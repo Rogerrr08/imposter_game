@@ -101,7 +101,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  for (int i = 0; i < 3; i++)
+                  for (int i = 0; i < ActiveGame.maxLives; i++)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 3),
                       child: Icon(

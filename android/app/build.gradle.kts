@@ -39,6 +39,17 @@ android {
     }
 }
 
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        val buildTypeName = variant.buildType ?: "debug"
+        val appVersion = variant.versionName.orNull ?: "0.0.0"
+
+        variant.outputs.forEach { output ->
+            output.outputFileName.set("yeyo-impostor-v${appVersion}-${buildTypeName}.apk")
+        }
+    }
+}
+
 flutter {
     source = "../.."
 }

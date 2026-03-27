@@ -3,11 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../theme/app_theme.dart';
 import '../../data/word_bank.dart';
+import '../../database/database.dart';
+import '../../models/game_state.dart';
 import '../../providers/game_provider.dart';
 import '../../providers/group_provider.dart';
-import '../../models/game_state.dart';
+import '../../theme/app_theme.dart';
 
 class GameSetupScreen extends ConsumerStatefulWidget {
   final int? groupId;
@@ -23,7 +24,10 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   final _playerFocusNode = FocusNode();
   final _scrollController = ScrollController();
 
-  final List<String> _players = [];
+  final List<String> _manualPlayers = [];
+  List<GroupPlayer> _groupPlayers = const [];
+  final Set<int> _excludedGroupPlayerIds = <int>{};
+
   WordCategory _selectedCategory = WordCategory.cosas;
   int _impostorCount = 1;
   bool _hintsEnabled = true;
@@ -31,7 +35,6 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
 
   static const int _minPlayers = 3;
   static const int _maxPlayers = 20;
-
   static const List<int> _presetDurations = [60, 120, 180, 300, 600];
   static const List<String> _presetLabels = [
     '1 min',
@@ -44,20 +47,41 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   static const Map<WordCategory, _CategoryInfo> _categoryData = {
     WordCategory.cosas: _CategoryInfo('Cosas', '📦'),
     WordCategory.entretenimiento: _CategoryInfo('Entretenimiento', '🎬'),
-    WordCategory.geografia: _CategoryInfo('Geografía', '🌍'),
+    WordCategory.geografia: _CategoryInfo('Geografia', '🌍'),
     WordCategory.deportes: _CategoryInfo('Deportes', '⚽'),
   };
 
-  int get _maxImpostors => (_players.length / 3).floor().clamp(1, _maxPlayers);
-
   bool get _isGroupMode => widget.groupId != null;
+
+  List<GroupPlayer> get _activeGroupPlayers => _groupPlayers
+      .where((player) => !_excludedGroupPlayerIds.contains(player.id))
+      .toList();
+
+  List<String> get _currentPlayers => _isGroupMode
+      ? _activeGroupPlayers.map((player) => player.name).toList()
+      : List<String>.from(_manualPlayers);
+
+  int get _playerCount => _currentPlayers.length;
+
+  int get _maxImpostors =>
+      (_playerCount / 3).floor().clamp(1, _maxPlayers);
 
   @override
   void initState() {
     super.initState();
-    // Clamp impostor count when it might be out of range
+    if (!_isGroupMode) {
+      final preset = ref.read(lastQuickGamePresetProvider);
+      if (preset != null) {
+        _manualPlayers.addAll(preset.playerNames);
+        _selectedCategory = preset.category;
+        _impostorCount = preset.impostorCount;
+        _hintsEnabled = preset.hintsEnabled;
+        _durationSeconds = preset.durationSeconds;
+      }
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _clampImpostorCount();
+      if (!mounted) return;
+      setState(_clampImpostorCount);
     });
   }
 
@@ -72,23 +96,26 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   void _clampImpostorCount() {
     final max = _maxImpostors;
     if (_impostorCount > max) {
-      setState(() => _impostorCount = max);
+      _impostorCount = max;
     }
   }
 
   void _addPlayer() {
     final name = _playerController.text.trim();
     if (name.isEmpty) return;
-    if (_players.length >= _maxPlayers) {
-      _showSnackBar('Máximo $_maxPlayers jugadores');
+
+    if (_playerCount >= _maxPlayers) {
+      _showSnackBar('Maximo $_maxPlayers jugadores');
       return;
     }
-    if (_players.any((p) => p.toLowerCase() == name.toLowerCase())) {
+
+    if (_manualPlayers.any((player) => player.toLowerCase() == name.toLowerCase())) {
       _showSnackBar('Ya existe un jugador con ese nombre');
       return;
     }
+
     setState(() {
-      _players.add(name);
+      _manualPlayers.add(name);
       _playerController.clear();
       _clampImpostorCount();
     });
@@ -97,8 +124,43 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
 
   void _removePlayer(int index) {
     setState(() {
-      _players.removeAt(index);
+      _manualPlayers.removeAt(index);
       _clampImpostorCount();
+    });
+  }
+
+  void _toggleGroupPlayer(GroupPlayer player, bool shouldPlay) {
+    setState(() {
+      if (shouldPlay) {
+        _excludedGroupPlayerIds.remove(player.id);
+      } else {
+        _excludedGroupPlayerIds.add(player.id);
+      }
+      _clampImpostorCount();
+    });
+  }
+
+  void _syncGroupPlayers(List<GroupPlayer> players) {
+    final hasChanged = players.length != _groupPlayers.length ||
+        players.asMap().entries.any((entry) {
+          final index = entry.key;
+          if (index >= _groupPlayers.length) return true;
+
+          final previous = _groupPlayers[index];
+          final current = entry.value;
+          return previous.id != current.id || previous.name != current.name;
+        });
+
+    if (!hasChanged) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        _groupPlayers = List<GroupPlayer>.from(players);
+        final validIds = players.map((player) => player.id).toSet();
+        _excludedGroupPlayerIds.removeWhere((id) => !validIds.contains(id));
+        _clampImpostorCount();
+      });
     });
   }
 
@@ -109,13 +171,14 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   }
 
   void _startGame() {
-    if (_players.length < _minPlayers) {
+    final playerNames = _currentPlayers;
+    if (playerNames.length < _minPlayers) {
       _showSnackBar('Se necesitan al menos $_minPlayers jugadores');
       return;
     }
 
     final config = GameConfig(
-      playerNames: List.unmodifiable(_players),
+      playerNames: List<String>.unmodifiable(playerNames),
       impostorCount: _impostorCount,
       hintsEnabled: _hintsEnabled,
       durationSeconds: _durationSeconds,
@@ -137,7 +200,11 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop()
+              ? context.pop()
+              : widget.groupId != null
+                  ? context.go('/groups/${widget.groupId}')
+                  : context.go('/'),
         ),
       ),
       body: SafeArea(
@@ -150,31 +217,20 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // -- Players section --
                     _buildPlayersSection(),
                     const SizedBox(height: 28),
-
-                    // -- Category selection --
                     _buildCategorySection(),
                     const SizedBox(height: 28),
-
-                    // -- Impostor count --
                     _buildImpostorCountSection(),
                     const SizedBox(height: 28),
-
-                    // -- Hints toggle --
                     _buildHintsToggle(),
                     const SizedBox(height: 28),
-
-                    // -- Timer duration --
                     _buildTimerSection(),
                     const SizedBox(height: 24),
                   ],
                 ),
               ),
             ),
-
-            // -- Start button --
             _buildStartButton(),
           ],
         ),
@@ -182,25 +238,16 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Players Section
-  // ---------------------------------------------------------------------------
-
   Widget _buildPlayersSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionHeader(
           icon: Icons.people_alt_rounded,
-          title: 'Jugadores: ${_players.length}/$_maxPlayers',
+          title: 'Jugadores: $_playerCount/$_maxPlayers',
         ),
         const SizedBox(height: 12),
-
-        if (_isGroupMode)
-          _buildGroupPlayers()
-        else
-          _buildManualPlayerInput(),
-
+        if (_isGroupMode) _buildGroupPlayers() else _buildManualPlayerInput(),
         const SizedBox(height: 12),
         _buildPlayerChips(),
       ],
@@ -208,48 +255,51 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   }
 
   Widget _buildGroupPlayers() {
-    final groupPlayers = ref.watch(groupPlayersProvider(widget.groupId!));
+    final groupPlayersAsync = ref.watch(groupPlayersProvider(widget.groupId!));
 
-    return groupPlayers.when(
+    return groupPlayersAsync.when(
       loading: () => const Center(
         child: Padding(
           padding: EdgeInsets.all(16),
           child: CircularProgressIndicator(color: AppTheme.primaryColor),
         ),
       ),
-      error: (err, _) => Container(
+      error: (error, _) => Container(
+        width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppTheme.secondaryColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Row(
-          children: [
-            const Icon(Icons.error_outline, color: AppTheme.secondaryColor),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Error cargando jugadores del grupo',
-                style: GoogleFonts.poppins(
-                  color: AppTheme.secondaryColor,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ],
+        child: Text(
+          'Error cargando jugadores del grupo',
+          style: GoogleFonts.poppins(
+            color: AppTheme.secondaryColor,
+            fontSize: 13,
+          ),
         ),
       ),
       data: (players) {
-        // Sync group players into local list once
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_players.isEmpty && players.isNotEmpty) {
-            setState(() {
-              _players.clear();
-              _players.addAll(players.map((p) => p.name));
-              _clampImpostorCount();
-            });
-          }
-        });
+        _syncGroupPlayers(players);
+
+        if (players.isEmpty) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceColor.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Text(
+              'Este grupo no tiene jugadores todavia.',
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                color: Colors.white54,
+              ),
+            ),
+          );
+        }
 
         return Container(
           padding: const EdgeInsets.all(12),
@@ -260,17 +310,56 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
               color: AppTheme.primaryColor.withValues(alpha: 0.3),
             ),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(Icons.group, color: AppTheme.primaryColor, size: 20),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  'Jugadores cargados del grupo',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    color: Colors.white70,
+              Row(
+                children: [
+                  const Icon(Icons.group, color: AppTheme.primaryColor, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Marca quien si juega esta partida',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: Colors.white70,
+                      ),
+                    ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: players.map((player) {
+                  final isSelected =
+                      !_excludedGroupPlayerIds.contains(player.id);
+                  return FilterChip(
+                    selected: isSelected,
+                    label: Text(player.name),
+                    labelStyle: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: isSelected ? Colors.white : Colors.white60,
+                    ),
+                    backgroundColor: AppTheme.cardColor,
+                    selectedColor: AppTheme.primaryColor.withValues(alpha: 0.25),
+                    checkmarkColor: Colors.white,
+                    side: BorderSide(
+                      color: isSelected
+                          ? AppTheme.primaryColor
+                          : Colors.white.withValues(alpha: 0.12),
+                    ),
+                    onSelected: (value) => _toggleGroupPlayer(player, value),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Juegan $_playerCount de ${players.length} integrantes',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: Colors.white54,
                 ),
               ),
             ],
@@ -320,16 +409,16 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   }
 
   Widget _buildPlayerChips() {
-    if (_players.isEmpty) {
+    final players = _currentPlayers;
+
+    if (players.isEmpty) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 24),
         decoration: BoxDecoration(
           color: AppTheme.surfaceColor.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.05),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Column(
           children: [
@@ -354,10 +443,11 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: List.generate(_players.length, (index) {
+      children: List<Widget>.generate(players.length, (index) {
+        final playerName = players[index];
         return Chip(
           label: Text(
-            _players[index],
+            playerName,
             style: GoogleFonts.poppins(
               fontSize: 13,
               fontWeight: FontWeight.w500,
@@ -367,7 +457,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           avatar: CircleAvatar(
             backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.4),
             child: Text(
-              _players[index][0].toUpperCase(),
+              playerName[0].toUpperCase(),
               style: GoogleFonts.poppins(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -390,17 +480,13 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Category Section
-  // ---------------------------------------------------------------------------
-
   Widget _buildCategorySection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionHeader(
           icon: Icons.category_rounded,
-          title: 'Categoría',
+          title: 'Categoria',
         ),
         const SizedBox(height: 12),
         GridView.count(
@@ -443,16 +529,14 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      info.emoji,
-                      style: const TextStyle(fontSize: 28),
-                    ),
+                    Text(info.emoji, style: const TextStyle(fontSize: 28)),
                     const SizedBox(height: 6),
                     Text(
                       info.label,
                       style: GoogleFonts.poppins(
                         fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight:
+                            isSelected ? FontWeight.w700 : FontWeight.w500,
                         color: isSelected ? Colors.white : Colors.white70,
                       ),
                     ),
@@ -465,10 +549,6 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       ],
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Impostor Count Section
-  // ---------------------------------------------------------------------------
 
   Widget _buildImpostorCountSection() {
     return Column(
@@ -484,9 +564,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           decoration: BoxDecoration(
             color: AppTheme.cardColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.06),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
           ),
           child: Row(
             children: [
@@ -526,11 +604,11 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
             ],
           ),
         ),
-        if (_players.length >= _minPlayers)
+        if (_playerCount >= _minPlayers)
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(
-              'Máximo ${_maxImpostors} impostor${_maxImpostors == 1 ? '' : 'es'} para ${_players.length} jugadores',
+              'Maximo $_maxImpostors impostor${_maxImpostors == 1 ? '' : 'es'} para $_playerCount jugadores',
               style: GoogleFonts.poppins(
                 fontSize: 11,
                 color: Colors.white24,
@@ -567,19 +645,13 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Hints Toggle
-  // ---------------------------------------------------------------------------
-
   Widget _buildHintsToggle() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.06),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: SwitchListTile(
         contentPadding: EdgeInsets.zero,
@@ -593,7 +665,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
         ),
         subtitle: Text(
           _hintsEnabled
-              ? 'Los impostores reciben una pista'
+              ? 'Los impostores reciben una pista mas sutil'
               : 'Sin pistas, mayor dificultad',
           style: GoogleFonts.poppins(
             fontSize: 12,
@@ -612,17 +684,13 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // Timer Duration Section
-  // ---------------------------------------------------------------------------
-
   Widget _buildTimerSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionHeader(
           icon: Icons.timer_rounded,
-          title: 'Duración: ${_formatDuration(_durationSeconds)}',
+          title: 'Duracion: ${_formatDuration(_durationSeconds)}',
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -653,8 +721,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color:
-                                  AppTheme.primaryColor.withValues(alpha: 0.3),
+                              color: AppTheme.primaryColor.withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 3),
                             ),
@@ -692,9 +759,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
             min: 60,
             max: 600,
             divisions: 54,
-            onChanged: (value) {
-              setState(() => _durationSeconds = value.round());
-            },
+            onChanged: (value) => setState(() => _durationSeconds = value.round()),
           ),
         ),
       ],
@@ -710,12 +775,9 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     return '$minutes:${remainingSeconds.toString().padLeft(2, '0')} min';
   }
 
-  // ---------------------------------------------------------------------------
-  // Start Button
-  // ---------------------------------------------------------------------------
-
   Widget _buildStartButton() {
-    final canStart = _players.length >= _minPlayers;
+    final canStart = _playerCount >= _minPlayers;
+    final missingPlayers = (_minPlayers - _playerCount).clamp(0, _minPlayers);
 
     return Container(
       width: double.infinity,
@@ -756,7 +818,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
             Text(
               canStart
                   ? 'Comenzar Partida'
-                  : 'Faltan ${_minPlayers - _players.length} jugador${(_minPlayers - _players.length) == 1 ? '' : 'es'}',
+                  : 'Faltan $missingPlayers jugador${missingPlayers == 1 ? '' : 'es'}',
               style: GoogleFonts.poppins(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
@@ -767,10 +829,6 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       ),
     );
   }
-
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
 
   Widget _sectionHeader({required IconData icon, required String title}) {
     return Row(
@@ -789,10 +847,6 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     );
   }
 }
-
-// ---------------------------------------------------------------------------
-// Supporting data class for category metadata
-// ---------------------------------------------------------------------------
 
 class _CategoryInfo {
   final String label;

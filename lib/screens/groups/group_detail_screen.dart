@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import '../../database/database.dart';
 import '../../providers/database_provider.dart';
+import '../../providers/game_provider.dart';
 import '../../providers/group_provider.dart';
 
 class GroupDetailScreen extends ConsumerStatefulWidget {
@@ -37,7 +38,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/groups'),
         ),
         title: groupAsync.when(
           loading: () => Text(
@@ -55,11 +56,28 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         ),
         actions: [
           groupAsync.whenOrNull(
-                data: (group) => group == null ? null : IconButton(
-                  icon: const Icon(Icons.edit_rounded, size: 22),
-                  tooltip: 'Editar nombre',
-                  onPressed: () => _showEditGroupNameDialog(context, group.name),
-                ),
+                data: (group) => group == null
+                    ? null
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit_rounded, size: 22),
+                            tooltip: 'Editar nombre',
+                            onPressed: () =>
+                                _showEditGroupNameDialog(context, group.name),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 22,
+                            ),
+                            tooltip: 'Eliminar grupo',
+                            onPressed: () =>
+                                _confirmDeleteGroup(context, group.name),
+                          ),
+                        ],
+                      ),
               ) ??
               const SizedBox.shrink(),
         ],
@@ -142,7 +160,19 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => context.push('/rankings/${widget.groupId}'),
+                      onPressed: () {
+                        final selectedCategory =
+                            ref.read(rankingCategoryFilterProvider);
+                        ref.invalidate(
+                          rankingsProvider(
+                            (
+                              groupId: widget.groupId,
+                              category: selectedCategory,
+                            ),
+                          ),
+                        );
+                        context.push('/rankings/${widget.groupId}');
+                      },
                       icon: const Icon(Icons.leaderboard_rounded, size: 20),
                       label: Text(
                         'Rankings',
@@ -158,7 +188,19 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => context.push('/history/${widget.groupId}'),
+                      onPressed: () {
+                        final selectedCategory =
+                            ref.read(historyCategoryFilterProvider);
+                        ref.invalidate(
+                          gameHistoryProvider(
+                            (
+                              groupId: widget.groupId,
+                              category: selectedCategory,
+                            ),
+                          ),
+                        );
+                        context.push('/history/${widget.groupId}');
+                      },
                       icon: const Icon(Icons.history_rounded, size: 20),
                       label: Text(
                         'Historial',
@@ -391,6 +433,47 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDeleteGroup(BuildContext context, String groupName) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Eliminar grupo',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Se eliminarán el grupo "$groupName", sus jugadores, su historial y su ranking. Esta acción no se puede deshacer.',
+          style: GoogleFonts.poppins(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.poppins(color: Colors.white54),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondaryColor,
+            ),
+            child: Text(
+              'Eliminar',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    await ref.read(groupsProvider.notifier).deleteGroup(widget.groupId);
+    if (!mounted) return;
+    context.go('/groups');
   }
 }
 

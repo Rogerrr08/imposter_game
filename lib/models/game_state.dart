@@ -10,7 +10,7 @@ class GamePlayer {
   final String? hint;
   bool isEliminated;
   int points;
-  /// Whether this civil correctly voted an impostor (for scoring).
+  /// Whether this civil correctly voted an impostor at least once.
   bool votedImpostorCorrectly;
 
   GamePlayer({
@@ -42,6 +42,8 @@ class GameConfig {
 }
 
 class ActiveGame {
+  static const int maxLives = 3;
+
   final GameConfig config;
   final String secretWord;
   final List<String> wordHints;
@@ -68,12 +70,15 @@ class ActiveGame {
     int? timeRemainingSeconds,
     this.civilsWon = false,
     this.impostorGuessedWord = false,
-    this.livesRemaining = 3,
+    this.livesRemaining = maxLives,
     this.impostorWhoGuessed,
   }) : timeRemainingSeconds = timeRemainingSeconds ?? config.durationSeconds;
 
   List<GamePlayer> get activePlayers =>
       players.where((p) => !p.isEliminated).toList();
+
+  List<GamePlayer> get activeCivils =>
+      activePlayers.where((p) => p.role == PlayerRole.civil).toList();
 
   List<GamePlayer> get impostors =>
       players.where((p) => p.role == PlayerRole.impostor).toList();

@@ -22,7 +22,7 @@ class GroupsScreen extends ConsumerWidget {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
@@ -153,10 +153,13 @@ class GroupsScreen extends ConsumerWidget {
               return null;
             },
             onFieldSubmitted: (_) {
-              if (formKey.currentState!.validate()) {
-                ref.read(groupsProvider.notifier).createGroup(controller.text.trim());
-                Navigator.pop(dialogContext);
-              }
+              _createGroupAndOpen(
+                context: context,
+                dialogContext: dialogContext,
+                ref: ref,
+                formKey: formKey,
+                controller: controller,
+              );
             },
           ),
         ),
@@ -169,12 +172,13 @@ class GroupsScreen extends ConsumerWidget {
             ),
           ),
           ElevatedButton(
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                ref.read(groupsProvider.notifier).createGroup(controller.text.trim());
-                Navigator.pop(dialogContext);
-              }
-            },
+            onPressed: () => _createGroupAndOpen(
+              context: context,
+              dialogContext: dialogContext,
+              ref: ref,
+              formKey: formKey,
+              controller: controller,
+            ),
             child: Text(
               'Crear',
               style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
@@ -183,6 +187,28 @@ class GroupsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _createGroupAndOpen({
+    required BuildContext context,
+    required BuildContext dialogContext,
+    required WidgetRef ref,
+    required GlobalKey<FormState> formKey,
+    required TextEditingController controller,
+  }) async {
+    if (!formKey.currentState!.validate()) return;
+
+    final groupId = await ref
+        .read(groupsProvider.notifier)
+        .createGroup(controller.text.trim());
+
+    if (dialogContext.mounted) {
+      Navigator.pop(dialogContext);
+    }
+
+    if (context.mounted) {
+      context.push('/groups/$groupId');
+    }
   }
 }
 

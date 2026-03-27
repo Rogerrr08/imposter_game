@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="imposter_game"
+        android:label="Yeyo Impostor"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -21,6 +21,7 @@ class GameResultsScreen extends ConsumerWidget {
 
     final civilsWon = game.civilsWon;
     final impostorGuessed = game.impostorGuessedWord;
+    final groupId = game.config.groupId;
 
     return Scaffold(
       body: SafeArea(
@@ -47,12 +48,26 @@ class GameResultsScreen extends ConsumerWidget {
                 child: ElevatedButton.icon(
                   onPressed: () {
                     ref.read(gameProvider.notifier).clearGame();
-                    context.go('/setup');
+                    context.go('/setup', extra: groupId);
                   },
                   icon: const Icon(Icons.replay),
                   label: const Text('Jugar de Nuevo'),
                 ),
               ),
+              if (groupId != null) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      ref.read(gameProvider.notifier).clearGame();
+                      context.go('/groups/$groupId');
+                    },
+                    icon: const Icon(Icons.group_rounded),
+                    label: const Text('Volver al Grupo'),
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
@@ -81,7 +96,7 @@ class GameResultsScreen extends ConsumerWidget {
         ? 'Todos los impostores fueron descubiertos'
         : impostorGuessed
             ? 'El impostor adivinó la palabra secreta'
-            : 'Los impostores sobrevivieron';
+            : 'Los civiles se quedaron sin vidas o ya solo quedaban dos jugadores';
 
     return Column(
       children: [

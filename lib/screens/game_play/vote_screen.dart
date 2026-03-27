@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../models/action_reveal.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/game_provider.dart';
 import '../../models/game_state.dart';
@@ -49,19 +50,77 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
   }
 
   void _confirmVote() {
-    if (_selectedPlayer == null) return;
+    if (_selectedPlayer == null || _votedBy == null) return;
+
+    final gameState = ref.read(gameProvider);
+    if (gameState == null) return;
+
+    GamePlayer? voter;
+    for (final player in gameState.activePlayers) {
+      if (player.name == _votedBy) {
+        voter = player;
+        break;
+      }
+    }
+
+    if (voter == null) return;
+
+    if (voter.role == PlayerRole.impostor) {
+      _showVoteError(
+        'Los impostores no pueden proponer votos.',
+      );
+      return;
+    }
+
+    if (_selectedPlayer == _votedBy) {
+      _showVoteError(
+        'Un jugador no puede votarse a si mismo.',
+      );
+      return;
+    }
 
     final wasImpostor = ref.read(gameProvider.notifier).eliminatePlayer(
       _selectedPlayer!,
       votedBy: _votedBy,
     );
 
-    setState(() {
-      _hasVoted = true;
-      _wasImpostor = wasImpostor;
-    });
+    context.go(
+      '/action-reveal',
+      extra: ActionRevealData(
+        type: ActionRevealType.vote,
+        success: wasImpostor,
+        subjectText: _selectedPlayer!,
+        actorText: _votedBy,
+        livesRemaining: wasImpostor ? null : gameState.livesRemaining,
+      ),
+    );
+  }
 
-    _resultAnimController.forward(from: 0);
+  void _showVoteError(String message) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Voto no valido',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          message,
+          style: GoogleFonts.poppins(color: Colors.white70),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+            },
+            child: Text(
+              'Entendido',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _continue() {
@@ -102,6 +161,9 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
 
   Widget _buildVotingView(ActiveGame gameState) {
     final activePlayers = gameState.activePlayers;
+    final selectedVoterValue = activePlayers.any((player) => player.name == _votedBy)
+        ? _votedBy
+        : null;
 
     return Column(
       children: [
@@ -136,7 +198,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < ActiveGame.maxLives; i++)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2),
                 child: Icon(
@@ -181,7 +243,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
                 'Quien propone el voto?',
                 style: GoogleFonts.poppins(color: Colors.white38, fontSize: 14),
               ),
-              value: _votedBy,
+              value: selectedVoterValue,
               dropdownColor: AppTheme.surfaceColor,
               style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
               items: activePlayers.map((p) {
@@ -292,7 +354,8 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _selectedPlayer != null ? _confirmVote : null,
+            onPressed:
+                _selectedPlayer != null && _votedBy != null ? _confirmVote : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
               disabledBackgroundColor:
@@ -334,7 +397,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
     if (_wasImpostor) {
       subtitle = 'Buen trabajo, encontraron a un impostor';
     } else {
-      subtitle = 'Han eliminado a un civil...\n'
+      subtitle = '${_votedBy ?? 'El civil que voto'} fallo y queda eliminado.\n'
           '${gameState.livesRemaining} vida${gameState.livesRemaining == 1 ? '' : 's'} restante${gameState.livesRemaining == 1 ? '' : 's'}';
     }
 
@@ -398,7 +461,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      for (int i = 0; i < 3; i++)
+                      for (int i = 0; i < ActiveGame.maxLives; i++)
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 3),
                           child: Icon(

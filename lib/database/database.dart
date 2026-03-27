@@ -3,6 +3,9 @@ import 'package:drift_flutter/drift_flutter.dart';
 
 part 'database.g.dart';
 
+const _overallStatsScope = '__all__';
+const _playerStatsInitializedKey = 'player_stats_initialized';
+
 // ---------------------------------------------------------------------------
 // Table definitions
 // ---------------------------------------------------------------------------
@@ -62,7 +65,29 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        onCreate: (m) async {
+          await m.createAll();
+          await _createAuxiliaryTables();
+          await _createAuxiliaryIndexes();
+        },
+        onUpgrade: (m, from, to) async {
+          if (from < 3) {
+            await _createAuxiliaryTables();
+            await _createAuxiliaryIndexes();
+          }
+        },
+        beforeOpen: (details) async {
+          await _createAuxiliaryTables();
+          await _createAuxiliaryIndexes();
+          await _ensurePlayerStatsInitialized();
+
+          await _trimAllGroupsHistory();
+        },
+      );
 
   static QueryExecutor _openConnection() {
     return driftDatabase(
@@ -73,6 +98,146 @@ class AppDatabase extends _$AppDatabase {
         driftWorker: Uri.parse('drift_worker.dart.js'),
       ),
     );
+  }
+
+  Future<void> _createAuxiliaryTables() async {
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS player_stats (
+        group_id INTEGER NOT NULL,
+        scope TEXT NOT NULL,
+        player_name TEXT NOT NULL,
+        games_played INTEGER NOT NULL DEFAULT 0,
+        civil_wins INTEGER NOT NULL DEFAULT 0,
+        impostor_wins INTEGER NOT NULL DEFAULT 0,
+        total_points INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (group_id, scope, player_name)
+      )
+    ''');
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS app_meta (
+        key TEXT NOT NULL PRIMARY KEY,
+        value TEXT NOT NULL
+      )
+    ''');
+  }
+
+  Future<void> _createAuxiliaryIndexes() async {
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_games_group_played_at ON games (group_id, played_at DESC, id DESC)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_games_group_category_played_at ON games (group_id, category, played_at DESC, id DESC)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_player_stats_lookup ON player_stats (group_id, scope, total_points DESC, player_name COLLATE NOCASE)',
+    );
+  }
+
+  Future<void> _ensurePlayerStatsInitialized() async {
+    if (await _isMetaFlagEnabled(_playerStatsInitializedKey)) {
+      return;
+    }
+
+    if (await _isPlayerStatsTableEmpty()) {
+      await _rebuildPlayerStatsFromHistory();
+    }
+
+    await _setMetaValue(_playerStatsInitializedKey, '1');
+  }
+
+  Future<bool> _isPlayerStatsTableEmpty() async {
+    final result = await customSelect(
+      'SELECT COUNT(*) AS count FROM player_stats',
+    ).getSingle();
+    return _readInt(result, 'count') == 0;
+  }
+
+  Future<bool> _isMetaFlagEnabled(String key) async {
+    final row = await customSelect(
+      'SELECT value FROM app_meta WHERE key = ?',
+      variables: [Variable.withString(key)],
+    ).getSingleOrNull();
+
+    return row?.read<String>('value') == '1';
+  }
+
+  Future<void> _setMetaValue(String key, String value) {
+    return customStatement(
+      '''
+      INSERT INTO app_meta (key, value)
+      VALUES (?, ?)
+      ON CONFLICT(key) DO UPDATE SET value = excluded.value
+      ''',
+      [key, value],
+    );
+  }
+
+  Future<void> _rebuildPlayerStatsFromHistory() async {
+    await customStatement('DELETE FROM player_stats');
+
+    await customStatement('''
+      INSERT INTO player_stats (
+        group_id,
+        scope,
+        player_name,
+        games_played,
+        civil_wins,
+        impostor_wins,
+        total_points
+      )
+      SELECT
+        g.group_id,
+        '$_overallStatsScope',
+        gp.player_name,
+        COUNT(DISTINCT gp.game_id),
+        COALESCE(SUM(CASE WHEN gp.was_impostor = 0 AND g.civils_won = 1 THEN 1 ELSE 0 END), 0),
+        COALESCE(SUM(CASE WHEN gp.was_impostor = 1 AND g.civils_won = 0 THEN 1 ELSE 0 END), 0),
+        COALESCE(SUM(gp.points), 0)
+      FROM ${gamePlayersTable.actualTableName} gp
+      INNER JOIN games g ON gp.game_id = g.id
+      WHERE g.group_id IS NOT NULL
+      GROUP BY g.group_id, gp.player_name
+    ''');
+
+    await customStatement('''
+      INSERT INTO player_stats (
+        group_id,
+        scope,
+        player_name,
+        games_played,
+        civil_wins,
+        impostor_wins,
+        total_points
+      )
+      SELECT
+        g.group_id,
+        g.category,
+        gp.player_name,
+        COUNT(DISTINCT gp.game_id),
+        COALESCE(SUM(CASE WHEN gp.was_impostor = 0 AND g.civils_won = 1 THEN 1 ELSE 0 END), 0),
+        COALESCE(SUM(CASE WHEN gp.was_impostor = 1 AND g.civils_won = 0 THEN 1 ELSE 0 END), 0),
+        COALESCE(SUM(gp.points), 0)
+      FROM ${gamePlayersTable.actualTableName} gp
+      INNER JOIN games g ON gp.game_id = g.id
+      WHERE g.group_id IS NOT NULL
+      GROUP BY g.group_id, g.category, gp.player_name
+    ''');
+  }
+
+  Future<void> _trimAllGroupsHistory() async {
+    final rows = await customSelect(
+      'SELECT DISTINCT group_id FROM games WHERE group_id IS NOT NULL',
+      readsFrom: {games},
+    ).get();
+
+    final gameDao = GameDao(this);
+    for (final row in rows) {
+      await gameDao.trimGameHistory(_readInt(row, 'group_id'));
+    }
+  }
+
+  int _readInt(QueryRow row, String columnName) {
+    return row.read<int>(columnName);
   }
 }
 
@@ -120,6 +285,28 @@ class GroupDao extends DatabaseAccessor<AppDatabase> with _$GroupDaoMixin {
 
   /// Delete a group and all of its players (cascade manually).
   Future<void> deleteGroup(int id) async {
+    final gameIds = await db.customSelect(
+      'SELECT id FROM games WHERE group_id = ?',
+      variables: [Variable.withInt(id)],
+      readsFrom: {db.games},
+    ).get();
+
+    for (final row in gameIds) {
+      final gameId = row.read<int>('id');
+      await db.customStatement(
+        'DELETE FROM ${db.gamePlayersTable.actualTableName} WHERE game_id = ?',
+        [gameId],
+      );
+    }
+
+    await db.customStatement(
+      'DELETE FROM games WHERE group_id = ?',
+      [id],
+    );
+    await db.customStatement(
+      'DELETE FROM player_stats WHERE group_id = ?',
+      [id],
+    );
     await (delete(groupPlayers)..where((p) => p.groupId.equals(id))).go();
     await (delete(groups)..where((g) => g.id.equals(id))).go();
   }
@@ -203,6 +390,16 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
         );
       }
 
+      if (groupId != null) {
+        await _updatePlayerStats(
+          groupId: groupId,
+          category: category,
+          civilsWon: civilsWon,
+          playerResults: playerResults,
+        );
+        await trimGameHistory(groupId);
+      }
+
       return gameId;
     });
   }
@@ -211,7 +408,8 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
   Future<List<Game>> getGamesForGroup(int groupId) {
     return (select(games)
           ..where((g) => g.groupId.equals(groupId))
-          ..orderBy([(g) => OrderingTerm.desc(g.playedAt)]))
+          ..orderBy([(g) => OrderingTerm.desc(g.playedAt), (g) => OrderingTerm.desc(g.id)])
+          ..limit(20))
         .get();
   }
 
@@ -221,7 +419,8 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
     return (select(games)
           ..where(
               (g) => g.groupId.equals(groupId) & g.category.equals(category))
-          ..orderBy([(g) => OrderingTerm.desc(g.playedAt)]))
+          ..orderBy([(g) => OrderingTerm.desc(g.playedAt), (g) => OrderingTerm.desc(g.id)])
+          ..limit(20))
         .get();
   }
 
@@ -229,22 +428,29 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
   /// descending.
   Future<List<PlayerRanking>> getRankingForGroup(int groupId) async {
     final query = customSelect(
-      'SELECT gp.player_name AS name, SUM(gp.points) AS total_points, COUNT(DISTINCT gp.game_id) AS games_played '
-      'FROM game_players gp '
-      'INNER JOIN games g ON gp.game_id = g.id '
-      'WHERE g.group_id = ? '
-      'GROUP BY gp.player_name '
-      'ORDER BY total_points DESC',
-      variables: [Variable.withInt(groupId)],
-      readsFrom: {games, gamePlayersTable},
+      'SELECT '
+      'player_name AS name, '
+      'games_played, '
+      'civil_wins, '
+      'impostor_wins, '
+      'total_points '
+      'FROM player_stats '
+      'WHERE group_id = ? AND scope = ? '
+      'ORDER BY total_points DESC, civil_wins DESC, impostor_wins DESC, player_name COLLATE NOCASE ASC',
+      variables: [
+        Variable.withInt(groupId),
+        Variable.withString(_overallStatsScope),
+      ],
     );
 
     final rows = await query.get();
     return rows
         .map((row) => PlayerRanking(
               playerName: row.read<String>('name'),
-              totalPoints: row.read<int>('total_points'),
-              gamesPlayed: row.read<int>('games_played'),
+              gamesPlayed: _readInt(row, 'games_played'),
+              civilWins: _readInt(row, 'civil_wins'),
+              impostorWins: _readInt(row, 'impostor_wins'),
+              totalPoints: _readInt(row, 'total_points'),
             ))
         .toList();
   }
@@ -253,24 +459,157 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
   Future<List<PlayerRanking>> getRankingForGroupByCategory(
       int groupId, String category) async {
     final query = customSelect(
-      'SELECT gp.player_name AS name, SUM(gp.points) AS total_points, COUNT(DISTINCT gp.game_id) AS games_played '
-      'FROM game_players gp '
-      'INNER JOIN games g ON gp.game_id = g.id '
-      'WHERE g.group_id = ? AND g.category = ? '
-      'GROUP BY gp.player_name '
-      'ORDER BY total_points DESC',
+      'SELECT '
+      'player_name AS name, '
+      'games_played, '
+      'civil_wins, '
+      'impostor_wins, '
+      'total_points '
+      'FROM player_stats '
+      'WHERE group_id = ? AND scope = ? '
+      'ORDER BY total_points DESC, civil_wins DESC, impostor_wins DESC, player_name COLLATE NOCASE ASC',
       variables: [Variable.withInt(groupId), Variable.withString(category)],
-      readsFrom: {games, gamePlayersTable},
     );
 
     final rows = await query.get();
     return rows
         .map((row) => PlayerRanking(
               playerName: row.read<String>('name'),
-              totalPoints: row.read<int>('total_points'),
-              gamesPlayed: row.read<int>('games_played'),
+              gamesPlayed: _readInt(row, 'games_played'),
+              civilWins: _readInt(row, 'civil_wins'),
+              impostorWins: _readInt(row, 'impostor_wins'),
+              totalPoints: _readInt(row, 'total_points'),
             ))
         .toList();
+  }
+
+  Future<void> _updatePlayerStats({
+    required int groupId,
+    required String category,
+    required bool civilsWon,
+    required List<GamePlayerEntry> playerResults,
+  }) async {
+    for (final player in playerResults) {
+      final civilWins =
+          !player.wasImpostor && civilsWon ? 1 : 0;
+      final impostorWins =
+          player.wasImpostor && !civilsWon ? 1 : 0;
+
+      await _upsertPlayerStatsRow(
+        groupId: groupId,
+        scope: _overallStatsScope,
+        playerName: player.playerName,
+        points: player.points,
+        civilWins: civilWins,
+        impostorWins: impostorWins,
+      );
+
+      await _upsertPlayerStatsRow(
+        groupId: groupId,
+        scope: category,
+        playerName: player.playerName,
+        points: player.points,
+        civilWins: civilWins,
+        impostorWins: impostorWins,
+      );
+    }
+  }
+
+  Future<void> _upsertPlayerStatsRow({
+    required int groupId,
+    required String scope,
+    required String playerName,
+    required int points,
+    required int civilWins,
+    required int impostorWins,
+  }) {
+    return customStatement(
+      '''
+      INSERT INTO player_stats (
+        group_id,
+        scope,
+        player_name,
+        games_played,
+        civil_wins,
+        impostor_wins,
+        total_points
+      ) VALUES (?, ?, ?, 1, ?, ?, ?)
+      ON CONFLICT(group_id, scope, player_name) DO UPDATE SET
+        games_played = games_played + 1,
+        civil_wins = civil_wins + excluded.civil_wins,
+        impostor_wins = impostor_wins + excluded.impostor_wins,
+        total_points = total_points + excluded.total_points
+      ''',
+      [
+        groupId,
+        scope,
+        playerName,
+        civilWins,
+        impostorWins,
+        points,
+      ],
+    );
+  }
+
+  Future<void> trimGameHistory(int groupId) async {
+    final rows = await customSelect(
+      '''
+      SELECT id
+      FROM games
+      WHERE group_id = ?
+      ORDER BY played_at DESC, id DESC
+      LIMIT -1 OFFSET 20
+      ''',
+      variables: [Variable.withInt(groupId)],
+      readsFrom: {games},
+    ).get();
+
+    if (rows.isEmpty) return;
+
+    final gameIds = rows.map((row) => _readInt(row, 'id')).toList();
+
+    for (final gameId in gameIds) {
+      await customStatement(
+        'DELETE FROM ${gamePlayersTable.actualTableName} WHERE game_id = ?',
+        [gameId],
+      );
+      await customStatement(
+        'DELETE FROM games WHERE id = ?',
+        [gameId],
+      );
+    }
+  }
+
+  Future<void> clearHistoryForGroup(int groupId) async {
+    final rows = await customSelect(
+      'SELECT id FROM games WHERE group_id = ?',
+      variables: [Variable.withInt(groupId)],
+      readsFrom: {games},
+    ).get();
+
+    for (final row in rows) {
+      final gameId = _readInt(row, 'id');
+      await customStatement(
+        'DELETE FROM ${gamePlayersTable.actualTableName} WHERE game_id = ?',
+        [gameId],
+      );
+    }
+
+    await customStatement(
+      'DELETE FROM games WHERE group_id = ?',
+      [groupId],
+    );
+  }
+
+  Future<void> clearRankingForGroup(int groupId) {
+    return customStatement(
+      'DELETE FROM player_stats WHERE group_id = ?',
+      [groupId],
+    );
+  }
+
+  int _readInt(QueryRow row, String columnName) {
+    return row.read<int>(columnName);
   }
 
   /// Full details for a single game, including all player entries.
@@ -323,13 +662,17 @@ class GamePlayerEntry {
 /// Aggregate ranking row.
 class PlayerRanking {
   final String playerName;
-  final int totalPoints;
   final int gamesPlayed;
+  final int civilWins;
+  final int impostorWins;
+  final int totalPoints;
 
   const PlayerRanking({
     required this.playerName,
-    required this.totalPoints,
     required this.gamesPlayed,
+    required this.civilWins,
+    required this.impostorWins,
+    required this.totalPoints,
   });
 }
 

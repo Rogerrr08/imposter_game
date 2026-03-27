@@ -5,13 +5,21 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../theme/app_theme.dart';
+import '../../database/database.dart';
+import '../../providers/database_provider.dart';
 import '../../providers/game_provider.dart';
 import '../../data/word_bank.dart';
 
-class GameHistoryScreen extends ConsumerWidget {
+class GameHistoryScreen extends ConsumerStatefulWidget {
   final int groupId;
 
   const GameHistoryScreen({super.key, required this.groupId});
+
+  @override
+  ConsumerState<GameHistoryScreen> createState() => _GameHistoryScreenState();
+}
+
+class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
 
   static const _categoryLabels = <String?, String>{
     null: 'Todas',
@@ -22,22 +30,53 @@ class GameHistoryScreen extends ConsumerWidget {
   };
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final selectedCategory = ref.watch(rankingCategoryFilterProvider);
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final selectedCategory = ref.read(historyCategoryFilterProvider);
+      ref.invalidate(
+        gameHistoryProvider(
+          (
+            groupId: widget.groupId,
+            category: selectedCategory,
+          ),
+        ),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final groupId = widget.groupId;
+    final selectedCategory = ref.watch(historyCategoryFilterProvider);
+    final request = (groupId: groupId, category: selectedCategory);
     final historyAsync = ref.watch(
-      gameHistoryProvider((groupId: groupId, category: selectedCategory)),
+      gameHistoryProvider(request),
     );
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/groups/$groupId'),
         ),
         title: Text(
           'Historial',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Borrar historial',
+            icon: const Icon(Icons.delete_outline_rounded),
+            onPressed: _confirmClearHistory,
+          ),
+          IconButton(
+            tooltip: 'Refrescar',
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () => ref.invalidate(gameHistoryProvider(request)),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -66,6 +105,12 @@ class GameHistoryScreen extends ConsumerWidget {
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        onPressed: () => ref.invalidate(gameHistoryProvider(request)),
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Reintentar'),
                       ),
                     ],
                   ),
@@ -155,13 +200,54 @@ class GameHistoryScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               onSelected: (_) {
-                ref.read(rankingCategoryFilterProvider.notifier).state = entry.key;
+                ref.read(historyCategoryFilterProvider.notifier).state = entry.key;
               },
             ),
           );
         }).toList(),
       ),
     );
+  }
+
+  Future<void> _confirmClearHistory() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Borrar historial',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Esto borrará el historial guardado de este grupo. El ranking no se verá afectado.',
+          style: GoogleFonts.poppins(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.poppins(color: Colors.white54),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondaryColor,
+            ),
+            child: Text(
+              'Borrar',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final db = ref.read(databaseProvider);
+    await GameDao(db).clearHistoryForGroup(widget.groupId);
+    ref.invalidate(gameHistoryProvider);
   }
 }
 
