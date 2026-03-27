@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 
 import '../../theme/app_theme.dart';
 import '../../providers/game_provider.dart';
-import '../../data/word_bank.dart';
 
 class GameHistoryScreen extends ConsumerWidget {
   final int groupId;
@@ -57,7 +56,11 @@ class GameHistoryScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: AppTheme.secondaryColor,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'Error al cargar el historial',
@@ -155,7 +158,9 @@ class GameHistoryScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               onSelected: (_) {
-                ref.read(rankingCategoryFilterProvider.notifier).state = entry.key;
+                ref
+                    .read(rankingCategoryFilterProvider.notifier)
+                    .setCategory(entry.key);
               },
             ),
           );
@@ -196,7 +201,9 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
     final impostors = players.where((p) => p.wasImpostor == true).toList();
 
     final resultText = civilsWon ? 'Civiles ganaron' : 'Impostores ganaron';
-    final resultColor = civilsWon ? AppTheme.successColor : AppTheme.secondaryColor;
+    final resultColor = civilsWon
+        ? AppTheme.successColor
+        : AppTheme.secondaryColor;
     final resultIcon = civilsWon ? Icons.shield_rounded : Icons.psychology_alt;
 
     final categoryDisplay =
@@ -214,10 +221,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: resultColor.withValues(alpha: 0.3),
-            width: 1,
-          ),
+          side: BorderSide(color: resultColor.withValues(alpha: 0.3), width: 1),
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -277,7 +281,10 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
@@ -319,11 +326,16 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     Expanded(
                       child: RichText(
                         text: TextSpan(
-                          style: GoogleFonts.poppins(fontSize: 13, color: Colors.white70),
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: Colors.white70,
+                          ),
                           children: [
                             const TextSpan(text: 'Impostor: '),
                             TextSpan(
-                              text: impostors.map((p) => p.playerName).join(', '),
+                              text: impostors
+                                  .map((p) => p.playerName)
+                                  .join(', '),
                               style: GoogleFonts.poppins(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
@@ -340,7 +352,10 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
 
                 // Result
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: resultColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
@@ -361,9 +376,14 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                       if (impostorGuessedWord) ...[
                         const SizedBox(width: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: AppTheme.warningColor.withValues(alpha: 0.15),
+                            color: AppTheme.warningColor.withValues(
+                              alpha: 0.15,
+                            ),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
@@ -412,7 +432,9 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                         children: [
                           // Impostor/civil icon
                           Icon(
-                            isImpostor ? Icons.psychology_alt : Icons.shield_rounded,
+                            isImpostor
+                                ? Icons.psychology_alt
+                                : Icons.shield_rounded,
                             size: 16,
                             color: isImpostor
                                 ? AppTheme.secondaryColor
@@ -442,7 +464,9 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                                       vertical: 1,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.08),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.08,
+                                      ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
@@ -466,7 +490,9 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                             ),
                             decoration: BoxDecoration(
                               color: points > 0
-                                  ? AppTheme.successColor.withValues(alpha: 0.12)
+                                  ? AppTheme.successColor.withValues(
+                                      alpha: 0.12,
+                                    )
                                   : Colors.white.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(8),
                             ),

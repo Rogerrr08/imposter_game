@@ -52,6 +52,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
   void _submitGuess() {
     final guess = _guessController.text.trim();
     if (guess.isEmpty) return;
+    FocusScope.of(context).unfocus();
 
     final correct = ref.read(gameProvider.notifier).impostorGuess(guess);
 
@@ -124,10 +125,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
         const SizedBox(height: 8),
         Text(
           'Escribe la palabra secreta que crees que es',
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: Colors.white54,
-          ),
+          style: GoogleFonts.poppins(fontSize: 14, color: Colors.white54),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 40),
@@ -152,6 +150,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
             ),
             textAlign: TextAlign.center,
             textCapitalization: TextCapitalization.words,
+            onTapOutside: (_) => FocusScope.of(context).unfocus(),
             decoration: InputDecoration(
               hintText: 'Escribe tu respuesta...',
               hintStyle: GoogleFonts.poppins(
@@ -220,8 +219,9 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
-              disabledBackgroundColor:
-                  AppTheme.secondaryColor.withValues(alpha: 0.3),
+              disabledBackgroundColor: AppTheme.secondaryColor.withValues(
+                alpha: 0.3,
+              ),
               padding: const EdgeInsets.symmetric(vertical: 18),
               textStyle: GoogleFonts.poppins(
                 fontSize: 18,
@@ -237,11 +237,8 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
   }
 
   Widget _buildResultView() {
-    final color =
-        _wasCorrect ? AppTheme.secondaryColor : AppTheme.successColor;
-    final icon = _wasCorrect
-        ? Icons.celebration_rounded
-        : Icons.close_rounded;
+    final color = _wasCorrect ? AppTheme.secondaryColor : AppTheme.successColor;
+    final icon = _wasCorrect ? Icons.celebration_rounded : Icons.close_rounded;
     final title = _wasCorrect
         ? 'El impostor adivino la palabra!'
         : 'Respuesta incorrecta!';
@@ -276,17 +273,15 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
                       ),
                     ],
                   ),
-                  child: Icon(
-                    icon,
-                    size: 64,
-                    color: color,
-                  ),
+                  child: Icon(icon, size: 64, color: color),
                 ),
                 const SizedBox(height: 32),
                 // Guess shown
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     color: AppTheme.cardColor,
                     borderRadius: BorderRadius.circular(12),

@@ -57,9 +57,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
     final gameState = ref.watch(gameProvider);
 
     if (gameState == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     // If state already moved to results (e.g. from elimination), navigate
@@ -73,8 +71,8 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
     final seconds = gameState.timeRemainingSeconds % 60;
     final timeString =
         '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    final progress = gameState.timeRemainingSeconds /
-        gameState.config.durationSeconds;
+    final progress =
+        gameState.timeRemainingSeconds / gameState.config.durationSeconds;
     final isLowTime = gameState.timeRemainingSeconds <= 30;
 
     return Scaffold(
@@ -144,9 +142,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
               ),
               const SizedBox(height: 12),
               // Player list
-              Expanded(
-                child: _buildPlayerList(gameState),
-              ),
+              Expanded(child: _buildPlayerList(gameState)),
               const SizedBox(height: 16),
               // Action buttons
               Row(
@@ -198,8 +194,13 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   }
 
   Widget _buildCircularTimer(
-      String timeString, double progress, bool isLowTime) {
-    final timerColor = isLowTime ? AppTheme.secondaryColor : AppTheme.primaryColor;
+    String timeString,
+    double progress,
+    bool isLowTime,
+  ) {
+    final timerColor = isLowTime
+        ? AppTheme.secondaryColor
+        : AppTheme.primaryColor;
 
     return SizedBox(
       width: 180,
@@ -268,7 +269,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   Widget _buildPlayerList(ActiveGame gameState) {
     return ListView.separated(
       itemCount: gameState.players.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 8),
+      separatorBuilder: (_, _) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
         final player = gameState.players[index];
         final isEliminated = player.isEliminated;
@@ -319,8 +320,9 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: isEliminated ? Colors.white30 : Colors.white,
-                    decoration:
-                        isEliminated ? TextDecoration.lineThrough : null,
+                    decoration: isEliminated
+                        ? TextDecoration.lineThrough
+                        : null,
                     decorationColor: Colors.white30,
                   ),
                 ),

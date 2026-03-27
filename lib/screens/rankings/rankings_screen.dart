@@ -5,7 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../theme/app_theme.dart';
 import '../../providers/game_provider.dart';
-import '../../data/word_bank.dart';
 
 class RankingsScreen extends ConsumerWidget {
   final int groupId;
@@ -60,7 +59,11 @@ class RankingsScreen extends ConsumerWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
+                      const Icon(
+                        Icons.error_outline,
+                        size: 48,
+                        color: AppTheme.secondaryColor,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         'Error al cargar rankings',
@@ -159,7 +162,9 @@ class RankingsScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               onSelected: (_) {
-                ref.read(rankingCategoryFilterProvider.notifier).state = entry.key;
+                ref
+                    .read(rankingCategoryFilterProvider.notifier)
+                    .setCategory(entry.key);
               },
             ),
           );
@@ -207,7 +212,10 @@ class RankingsScreen extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
           side: isTop3
-              ? BorderSide(color: positionColor.withValues(alpha: 0.4), width: 1.5)
+              ? BorderSide(
+                  color: positionColor.withValues(alpha: 0.4),
+                  width: 1.5,
+                )
               : BorderSide.none,
         ),
         child: Padding(
@@ -248,7 +256,9 @@ class RankingsScreen extends ConsumerWidget {
                       style: GoogleFonts.poppins(
                         fontSize: isTop3 ? 17 : 15,
                         fontWeight: isTop3 ? FontWeight.w700 : FontWeight.w500,
-                        color: isTop3 ? Colors.white : Colors.white.withValues(alpha: 0.85),
+                        color: isTop3
+                            ? Colors.white
+                            : Colors.white.withValues(alpha: 0.85),
                       ),
                     ),
                     if (ranking.gamesPlayed > 0)
@@ -265,7 +275,10 @@ class RankingsScreen extends ConsumerWidget {
 
               // Points
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: isTop3
                       ? positionColor.withValues(alpha: 0.15)

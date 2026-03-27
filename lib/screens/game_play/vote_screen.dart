@@ -51,10 +51,9 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
   void _confirmVote() {
     if (_selectedPlayer == null) return;
 
-    final wasImpostor = ref.read(gameProvider.notifier).eliminatePlayer(
-      _selectedPlayer!,
-      votedBy: _votedBy,
-    );
+    final wasImpostor = ref
+        .read(gameProvider.notifier)
+        .eliminatePlayer(_selectedPlayer!, votedBy: _votedBy);
 
     setState(() {
       _hasVoted = true;
@@ -83,9 +82,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
     final gameState = ref.watch(gameProvider);
 
     if (gameState == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -185,10 +182,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
               dropdownColor: AppTheme.surfaceColor,
               style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
               items: activePlayers.map((p) {
-                return DropdownMenuItem(
-                  value: p.name,
-                  child: Text(p.name),
-                );
+                return DropdownMenuItem(value: p.name, child: Text(p.name));
               }).toList(),
               onChanged: (val) => setState(() => _votedBy = val),
             ),
@@ -199,7 +193,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
         Expanded(
           child: ListView.separated(
             itemCount: activePlayers.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final player = activePlayers[index];
               final isSelected = _selectedPlayer == player.name;
@@ -210,8 +204,10 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? AppTheme.secondaryColor.withValues(alpha: 0.15)
@@ -276,8 +272,11 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
                           ),
                         ),
                         child: isSelected
-                            ? const Icon(Icons.check, size: 16,
-                                color: Colors.white)
+                            ? const Icon(
+                                Icons.check,
+                                size: 16,
+                                color: Colors.white,
+                              )
                             : null,
                       ),
                     ],
@@ -295,8 +294,9 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
             onPressed: _selectedPlayer != null ? _confirmVote : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
-              disabledBackgroundColor:
-                  AppTheme.secondaryColor.withValues(alpha: 0.3),
+              disabledBackgroundColor: AppTheme.secondaryColor.withValues(
+                alpha: 0.3,
+              ),
               padding: const EdgeInsets.symmetric(vertical: 18),
               textStyle: GoogleFonts.poppins(
                 fontSize: 18,
@@ -311,10 +311,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
           onPressed: () => context.pop(),
           child: Text(
             'Cancelar',
-            style: GoogleFonts.poppins(
-              color: Colors.white54,
-              fontSize: 15,
-            ),
+            style: GoogleFonts.poppins(color: Colors.white54, fontSize: 15),
           ),
         ),
         const SizedBox(height: 16),
@@ -323,8 +320,9 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
   }
 
   Widget _buildResultView(ActiveGame gameState) {
-    final color =
-        _wasImpostor ? AppTheme.secondaryColor : AppTheme.successColor;
+    final color = _wasImpostor
+        ? AppTheme.secondaryColor
+        : AppTheme.successColor;
     final icon = _wasImpostor
         ? Icons.whatshot_rounded
         : Icons.sentiment_dissatisfied_rounded;
@@ -334,7 +332,8 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
     if (_wasImpostor) {
       subtitle = 'Buen trabajo, encontraron a un impostor';
     } else {
-      subtitle = 'Han eliminado a un civil...\n'
+      subtitle =
+          'Han eliminado a un civil...\n'
           '${gameState.livesRemaining} vida${gameState.livesRemaining == 1 ? '' : 's'} restante${gameState.livesRemaining == 1 ? '' : 's'}';
     }
 

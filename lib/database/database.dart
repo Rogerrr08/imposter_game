@@ -38,7 +38,6 @@ class Games extends Table {
 
 /// Individual player results inside a [Games] entry.
 class GamePlayersTable extends Table {
-  @override
   String get actualTableName => 'game_players';
 
   IntColumn get id => integer().autoIncrement()();
@@ -88,22 +87,22 @@ class GroupDao extends DatabaseAccessor<AppDatabase> with _$GroupDaoMixin {
 
   /// Insert a new group and return the generated row.
   Future<Group> createGroup(String name) async {
-    final id = await into(groups).insert(
-      GroupsCompanion.insert(name: name),
-    );
+    final id = await into(groups).insert(GroupsCompanion.insert(name: name));
     return (select(groups)..where((g) => g.id.equals(id))).getSingle();
   }
 
   /// Return every group ordered by creation date (newest first).
   Future<List<Group>> getAllGroups() {
-    return (select(groups)..orderBy([(g) => OrderingTerm.desc(g.createdAt)]))
-        .get();
+    return (select(
+      groups,
+    )..orderBy([(g) => OrderingTerm.desc(g.createdAt)])).get();
   }
 
   /// Stream of all groups ordered by creation date (newest first).
   Stream<List<Group>> watchAllGroups() {
-    return (select(groups)..orderBy([(g) => OrderingTerm.desc(g.createdAt)]))
-        .watch();
+    return (select(
+      groups,
+    )..orderBy([(g) => OrderingTerm.desc(g.createdAt)])).watch();
   }
 
   /// Get a single group by its [id].
@@ -128,9 +127,9 @@ class GroupDao extends DatabaseAccessor<AppDatabase> with _$GroupDaoMixin {
 
   /// Add a player to a group and return the generated row.
   Future<GroupPlayer> addPlayerToGroup(int groupId, String playerName) async {
-    final id = await into(groupPlayers).insert(
-      GroupPlayersCompanion.insert(groupId: groupId, name: playerName),
-    );
+    final id = await into(
+      groupPlayers,
+    ).insert(GroupPlayersCompanion.insert(groupId: groupId, name: playerName));
     return (select(groupPlayers)..where((p) => p.id.equals(id))).getSingle();
   }
 
@@ -141,14 +140,16 @@ class GroupDao extends DatabaseAccessor<AppDatabase> with _$GroupDaoMixin {
 
   /// Get all players that belong to [groupId].
   Future<List<GroupPlayer>> getPlayersInGroup(int groupId) {
-    return (select(groupPlayers)..where((p) => p.groupId.equals(groupId)))
-        .get();
+    return (select(
+      groupPlayers,
+    )..where((p) => p.groupId.equals(groupId))).get();
   }
 
   /// Stream of players for a given group.
   Stream<List<GroupPlayer>> watchPlayersInGroup(int groupId) {
-    return (select(groupPlayers)..where((p) => p.groupId.equals(groupId)))
-        .watch();
+    return (select(
+      groupPlayers,
+    )..where((p) => p.groupId.equals(groupId))).watch();
   }
 
   /// Update the name of an existing player.
@@ -216,11 +217,11 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
   }
 
   /// Get games for a group filtered by [category].
-  Future<List<Game>> getGamesForGroupByCategory(
-      int groupId, String category) {
+  Future<List<Game>> getGamesForGroupByCategory(int groupId, String category) {
     return (select(games)
           ..where(
-              (g) => g.groupId.equals(groupId) & g.category.equals(category))
+            (g) => g.groupId.equals(groupId) & g.category.equals(category),
+          )
           ..orderBy([(g) => OrderingTerm.desc(g.playedAt)]))
         .get();
   }
@@ -241,17 +242,21 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
 
     final rows = await query.get();
     return rows
-        .map((row) => PlayerRanking(
-              playerName: row.read<String>('name'),
-              totalPoints: row.read<int>('total_points'),
-              gamesPlayed: row.read<int>('games_played'),
-            ))
+        .map(
+          (row) => PlayerRanking(
+            playerName: row.read<String>('name'),
+            totalPoints: row.read<int>('total_points'),
+            gamesPlayed: row.read<int>('games_played'),
+          ),
+        )
         .toList();
   }
 
   /// Aggregate ranking for a group filtered by [category].
   Future<List<PlayerRanking>> getRankingForGroupByCategory(
-      int groupId, String category) async {
+    int groupId,
+    String category,
+  ) async {
     final query = customSelect(
       'SELECT gp.player_name AS name, SUM(gp.points) AS total_points, COUNT(DISTINCT gp.game_id) AS games_played '
       'FROM game_players gp '
@@ -265,37 +270,38 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
 
     final rows = await query.get();
     return rows
-        .map((row) => PlayerRanking(
-              playerName: row.read<String>('name'),
-              totalPoints: row.read<int>('total_points'),
-              gamesPlayed: row.read<int>('games_played'),
-            ))
+        .map(
+          (row) => PlayerRanking(
+            playerName: row.read<String>('name'),
+            totalPoints: row.read<int>('total_points'),
+            gamesPlayed: row.read<int>('games_played'),
+          ),
+        )
         .toList();
   }
 
   /// Full details for a single game, including all player entries.
   Future<GameDetails> getGameDetails(int gameId) async {
-    final game =
-        await (select(games)..where((g) => g.id.equals(gameId))).getSingle();
-    final players = await (select(gamePlayersTable)
-          ..where((p) => p.gameId.equals(gameId)))
-        .get();
+    final game = await (select(
+      games,
+    )..where((g) => g.id.equals(gameId))).getSingle();
+    final players = await (select(
+      gamePlayersTable,
+    )..where((p) => p.gameId.equals(gameId))).get();
 
     return GameDetails(game: game, players: players);
   }
 
   /// Stream of game details for reactive UI updates.
   Stream<GameDetails> watchGameDetails(int gameId) {
-    final gameStream =
-        (select(games)..where((g) => g.id.equals(gameId))).watchSingle();
-    final playersStream = (select(gamePlayersTable)
-          ..where((p) => p.gameId.equals(gameId)))
-        .watch();
+    final gameStream = (select(
+      games,
+    )..where((g) => g.id.equals(gameId))).watchSingle();
 
     return gameStream.asyncMap((game) async {
-      final players = await (select(gamePlayersTable)
-            ..where((p) => p.gameId.equals(gameId)))
-          .get();
+      final players = await (select(
+        gamePlayersTable,
+      )..where((p) => p.gameId.equals(gameId))).get();
       return GameDetails(game: game, players: players);
     });
   }
@@ -338,8 +344,5 @@ class GameDetails {
   final Game game;
   final List<GamePlayersTableData> players;
 
-  const GameDetails({
-    required this.game,
-    required this.players,
-  });
+  const GameDetails({required this.game, required this.players});
 }

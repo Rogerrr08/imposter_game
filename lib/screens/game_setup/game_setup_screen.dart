@@ -108,7 +108,12 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     );
   }
 
+  void _dismissKeyboard() {
+    FocusScope.of(context).unfocus();
+  }
+
   void _startGame() {
+    _dismissKeyboard();
     if (_players.length < _minPlayers) {
       _showSnackBar('Se necesitan al menos $_minPlayers jugadores');
       return;
@@ -146,6 +151,8 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
             Expanded(
               child: SingleChildScrollView(
                 controller: _scrollController,
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,10 +203,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
         ),
         const SizedBox(height: 12),
 
-        if (_isGroupMode)
-          _buildGroupPlayers()
-        else
-          _buildManualPlayerInput(),
+        if (_isGroupMode) _buildGroupPlayers() else _buildManualPlayerInput(),
 
         const SizedBox(height: 12),
         _buildPlayerChips(),
@@ -289,6 +293,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
             focusNode: _playerFocusNode,
             style: GoogleFonts.poppins(color: Colors.white),
             textCapitalization: TextCapitalization.words,
+            onTapOutside: (_) => _dismissKeyboard(),
             decoration: InputDecoration(
               hintText: 'Nombre del jugador',
               hintStyle: GoogleFonts.poppins(color: Colors.white30),
@@ -327,9 +332,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
         decoration: BoxDecoration(
           color: AppTheme.surfaceColor.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.05),
-          ),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
         ),
         child: Column(
           children: [
@@ -341,10 +344,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
             const SizedBox(height: 8),
             Text(
               'Agrega al menos $_minPlayers jugadores',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: Colors.white30,
-              ),
+              style: GoogleFonts.poppins(fontSize: 13, color: Colors.white30),
             ),
           ],
         ),
@@ -379,9 +379,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           deleteIconColor: Colors.white54,
           onDeleted: _isGroupMode ? null : () => _removePlayer(index),
           backgroundColor: AppTheme.cardColor,
-          side: BorderSide(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-          ),
+          side: BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.3)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
@@ -398,10 +396,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionHeader(
-          icon: Icons.category_rounded,
-          title: 'Categoría',
-        ),
+        _sectionHeader(icon: Icons.category_rounded, title: 'Categoría'),
         const SizedBox(height: 12),
         GridView.count(
           shrinkWrap: true,
@@ -433,7 +428,9 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.25),
+                            color: AppTheme.primaryColor.withValues(
+                              alpha: 0.25,
+                            ),
                             blurRadius: 12,
                             offset: const Offset(0, 4),
                           ),
@@ -443,16 +440,15 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      info.emoji,
-                      style: const TextStyle(fontSize: 28),
-                    ),
+                    Text(info.emoji, style: const TextStyle(fontSize: 28)),
                     const SizedBox(height: 6),
                     Text(
                       info.label,
                       style: GoogleFonts.poppins(
                         fontSize: 13,
-                        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
                         color: isSelected ? Colors.white : Colors.white70,
                       ),
                     ),
@@ -484,9 +480,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           decoration: BoxDecoration(
             color: AppTheme.cardColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.06),
-            ),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
           ),
           child: Row(
             children: [
@@ -530,11 +524,8 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: Text(
-              'Máximo ${_maxImpostors} impostor${_maxImpostors == 1 ? '' : 'es'} para ${_players.length} jugadores',
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                color: Colors.white24,
-              ),
+              'Máximo $_maxImpostors impostor${_maxImpostors == 1 ? '' : 'es'} para ${_players.length} jugadores',
+              style: GoogleFonts.poppins(fontSize: 11, color: Colors.white24),
             ),
           ),
       ],
@@ -577,9 +568,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       decoration: BoxDecoration(
         color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.06),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
       ),
       child: SwitchListTile(
         contentPadding: EdgeInsets.zero,
@@ -595,10 +584,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           _hintsEnabled
               ? 'Los impostores reciben una pista'
               : 'Sin pistas, mayor dificultad',
-          style: GoogleFonts.poppins(
-            fontSize: 12,
-            color: Colors.white30,
-          ),
+          style: GoogleFonts.poppins(fontSize: 12, color: Colors.white30),
         ),
         secondary: Icon(
           _hintsEnabled ? Icons.lightbulb_rounded : Icons.lightbulb_outline,
@@ -606,7 +592,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           size: 26,
         ),
         value: _hintsEnabled,
-        activeColor: AppTheme.primaryColor,
+        activeThumbColor: AppTheme.primaryColor,
         onChanged: (value) => setState(() => _hintsEnabled = value),
       ),
     );
@@ -630,7 +616,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: _presetDurations.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
             itemBuilder: (context, index) {
               final duration = _presetDurations[index];
               final isSelected = _durationSeconds == duration;
@@ -653,8 +639,9 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color:
-                                  AppTheme.primaryColor.withValues(alpha: 0.3),
+                              color: AppTheme.primaryColor.withValues(
+                                alpha: 0.3,
+                              ),
                               blurRadius: 8,
                               offset: const Offset(0, 3),
                             ),
@@ -666,8 +653,9 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                       _presetLabels[index],
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: isSelected
+                            ? FontWeight.w700
+                            : FontWeight.w500,
                         color: isSelected ? Colors.white : Colors.white54,
                       ),
                     ),
@@ -733,8 +721,9 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       child: ElevatedButton(
         onPressed: canStart ? _startGame : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              canStart ? AppTheme.primaryColor : AppTheme.surfaceColor,
+          backgroundColor: canStart
+              ? AppTheme.primaryColor
+              : AppTheme.surfaceColor,
           foregroundColor: canStart ? Colors.white : Colors.white24,
           disabledBackgroundColor: AppTheme.surfaceColor,
           disabledForegroundColor: Colors.white24,

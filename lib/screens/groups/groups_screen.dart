@@ -47,7 +47,11 @@ class GroupsScreen extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
+                const Icon(
+                  Icons.error_outline,
+                  size: 48,
+                  color: AppTheme.secondaryColor,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'Error al cargar los grupos',
@@ -61,7 +65,10 @@ class GroupsScreen extends ConsumerWidget {
                 Text(
                   error.toString(),
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.white54),
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    color: Colors.white54,
+                  ),
                 ),
               ],
             ),
@@ -140,10 +147,14 @@ class GroupsScreen extends ConsumerWidget {
             controller: controller,
             autofocus: true,
             textCapitalization: TextCapitalization.words,
+            onTapOutside: (_) => FocusScope.of(dialogContext).unfocus(),
             decoration: InputDecoration(
               hintText: 'Nombre del grupo',
               hintStyle: GoogleFonts.poppins(color: Colors.white38),
-              prefixIcon: const Icon(Icons.group_rounded, color: AppTheme.primaryColor),
+              prefixIcon: const Icon(
+                Icons.group_rounded,
+                color: AppTheme.primaryColor,
+              ),
             ),
             style: GoogleFonts.poppins(color: Colors.white),
             validator: (value) {
@@ -154,7 +165,9 @@ class GroupsScreen extends ConsumerWidget {
             },
             onFieldSubmitted: (_) {
               if (formKey.currentState!.validate()) {
-                ref.read(groupsProvider.notifier).createGroup(controller.text.trim());
+                ref
+                    .read(groupsProvider.notifier)
+                    .createGroup(controller.text.trim());
                 Navigator.pop(dialogContext);
               }
             },
@@ -171,7 +184,9 @@ class GroupsScreen extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               if (formKey.currentState!.validate()) {
-                ref.read(groupsProvider.notifier).createGroup(controller.text.trim());
+                ref
+                    .read(groupsProvider.notifier)
+                    .createGroup(controller.text.trim());
                 Navigator.pop(dialogContext);
               }
             },
@@ -291,7 +306,7 @@ class _GroupCard extends ConsumerWidget {
                                   color: Colors.white54,
                                 ),
                               ),
-                              error: (_, __) => Text(
+                              error: (_, _) => Text(
                                 '?',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,

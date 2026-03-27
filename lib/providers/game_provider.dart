@@ -21,7 +21,8 @@ class GameNotifier extends Notifier<ActiveGame?> {
     final wordEntry = WordBank.getRandomWord(config.category);
 
     final players = <GamePlayer>[];
-    final shuffledNames = List<String>.from(config.playerNames)..shuffle(_random);
+    final shuffledNames = List<String>.from(config.playerNames)
+      ..shuffle(_random);
 
     // Assign impostors
     final impostorIndices = <int>{};
@@ -36,14 +37,18 @@ class GameNotifier extends Notifier<ActiveGame?> {
       final isImpostor = impostorIndices.contains(i);
       String? hint;
       if (isImpostor && config.hintsEnabled && availableHints.isNotEmpty) {
-        hint = availableHints[impostorIndices.toList().indexOf(i) % availableHints.length];
+        hint =
+            availableHints[impostorIndices.toList().indexOf(i) %
+                availableHints.length];
       }
 
-      players.add(GamePlayer(
-        name: shuffledNames[i],
-        role: isImpostor ? PlayerRole.impostor : PlayerRole.civil,
-        hint: hint,
-      ));
+      players.add(
+        GamePlayer(
+          name: shuffledNames[i],
+          role: isImpostor ? PlayerRole.impostor : PlayerRole.civil,
+          hint: hint,
+        ),
+      );
     }
 
     // Restore original order for reveal
@@ -167,7 +172,11 @@ class GameNotifier extends Notifier<ActiveGame?> {
           p.points += 1;
         }
       }
-      _finishGame(civilsWon: false, impostorGuessedWord: true, guesser: guessedBy);
+      _finishGame(
+        civilsWon: false,
+        impostorGuessedWord: true,
+        guesser: guessedBy,
+      );
       return true;
     }
     return false;
@@ -237,7 +246,10 @@ class GameNotifier extends Notifier<ActiveGame?> {
     _saveGameToDatabase(civilsWon, impostorGuessedWord);
   }
 
-  Future<void> _saveGameToDatabase(bool civilsWon, bool impostorGuessedWord) async {
+  Future<void> _saveGameToDatabase(
+    bool civilsWon,
+    bool impostorGuessedWord,
+  ) async {
     if (state == null) return;
     final game = state!;
 
@@ -254,12 +266,16 @@ class GameNotifier extends Notifier<ActiveGame?> {
         hintsEnabled: game.config.hintsEnabled,
         civilsWon: civilsWon,
         impostorGuessedWord: impostorGuessedWord,
-        playerResults: game.players.map((p) => GamePlayerEntry(
-          playerName: p.name,
-          wasImpostor: p.role == PlayerRole.impostor,
-          points: p.points,
-          wasEliminated: p.isEliminated,
-        )).toList(),
+        playerResults: game.players
+            .map(
+              (p) => GamePlayerEntry(
+                playerName: p.name,
+                wasImpostor: p.role == PlayerRole.impostor,
+                points: p.points,
+                wasEliminated: p.isEliminated,
+              ),
+            )
+            .toList(),
       );
     } catch (e) {
       // Silently fail - game can still be played without persistence
@@ -272,55 +288,76 @@ class GameNotifier extends Notifier<ActiveGame?> {
 }
 
 // Rankings provider
-final rankingsProvider = FutureProvider.family<List<PlayerRanking>, ({int groupId, String? category})>(
-  (ref, params) async {
-    final db = ref.read(databaseProvider);
-    final gameDao = GameDao(db);
-    if (params.category != null) {
-      return gameDao.getRankingForGroupByCategory(params.groupId, params.category!);
-    }
-    return gameDao.getRankingForGroup(params.groupId);
-  },
-);
+final rankingsProvider =
+    FutureProvider.family<
+      List<PlayerRanking>,
+      ({int groupId, String? category})
+    >((ref, params) async {
+      final db = ref.read(databaseProvider);
+      final gameDao = GameDao(db);
+      if (params.category != null) {
+        return gameDao.getRankingForGroupByCategory(
+          params.groupId,
+          params.category!,
+        );
+      }
+      return gameDao.getRankingForGroup(params.groupId);
+    });
 
 // Game history provider
-final gameHistoryProvider = FutureProvider.family<List<GameWithPlayers>, ({int groupId, String? category})>(
-  (ref, params) async {
-    final db = ref.read(databaseProvider);
-    final gameDao = GameDao(db);
+final gameHistoryProvider =
+    FutureProvider.family<
+      List<GameWithPlayers>,
+      ({int groupId, String? category})
+    >((ref, params) async {
+      final db = ref.read(databaseProvider);
+      final gameDao = GameDao(db);
 
-    List<Game> games;
-    if (params.category != null) {
-      games = await gameDao.getGamesForGroupByCategory(params.groupId, params.category!);
-    } else {
-      games = await gameDao.getGamesForGroup(params.groupId);
-    }
+      List<Game> games;
+      if (params.category != null) {
+        games = await gameDao.getGamesForGroupByCategory(
+          params.groupId,
+          params.category!,
+        );
+      } else {
+        games = await gameDao.getGamesForGroup(params.groupId);
+      }
 
-    final result = <GameWithPlayers>[];
-    for (final game in games) {
-      final details = await gameDao.getGameDetails(game.id);
-      result.add(GameWithPlayers(
-        game: details.game,
-        players: details.players.map((p) => GamePlayer2(
-          playerName: p.playerName,
-          wasImpostor: p.wasImpostor,
-          points: p.points,
-          wasEliminated: p.wasEliminated,
-        )).toList(),
-      ));
-    }
-    return result;
-  },
-);
+      final result = <GameWithPlayers>[];
+      for (final game in games) {
+        final details = await gameDao.getGameDetails(game.id);
+        result.add(
+          GameWithPlayers(
+            game: details.game,
+            players: details.players
+                .map(
+                  (p) => GamePlayer2(
+                    playerName: p.playerName,
+                    wasImpostor: p.wasImpostor,
+                    points: p.points,
+                    wasEliminated: p.wasEliminated,
+                  ),
+                )
+                .toList(),
+          ),
+        );
+      }
+      return result;
+    });
 
 // Category filter
-final rankingCategoryFilterProvider = NotifierProvider<CategoryFilterNotifier, String?>(
-  CategoryFilterNotifier.new,
-);
+final rankingCategoryFilterProvider =
+    NotifierProvider<CategoryFilterNotifier, String?>(
+      CategoryFilterNotifier.new,
+    );
 
 class CategoryFilterNotifier extends Notifier<String?> {
   @override
   String? build() => null;
+
+  void setCategory(String? category) {
+    state = category;
+  }
 }
 
 // Helper classes for game history
