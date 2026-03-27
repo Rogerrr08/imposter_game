@@ -1,6 +1,6 @@
 {
-    "name": "imposter_game",
-    "short_name": "imposter_game",
+    "name": "Yeyo Impostor",
+    "short_name": "Yeyo Impostor",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

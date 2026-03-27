@@ -3,13 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../database/database.dart';
+import '../../providers/database_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/game_provider.dart';
 
-class RankingsScreen extends ConsumerWidget {
+class RankingsScreen extends ConsumerStatefulWidget {
   final int groupId;
 
   const RankingsScreen({super.key, required this.groupId});
+
+  @override
+  ConsumerState<RankingsScreen> createState() => _RankingsScreenState();
+}
+
+class _RankingsScreenState extends ConsumerState<RankingsScreen> {
 
   static const _goldColor = Color(0xFFFFD700);
   static const _silverColor = Color(0xFFC0C0C0);
@@ -24,22 +32,53 @@ class RankingsScreen extends ConsumerWidget {
   };
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final selectedCategory = ref.read(rankingCategoryFilterProvider);
+      ref.invalidate(
+        rankingsProvider(
+          (
+            groupId: widget.groupId,
+            category: selectedCategory,
+          ),
+        ),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final groupId = widget.groupId;
     final selectedCategory = ref.watch(rankingCategoryFilterProvider);
+    final request = (groupId: groupId, category: selectedCategory);
     final rankingsAsync = ref.watch(
-      rankingsProvider((groupId: groupId, category: selectedCategory)),
+      rankingsProvider(request),
     );
 
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/groups/$groupId'),
         ),
         title: Text(
           'Rankings',
           style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Borrar ranking',
+            icon: const Icon(Icons.delete_outline_rounded),
+            onPressed: _confirmClearRanking,
+          ),
+          IconButton(
+            tooltip: 'Refrescar',
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: () => ref.invalidate(rankingsProvider(request)),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -72,6 +111,12 @@ class RankingsScreen extends ConsumerWidget {
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
                         ),
+                      ),
+                      const SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        onPressed: () => ref.invalidate(rankingsProvider(request)),
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Reintentar'),
                       ),
                     ],
                   ),
@@ -173,7 +218,7 @@ class RankingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildRankingItem(dynamic ranking, int position) {
+  Widget _buildRankingItem(PlayerRanking ranking, int position) {
     final isTop3 = position <= 3;
 
     String positionDisplay;
@@ -263,7 +308,7 @@ class RankingsScreen extends ConsumerWidget {
                     ),
                     if (ranking.gamesPlayed > 0)
                       Text(
-                        '${ranking.gamesPlayed} partida${ranking.gamesPlayed == 1 ? '' : 's'}',
+                        'Partidas jugadas: ${ranking.gamesPlayed}  |  Victorias como civil: ${ranking.civilWins}  |  Victorias como impostor: ${ranking.impostorWins}',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: Colors.white54,
@@ -313,5 +358,46 @@ class RankingsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmClearRanking() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Borrar ranking',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Esto borrará el ranking acumulado de este grupo. Esta acción no se puede deshacer.',
+          style: GoogleFonts.poppins(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.poppins(color: Colors.white54),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondaryColor,
+            ),
+            child: Text(
+              'Borrar',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final db = ref.read(databaseProvider);
+    await GameDao(db).clearRankingForGroup(widget.groupId);
+    ref.invalidate(rankingsProvider);
   }
 }

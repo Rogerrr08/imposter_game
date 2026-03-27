@@ -1,65 +1,26 @@
-# Imposter Game
+# Yeyo Impostor
 
-App móvil en Flutter para jugar una variante social de impostor con palabra secreta, temporizador, grupos persistentes, historial y rankings.
+Yeyo Impostor es una app social para jugar partidas del clásico juego de deducción con amigos, ya sea en modo rápido o usando grupos guardados. Está pensada para que montar una partida tome pocos segundos y para que cada ronda tenga suficiente tensión, roles claros, puntuación competitiva e historial de resultados.
 
-## Estado actual
+## Qué puede hacer la app
 
-- Plataforma principal: Flutter
-- Persistencia local: Drift
-- Navegación: go_router
-- Estado: Riverpod
-- Notificaciones locales: aviso cuando falta 1 minuto para terminar la ronda
+- Crear partidas rápidas configurando jugadores, categoría, tiempo, cantidad de impostores y si habrá pistas o no.
+- Guardar grupos de jugadores para reutilizarlos en futuras partidas.
+- Excluir temporalmente miembros de un grupo antes de empezar una ronda, sin borrar el grupo.
+- Asignar roles automáticamente y mostrar pistas al impostor cuando el modo de pistas está activo.
+- Controlar vidas de los civiles, votaciones, eliminaciones y condiciones de victoria.
+- Permitir que el impostor intente adivinar la palabra con validaciones flexibles para mayúsculas, tildes, diéresis y plurales.
+- Llevar historial de partidas por grupo.
+- Mostrar ranking acumulado con nombre, partidas jugadas, victorias como civil, victorias como impostor y puntos.
+- Repetir partidas rápidas conservando la última configuración para volver a jugar más rápido.
 
-## Cómo correr el proyecto
+## Experiencia de juego
 
-```bash
-flutter pub get
-flutter run
-```
+La app está enfocada en partidas presenciales: un dispositivo, varios jugadores y rondas rápidas llenas de discusión, sospecha y faroles. Incluye pantallas de revelación y suspenso para hacer cada voto y cada intento de adivinanza más emocionante.
 
-Para release:
+## Ideal para
 
-```bash
-flutter run --release
-```
-
-## Versión
-
-La versión fuente del proyecto vive en [pubspec.yaml](pubspec.yaml) con el formato:
-
-```yaml
-version: 1.0.0+1
-```
-
-- `1.0.0` es la versión visible para usuario.
-- `1` es el número interno de build.
-- En la app se muestra como `v1.0.0 (1)`.
-
-## Reglas básicas del juego
-
-- Se juega con 3 a 20 personas.
-- Los civiles conocen la palabra secreta.
-- Los impostores no conocen la palabra.
-- El grupo debate antes de votar.
-- Si el equipo civil falla demasiadas veces o los impostores sobreviven, pierden.
-
-## Estructura mínima
-
-- [lib/screens](lib/screens): pantallas principales
-- [lib/providers](lib/providers): estado y acceso a datos
-- [lib/database](lib/database): esquema y consultas Drift
-- [docs/README.md](docs/README.md): estándar de versionado del proyecto
-
-## Versionado del proyecto
-
-Este proyecto usa un único origen de verdad para versión y build:
-
-- `pubspec.yaml -> version: major.minor.patch+build`
-- Android usa:
-  `versionName = major.minor.patch`
-  `versionCode = build`
-- iOS usa:
-  `CFBundleShortVersionString = major.minor.patch`
-  `CFBundleVersion = build`
-
-La guía completa está en [docs/README.md](docs/README.md).
+- Reuniones con amigos
+- Fiestas y juegos en grupo
+- Dinámicas casuales en familia
+- Retos rápidos de deducción social

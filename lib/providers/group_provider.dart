@@ -29,8 +29,7 @@ class GroupsNotifier extends AsyncNotifier<List<Group>> {
 
   Future<void> deleteGroup(int id) async {
     final db = ref.read(databaseProvider);
-    await (db.delete(db.groupPlayers)..where((t) => t.groupId.equals(id))).go();
-    await (db.delete(db.groups)..where((t) => t.id.equals(id))).go();
+    await GroupDao(db).deleteGroup(id);
     ref.invalidateSelf();
   }
 

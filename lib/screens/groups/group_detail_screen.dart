@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import '../../database/database.dart';
 import '../../providers/database_provider.dart';
+import '../../providers/game_provider.dart';
 import '../../providers/group_provider.dart';
 
 class GroupDetailScreen extends ConsumerStatefulWidget {
@@ -20,10 +21,6 @@ class GroupDetailScreen extends ConsumerStatefulWidget {
 class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
   final _addPlayerController = TextEditingController();
   final _addPlayerFocusNode = FocusNode();
-
-  void _dismissKeyboard() {
-    FocusScope.of(context).unfocus();
-  }
 
   @override
   void dispose() {
@@ -41,14 +38,14 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/groups'),
         ),
         title: groupAsync.when(
           loading: () => Text(
             'Cargando...',
             style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
           ),
-          error: (_, _) => Text(
+          error: (_, __) => Text(
             'Error',
             style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
           ),
@@ -61,11 +58,25 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           groupAsync.whenOrNull(
                 data: (group) => group == null
                     ? null
-                    : IconButton(
-                        icon: const Icon(Icons.edit_rounded, size: 22),
-                        tooltip: 'Editar nombre',
-                        onPressed: () =>
-                            _showEditGroupNameDialog(context, group.name),
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit_rounded, size: 22),
+                            tooltip: 'Editar nombre',
+                            onPressed: () =>
+                                _showEditGroupNameDialog(context, group.name),
+                          ),
+                          IconButton(
+                            icon: const Icon(
+                              Icons.delete_outline_rounded,
+                              size: 22,
+                            ),
+                            tooltip: 'Eliminar grupo',
+                            onPressed: () =>
+                                _confirmDeleteGroup(context, group.name),
+                          ),
+                        ],
                       ),
               ) ??
               const SizedBox.shrink(),
@@ -81,11 +92,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.error_outline,
-                  size: 48,
-                  color: AppTheme.secondaryColor,
-                ),
+                const Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
                 const SizedBox(height: 16),
                 Text(
                   'Error al cargar el grupo',
@@ -100,7 +107,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           ),
         ),
         data: (group) => SingleChildScrollView(
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -132,8 +138,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () =>
-                      context.push('/setup', extra: widget.groupId),
+                  onPressed: () => context.push('/setup', extra: widget.groupId),
                   icon: const Icon(Icons.play_arrow_rounded, size: 24),
                   label: Text(
                     'Jugar con este grupo',
@@ -155,8 +160,19 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () =>
-                          context.push('/rankings/${widget.groupId}'),
+                      onPressed: () {
+                        final selectedCategory =
+                            ref.read(rankingCategoryFilterProvider);
+                        ref.invalidate(
+                          rankingsProvider(
+                            (
+                              groupId: widget.groupId,
+                              category: selectedCategory,
+                            ),
+                          ),
+                        );
+                        context.push('/rankings/${widget.groupId}');
+                      },
                       icon: const Icon(Icons.leaderboard_rounded, size: 20),
                       label: Text(
                         'Rankings',
@@ -172,8 +188,19 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () =>
-                          context.push('/history/${widget.groupId}'),
+                      onPressed: () {
+                        final selectedCategory =
+                            ref.read(historyCategoryFilterProvider);
+                        ref.invalidate(
+                          gameHistoryProvider(
+                            (
+                              groupId: widget.groupId,
+                              category: selectedCategory,
+                            ),
+                          ),
+                        );
+                        context.push('/history/${widget.groupId}');
+                      },
                       icon: const Icon(Icons.history_rounded, size: 20),
                       label: Text(
                         'Historial',
@@ -225,19 +252,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 controller: _addPlayerController,
                 focusNode: _addPlayerFocusNode,
                 textCapitalization: TextCapitalization.words,
-                onTapOutside: (_) => _dismissKeyboard(),
                 decoration: InputDecoration(
                   hintText: 'Nombre del jugador',
-                  hintStyle: GoogleFonts.poppins(
-                    color: Colors.white38,
-                    fontSize: 14,
-                  ),
+                  hintStyle: GoogleFonts.poppins(color: Colors.white38, fontSize: 14),
                   border: InputBorder.none,
                   filled: false,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 10,
-                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 ),
                 style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
                 onSubmitted: (_) => _addPlayer(),
@@ -252,11 +272,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 onTap: _addPlayer,
                 child: const Padding(
                   padding: EdgeInsets.all(10),
-                  child: Icon(
-                    Icons.person_add_rounded,
-                    size: 22,
-                    color: Colors.white,
-                  ),
+                  child: Icon(Icons.person_add_rounded, size: 22, color: Colors.white),
                 ),
               ),
             ),
@@ -333,8 +349,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: players.length,
-            separatorBuilder: (_, _) =>
-                Divider(height: 1, color: Colors.white.withValues(alpha: 0.08)),
+            separatorBuilder: (_, __) => Divider(
+              height: 1,
+              color: Colors.white.withValues(alpha: 0.08),
+            ),
             itemBuilder: (context, index) {
               final player = players[index];
               return _PlayerTile(
@@ -366,14 +384,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             controller: controller,
             autofocus: true,
             textCapitalization: TextCapitalization.words,
-            onTapOutside: (_) => FocusScope.of(dialogContext).unfocus(),
             decoration: InputDecoration(
               hintText: 'Nombre del grupo',
               hintStyle: GoogleFonts.poppins(color: Colors.white38),
-              prefixIcon: const Icon(
-                Icons.group_rounded,
-                color: AppTheme.primaryColor,
-              ),
+              prefixIcon: const Icon(Icons.group_rounded, color: AppTheme.primaryColor),
             ),
             style: GoogleFonts.poppins(color: Colors.white),
             validator: (value) {
@@ -384,9 +398,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             onFieldSubmitted: (_) {
               if (formKey.currentState!.validate()) {
-                ref
-                    .read(groupsProvider.notifier)
-                    .updateGroupName(widget.groupId, controller.text.trim());
+                ref.read(groupsProvider.notifier).updateGroupName(
+                      widget.groupId,
+                      controller.text.trim(),
+                    );
                 Navigator.pop(dialogContext);
               }
             },
@@ -403,9 +418,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           ElevatedButton(
             onPressed: () {
               if (formKey.currentState!.validate()) {
-                ref
-                    .read(groupsProvider.notifier)
-                    .updateGroupName(widget.groupId, controller.text.trim());
+                ref.read(groupsProvider.notifier).updateGroupName(
+                      widget.groupId,
+                      controller.text.trim(),
+                    );
                 Navigator.pop(dialogContext);
               }
             },
@@ -417,6 +433,47 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDeleteGroup(BuildContext context, String groupName) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Eliminar grupo',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Se eliminarán el grupo "$groupName", sus jugadores, su historial y su ranking. Esta acción no se puede deshacer.',
+          style: GoogleFonts.poppins(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.poppins(color: Colors.white54),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondaryColor,
+            ),
+            child: Text(
+              'Eliminar',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    await ref.read(groupsProvider.notifier).deleteGroup(widget.groupId);
+    if (!mounted) return;
+    context.go('/groups');
   }
 }
 
@@ -554,14 +611,10 @@ class _PlayerTile extends ConsumerWidget {
             controller: controller,
             autofocus: true,
             textCapitalization: TextCapitalization.words,
-            onTapOutside: (_) => FocusScope.of(dialogContext).unfocus(),
             decoration: InputDecoration(
               hintText: 'Nombre del jugador',
               hintStyle: GoogleFonts.poppins(color: Colors.white38),
-              prefixIcon: const Icon(
-                Icons.person_rounded,
-                color: AppTheme.primaryColor,
-              ),
+              prefixIcon: const Icon(Icons.person_rounded, color: AppTheme.primaryColor),
             ),
             style: GoogleFonts.poppins(color: Colors.white),
             validator: (value) {
@@ -573,9 +626,7 @@ class _PlayerTile extends ConsumerWidget {
             onFieldSubmitted: (_) async {
               if (formKey.currentState!.validate()) {
                 final db = ref.read(databaseProvider);
-                await GroupPlayersService(
-                  db,
-                ).updatePlayerName(player.id, controller.text.trim());
+                await GroupPlayersService(db).updatePlayerName(player.id, controller.text.trim());
                 ref.invalidate(groupPlayersProvider(groupId));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
               }
@@ -594,9 +645,7 @@ class _PlayerTile extends ConsumerWidget {
             onPressed: () async {
               if (formKey.currentState!.validate()) {
                 final db = ref.read(databaseProvider);
-                await GroupPlayersService(
-                  db,
-                ).updatePlayerName(player.id, controller.text.trim());
+                await GroupPlayersService(db).updatePlayerName(player.id, controller.text.trim());
                 ref.invalidate(groupPlayersProvider(groupId));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
               }

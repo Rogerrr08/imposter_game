@@ -7,11 +7,13 @@ import '../screens/game_play/role_reveal_screen.dart';
 import '../screens/game_play/game_play_screen.dart';
 import '../screens/game_play/vote_screen.dart';
 import '../screens/game_play/impostor_guess_screen.dart';
+import '../screens/game_play/action_reveal_screen.dart';
 import '../screens/game_results/game_results_screen.dart';
 import '../screens/groups/groups_screen.dart';
 import '../screens/groups/group_detail_screen.dart';
 import '../screens/rankings/rankings_screen.dart';
 import '../screens/rankings/game_history_screen.dart';
+import '../models/action_reveal.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -46,6 +48,13 @@ class AppRouter {
         path: '/impostor-guess',
         pageBuilder: (context, state) =>
             _buildPage(state, const ImpostorGuessScreen()),
+      ),
+      GoRoute(
+        path: '/action-reveal',
+        builder: (context, state) {
+          final reveal = state.extra as ActionRevealData;
+          return ActionRevealScreen(reveal: reveal);
+        },
       ),
       GoRoute(
         path: '/results',

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../models/action_reveal.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/game_provider.dart';
 
@@ -17,8 +18,7 @@ class ImpostorGuessScreen extends ConsumerStatefulWidget {
 class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
     with SingleTickerProviderStateMixin {
   final _guessController = TextEditingController();
-  bool _hasGuessed = false;
-  bool _wasCorrect = false;
+  String? _selectedImpostor;
 
   late AnimationController _animController;
   late Animation<double> _scaleAnimation;
@@ -51,25 +51,23 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
 
   void _submitGuess() {
     final guess = _guessController.text.trim();
-    if (guess.isEmpty) return;
-    FocusScope.of(context).unfocus();
+    final selectedImpostor = _resolveSelectedImpostor();
+    if (guess.isEmpty || selectedImpostor == null) return;
 
-    final correct = ref.read(gameProvider.notifier).impostorGuess(guess);
+    final correct = ref.read(gameProvider.notifier).impostorGuess(
+          guess,
+          guessedBy: selectedImpostor,
+        );
 
-    setState(() {
-      _hasGuessed = true;
-      _wasCorrect = correct;
-    });
-
-    _animController.forward(from: 0);
-  }
-
-  void _continue() {
-    if (_wasCorrect) {
-      context.go('/results');
-    } else {
-      context.pop();
-    }
+    context.go(
+      '/action-reveal',
+      extra: ActionRevealData(
+        type: ActionRevealType.guess,
+        success: correct,
+        subjectText: '"$guess"',
+        actorText: selectedImpostor,
+      ),
+    );
   }
 
   @override
@@ -78,13 +76,34 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: _hasGuessed ? _buildResultView() : _buildGuessForm(),
+          child: _buildGuessForm(),
         ),
       ),
     );
   }
 
+  String? _resolveSelectedImpostor() {
+    final gameState = ref.read(gameProvider);
+    final activeImpostors = gameState?.activeImpostors ?? const [];
+
+    if (activeImpostors.length == 1) {
+      return activeImpostors.first.name;
+    }
+
+    if (_selectedImpostor != null &&
+        activeImpostors.any((player) => player.name == _selectedImpostor)) {
+      return _selectedImpostor;
+    }
+
+    return null;
+  }
+
   Widget _buildGuessForm() {
+    final gameState = ref.watch(gameProvider);
+    final activeImpostors = gameState?.activeImpostors ?? const [];
+    final selectedImpostor = _resolveSelectedImpostor();
+    final hasSingleImpostor = activeImpostors.length == 1;
+
     return Column(
       children: [
         const SizedBox(height: 24),
@@ -125,10 +144,77 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
         const SizedBox(height: 8),
         Text(
           'Escribe la palabra secreta que crees que es',
-          style: GoogleFonts.poppins(fontSize: 14, color: Colors.white54),
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            color: Colors.white54,
+          ),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 40),
+        const SizedBox(height: 28),
+        if (hasSingleImpostor)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Impostor que está adivinando',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white38,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  selectedImpostor ?? activeImpostors.first.name,
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppTheme.surfaceColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                isExpanded: true,
+                hint: Text(
+                  'Que impostor esta adivinando?',
+                  style:
+                      GoogleFonts.poppins(color: Colors.white38, fontSize: 14),
+                ),
+                value: selectedImpostor,
+                dropdownColor: AppTheme.surfaceColor,
+                style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+                items: activeImpostors.map((player) {
+                  return DropdownMenuItem<String>(
+                    value: player.name,
+                    child: Text(player.name),
+                  );
+                }).toList(),
+                onChanged: activeImpostors.isEmpty
+                    ? null
+                    : (value) => setState(() => _selectedImpostor = value),
+              ),
+            ),
+          ),
+        const SizedBox(height: 20),
         // Text field
         Container(
           decoration: BoxDecoration(
@@ -150,7 +236,6 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
             ),
             textAlign: TextAlign.center,
             textCapitalization: TextCapitalization.words,
-            onTapOutside: (_) => FocusScope.of(context).unfocus(),
             decoration: InputDecoration(
               hintText: 'Escribe tu respuesta...',
               hintStyle: GoogleFonts.poppins(
@@ -214,14 +299,14 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: _guessController.text.trim().isNotEmpty
+            onPressed: _guessController.text.trim().isNotEmpty &&
+                    selectedImpostor != null
                 ? _submitGuess
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
-              disabledBackgroundColor: AppTheme.secondaryColor.withValues(
-                alpha: 0.3,
-              ),
+              disabledBackgroundColor:
+                  AppTheme.secondaryColor.withValues(alpha: 0.3),
               padding: const EdgeInsets.symmetric(vertical: 18),
               textStyle: GoogleFonts.poppins(
                 fontSize: 18,
@@ -229,111 +314,6 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
               ),
             ),
             child: const Text('Confirmar'),
-          ),
-        ),
-        const SizedBox(height: 32),
-      ],
-    );
-  }
-
-  Widget _buildResultView() {
-    final color = _wasCorrect ? AppTheme.secondaryColor : AppTheme.successColor;
-    final icon = _wasCorrect ? Icons.celebration_rounded : Icons.close_rounded;
-    final title = _wasCorrect
-        ? 'El impostor adivino la palabra!'
-        : 'Respuesta incorrecta!';
-    final subtitle = _wasCorrect
-        ? 'Los impostores ganan 3 puntos cada uno'
-        : 'El juego continua...';
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Spacer(flex: 2),
-        FadeTransition(
-          opacity: _fadeAnimation,
-          child: ScaleTransition(
-            scale: _scaleAnimation,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Result icon
-                Container(
-                  width: 130,
-                  height: 130,
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: color, width: 3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: color.withValues(alpha: 0.3),
-                        blurRadius: 30,
-                        spreadRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: Icon(icon, size: 64, color: color),
-                ),
-                const SizedBox(height: 32),
-                // Guess shown
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.cardColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '"${_guessController.text.trim()}"',
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white70,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Result title
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: color,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  subtitle,
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    color: Colors.white54,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
-        const Spacer(flex: 2),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed: _continue,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: color,
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              textStyle: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            child: Text(_wasCorrect ? 'Ver resultados' : 'Volver al juego'),
           ),
         ),
         const SizedBox(height: 32),

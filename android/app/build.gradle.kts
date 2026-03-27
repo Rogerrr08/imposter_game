@@ -1,3 +1,7 @@
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.File
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -14,10 +18,6 @@ android {
         isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     defaultConfig {
@@ -37,6 +37,55 @@ android {
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
+    }
+
+    applicationVariants.all {
+        val variant = this
+        outputs.all {
+            val output = this as BaseVariantOutputImpl
+            val buildTypeName = variant.buildType.name
+            val appVersion = variant.versionName ?: "0.0.0"
+
+            output.outputFileName = "yeyo-impostor-v${appVersion}-${buildTypeName}.apk"
+        }
+
+        val variantNameCapitalized =
+            variant.name.replaceFirstChar { char ->
+                if (char.isLowerCase()) char.titlecase() else char.toString()
+            }
+
+        tasks.named("assemble$variantNameCapitalized").configure {
+            doLast {
+                val buildTypeName = variant.buildType.name
+                val appVersion = variant.versionName ?: "0.0.0"
+                val flutterApkDir = layout.buildDirectory.dir("outputs/flutter-apk").get().asFile
+                val genericApk = File(flutterApkDir, "app-$buildTypeName.apk")
+                val renamedApk = File(
+                    flutterApkDir,
+                    "yeyo-impostor-v${appVersion}-${buildTypeName}.apk",
+                )
+
+                if (genericApk.exists()) {
+                    genericApk.copyTo(renamedApk, overwrite = true)
+                }
+
+                val genericSha = File(flutterApkDir, "app-$buildTypeName.apk.sha1")
+                val renamedSha = File(
+                    flutterApkDir,
+                    "yeyo-impostor-v${appVersion}-${buildTypeName}.apk.sha1",
+                )
+
+                if (genericSha.exists()) {
+                    genericSha.copyTo(renamedSha, overwrite = true)
+                }
+            }
+        }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 

@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'router/app_router.dart';
-import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  tz.initializeTimeZones();
-  await NotificationService.instance.initialize();
+  await initializeDateFormatting('es');
   runApp(const ProviderScope(child: ImpostorApp()));
 }
 
