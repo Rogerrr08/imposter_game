@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dart --version)",
+      "Bash(winget search:*)",
+      "Bash(winget install:*)",
+      "Bash(git --version)",
+      "Bash(test -d \"$HOME/flutter\")",
+      "Bash(git clone:*)",
+      "Bash(export PATH=\"$HOME/flutter/bin:$PATH\")",
+      "Bash(flutter --version)",
+      "Bash(flutter doctor:*)",
+      "Bash(flutter create:*)",
+      "Bash(flutter pub:*)",
+      "Bash(dart run:*)",
+      "Bash(flutter build:*)",
+      "Bash(export PATH=$HOME/flutter/bin:$PATH)",
+      "Read(//c/Users/rogen/Documents/Proyecto Impostor/imposter_game/$HOME/AppData/Local/Pub/Cache/hosted/pub.dev/riverpod-3.2.1/lib/**)",
+      "Read(//c/Users/rogen/Documents/Proyecto Impostor/imposter_game/$HOME/AppData/Local/Pub/Cache/hosted/pub.dev/riverpod-3.2.1/**)",
+      "Read(//c/Users/rogen/Documents/Proyecto Impostor/imposter_game/$HOME/AppData/Local/Pub/Cache/hosted/pub.dev/riverpod-3.2.1/lib/src/**)",
+      "Read(//c/Users/rogen/Documents/Proyecto Impostor/imposter_game/$HOME/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_riverpod-3.3.1/lib/**)",
+      "Bash(powershell -Command \"[Environment]::SetEnvironmentVariable\\(''Path'', [Environment]::GetEnvironmentVariable\\(''Path'', ''User''\\) + '';C:\\\\Users\\\\rogen\\\\flutter\\\\bin'', ''User''\\)\")",
+      "Bash(dart compile:*)",
+      "Bash(flutter run:*)"
+    ]
+  }
+}
