@@ -514,6 +514,10 @@ final historyCategoryFilterProvider =
 class CategoryFilterNotifier extends Notifier<String?> {
   @override
   String? build() => null;
+
+  void setCategory(String? category) {
+    state = category;
+  }
 }
 
 class QuickGamePresetNotifier extends Notifier<QuickGamePreset?> {

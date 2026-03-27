@@ -8,7 +8,6 @@ import '../../theme/app_theme.dart';
 import '../../database/database.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/game_provider.dart';
-import '../../data/word_bank.dart';
 
 class GameHistoryScreen extends ConsumerStatefulWidget {
   final int groupId;
@@ -20,7 +19,6 @@ class GameHistoryScreen extends ConsumerStatefulWidget {
 }
 
 class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
-
   static const _categoryLabels = <String?, String>{
     null: 'Todas',
     'cosas': 'Cosas',
@@ -200,7 +198,9 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
                 borderRadius: BorderRadius.circular(20),
               ),
               onSelected: (_) {
-                ref.read(historyCategoryFilterProvider.notifier).state = entry.key;
+                ref
+                    .read(historyCategoryFilterProvider.notifier)
+                    .setCategory(entry.key);
               },
             ),
           );
