@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../providers/app_info_provider.dart';
 import '../../theme/app_theme.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appVersionLabelAsync = ref.watch(appVersionLabelProvider);
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -111,6 +115,19 @@ class HomeScreen extends StatelessWidget {
                       'Cómo jugar',
                       style: GoogleFonts.poppins(color: Colors.white54),
                     ),
+                  ),
+                  const SizedBox(height: 4),
+                  appVersionLabelAsync.when(
+                    data: (label) => Text(
+                      label,
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: Colors.white38,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                    loading: () => const SizedBox(height: 18),
+                    error: (_, _) => const SizedBox(height: 18),
                   ),
                   const SizedBox(height: 16),
                 ],

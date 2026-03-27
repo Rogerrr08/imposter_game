@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/word_bank.dart';
 import '../database/database.dart';
 import '../models/game_state.dart';
+import '../services/notification_service.dart';
 import 'database_provider.dart';
 
 final gameProvider = NotifierProvider<GameNotifier, ActiveGame?>(
@@ -18,6 +20,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
   ActiveGame? build() => null;
 
   void startNewGame(GameConfig config) {
+    unawaited(NotificationService.instance.cancelGameNotifications());
     final wordEntry = WordBank.getRandomWord(config.category);
 
     final players = <GamePlayer>[];
@@ -94,6 +97,12 @@ class GameNotifier extends Notifier<ActiveGame?> {
       phase: GamePhase.playing,
       currentRevealIndex: game.currentRevealIndex,
       timeRemainingSeconds: game.timeRemainingSeconds,
+    );
+
+    unawaited(
+      NotificationService.instance.scheduleOneMinuteRemainingWarning(
+        totalDuration: Duration(seconds: game.timeRemainingSeconds),
+      ),
     );
   }
 
@@ -228,6 +237,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
   }) {
     if (state == null) return;
     final game = state!;
+    unawaited(NotificationService.instance.cancelGameNotifications());
 
     state = ActiveGame(
       config: game.config,
@@ -283,6 +293,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
   }
 
   void clearGame() {
+    unawaited(NotificationService.instance.cancelGameNotifications());
     state = null;
   }
 }
