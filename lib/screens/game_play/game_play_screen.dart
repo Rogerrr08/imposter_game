@@ -93,6 +93,10 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                   color: Colors.white70,
                 ),
               ),
+              if (gameState.shouldShowStartingPlayer) ...[
+                const SizedBox(height: 12),
+                _buildStartingPlayerBanner(gameState.startingPlayerName!),
+              ],
               const SizedBox(height: 24),
               // Circular timer
               _buildCircularTimer(timeString, progress, isLowTime),
@@ -259,6 +263,41 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStartingPlayerBanner(String playerName) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryColor.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: AppTheme.primaryColor.withValues(alpha: 0.35),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.play_arrow_rounded,
+            color: AppTheme.primaryColor,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              'Empieza: $playerName',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),

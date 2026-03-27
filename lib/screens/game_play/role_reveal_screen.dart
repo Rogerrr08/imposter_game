@@ -59,8 +59,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
         gameState.currentRevealIndex >= gameState.players.length - 1;
 
     if (isLastPlayer) {
-      ref.read(gameProvider.notifier).startPlaying();
-      context.go('/play');
+      context.go('/round-start');
     } else {
       ref.read(gameProvider.notifier).nextReveal();
       setState(() => _revealed = false);
@@ -80,6 +79,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     final currentPlayer = gameState.players[gameState.currentRevealIndex];
     final playerNumber = gameState.currentRevealIndex + 1;
     final totalPlayers = gameState.players.length;
+    final isLastPlayer = gameState.currentRevealIndex >= gameState.players.length - 1;
 
     return Scaffold(
       body: SafeArea(
@@ -121,7 +121,9 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                     ),
                   ),
                   child: Text(
-                    _revealed ? 'Ocultar y Pasar' : 'Revelar Rol',
+                    _revealed
+                        ? (isLastPlayer ? 'Empezar Juego' : 'Ocultar y Pasar')
+                        : 'Revelar Rol',
                   ),
                 ),
               ),

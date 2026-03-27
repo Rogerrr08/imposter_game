@@ -72,12 +72,17 @@ class GameNotifier extends Notifier<ActiveGame?> {
     final orderedPlayers = config.playerNames.map((name) {
       return players.firstWhere((player) => player.name == name);
     }).toList();
+    final startingPlayerName = _determineStartingPlayerName(
+      orderedPlayers,
+      hintsEnabled: config.hintsEnabled,
+    );
 
     state = ActiveGame(
       config: config,
       secretWord: wordEntry.word,
       wordHints: wordEntry.hints,
       players: orderedPlayers,
+      startingPlayerName: startingPlayerName,
       phase: GamePhase.roleReveal,
       currentRevealIndex: 0,
       timeRemainingSeconds: config.durationSeconds,
@@ -314,6 +319,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
       secretWord: game.secretWord,
       wordHints: game.wordHints,
       players: game.players,
+      startingPlayerName: game.startingPlayerName,
       phase: phase ?? game.phase,
       currentRevealIndex: currentRevealIndex ?? game.currentRevealIndex,
       timeRemainingSeconds:
@@ -420,6 +426,36 @@ class GameNotifier extends Notifier<ActiveGame?> {
       buffer.write(replacements[char] ?? char);
     }
     return buffer.toString();
+  }
+
+  String? _determineStartingPlayerName(
+    List<GamePlayer> players, {
+    required bool hintsEnabled,
+  }) {
+    if (players.isEmpty) return null;
+
+    final randomStartingIndex = _random.nextInt(players.length);
+    final randomStartingPlayer = players[randomStartingIndex];
+
+    if (hintsEnabled) {
+      return randomStartingPlayer.name;
+    }
+
+    if (randomStartingPlayer.role == PlayerRole.civil) {
+      return randomStartingPlayer.name;
+    }
+
+    for (int offset = 1; offset < players.length; offset++) {
+      final candidateIndex =
+          (randomStartingIndex - offset + players.length) % players.length;
+      final candidate = players[candidateIndex];
+
+      if (candidate.role == PlayerRole.civil) {
+        return candidate.name;
+      }
+    }
+
+    return randomStartingPlayer.name;
   }
 }
 

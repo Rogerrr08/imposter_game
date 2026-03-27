@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/game_setup/game_setup_screen.dart';
 import '../screens/game_play/role_reveal_screen.dart';
+import '../screens/game_play/round_start_screen.dart';
 import '../screens/game_play/game_play_screen.dart';
 import '../screens/game_play/vote_screen.dart';
 import '../screens/game_play/impostor_guess_screen.dart';
@@ -33,6 +34,10 @@ class AppRouter {
       GoRoute(
         path: '/role-reveal',
         builder: (context, state) => const RoleRevealScreen(),
+      ),
+      GoRoute(
+        path: '/round-start',
+        builder: (context, state) => const RoundStartScreen(),
       ),
       GoRoute(
         path: '/play',

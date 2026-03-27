@@ -48,6 +48,7 @@ class ActiveGame {
   final String secretWord;
   final List<String> wordHints;
   final List<GamePlayer> players;
+  final String? startingPlayerName;
   GamePhase phase;
   int currentRevealIndex;
   int timeRemainingSeconds;
@@ -65,6 +66,7 @@ class ActiveGame {
     required this.secretWord,
     required this.wordHints,
     required this.players,
+    this.startingPlayerName,
     this.phase = GamePhase.setup,
     this.currentRevealIndex = 0,
     int? timeRemainingSeconds,
@@ -94,4 +96,7 @@ class ActiveGame {
   bool get noLivesLeft => livesRemaining <= 0;
 
   bool get gameOver => allImpostorsFound || impostorsWinByNumbers || noLivesLeft;
+
+  bool get shouldShowStartingPlayer =>
+      startingPlayerName != null && players.every((player) => !player.isEliminated);
 }
