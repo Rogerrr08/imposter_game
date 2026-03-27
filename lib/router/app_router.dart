@@ -22,18 +22,19 @@ class AppRouter {
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) => const HomeScreen(),
+        pageBuilder: (context, state) => _buildPage(state, const HomeScreen()),
       ),
       GoRoute(
         path: '/setup',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final groupId = state.extra as int?;
-          return GameSetupScreen(groupId: groupId);
+          return _buildPage(state, GameSetupScreen(groupId: groupId));
         },
       ),
       GoRoute(
         path: '/role-reveal',
-        builder: (context, state) => const RoleRevealScreen(),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const RoleRevealScreen()),
       ),
       GoRoute(
         path: '/round-start',
@@ -41,15 +42,17 @@ class AppRouter {
       ),
       GoRoute(
         path: '/play',
-        builder: (context, state) => const GamePlayScreen(),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const GamePlayScreen()),
       ),
       GoRoute(
         path: '/vote',
-        builder: (context, state) => const VoteScreen(),
+        pageBuilder: (context, state) => _buildPage(state, const VoteScreen()),
       ),
       GoRoute(
         path: '/impostor-guess',
-        builder: (context, state) => const ImpostorGuessScreen(),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const ImpostorGuessScreen()),
       ),
       GoRoute(
         path: '/action-reveal',
@@ -60,33 +63,65 @@ class AppRouter {
       ),
       GoRoute(
         path: '/results',
-        builder: (context, state) => const GameResultsScreen(),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const GameResultsScreen()),
       ),
       GoRoute(
         path: '/groups',
-        builder: (context, state) => const GroupsScreen(),
+        pageBuilder: (context, state) =>
+            _buildPage(state, const GroupsScreen()),
       ),
       GoRoute(
         path: '/groups/:id',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final id = int.parse(state.pathParameters['id']!);
-          return GroupDetailScreen(groupId: id);
+          return _buildPage(state, GroupDetailScreen(groupId: id));
         },
       ),
       GoRoute(
         path: '/rankings/:groupId',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final groupId = int.parse(state.pathParameters['groupId']!);
-          return RankingsScreen(groupId: groupId);
+          return _buildPage(state, RankingsScreen(groupId: groupId));
         },
       ),
       GoRoute(
         path: '/history/:groupId',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final groupId = int.parse(state.pathParameters['groupId']!);
-          return GameHistoryScreen(groupId: groupId);
+          return _buildPage(state, GameHistoryScreen(groupId: groupId));
         },
       ),
     ],
   );
+
+  static CustomTransitionPage<void> _buildPage(
+    GoRouterState state,
+    Widget child,
+  ) {
+    return CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 260),
+      reverseTransitionDuration: const Duration(milliseconds: 220),
+      transitionsBuilder: (context, animation, _, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+
+        return FadeTransition(
+          opacity: curvedAnimation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.03, 0),
+              end: Offset.zero,
+            ).animate(curvedAnimation),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
 }
