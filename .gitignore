@@ -13,7 +13,7 @@
 migrate_working_dir/
 
 # Claude
-.claude
+*.claude
 
 # IntelliJ related
 *.iml
