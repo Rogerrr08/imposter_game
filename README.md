@@ -1,6 +1,6 @@
-# Yeyo Impostor
+# Yeison Impostor
 
-Yeyo Impostor es una app social para jugar partidas del clásico juego de deducción con amigos, ya sea en modo rápido o usando grupos guardados. Está pensada para que montar una partida tome pocos segundos y para que cada ronda tenga suficiente tensión, roles claros, puntuación competitiva e historial de resultados.
+Yeison Impostor es una app social para jugar partidas del clásico juego de deducción con amigos, ya sea en modo rápido o usando grupos guardados. Está pensada para que montar una partida tome pocos segundos y para que cada ronda tenga suficiente tensión, roles claros, puntuación competitiva e historial de resultados.
 
 ## Qué puede hacer la app
 

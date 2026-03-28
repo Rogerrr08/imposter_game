@@ -159,233 +159,214 @@ class _VoteScreenState extends ConsumerState<VoteScreen>
     );
   }
 
-  Widget _buildVotingView(ActiveGame gameState) {
-    final activePlayers = gameState.activePlayers;
-    final selectedVoterValue = activePlayers.any((player) => player.name == _votedBy)
-        ? _votedBy
-        : null;
-
-    return Column(
-      children: [
-        const SizedBox(height: 24),
-        // Header
-        Container(
-          width: 70,
-          height: 70,
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.2),
-            shape: BoxShape.circle,
-            border: Border.all(color: AppTheme.primaryColor, width: 2),
-          ),
-          child: const Icon(
-            Icons.how_to_vote_rounded,
-            size: 34,
-            color: AppTheme.primaryColor,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Quien es el impostor?',
-          style: GoogleFonts.poppins(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        if (gameState.shouldShowStartingPlayer) ...[
-          const SizedBox(height: 12),
-          _buildStartingPlayerBanner(gameState.startingPlayerName!),
-        ],
-        const SizedBox(height: 4),
-        // Lives indicator
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (int i = 0; i < ActiveGame.maxLives; i++)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Icon(
-                  i < gameState.livesRemaining
-                      ? Icons.favorite
-                      : Icons.favorite_border,
-                  color: i < gameState.livesRemaining
-                      ? AppTheme.secondaryColor
-                      : Colors.white24,
-                  size: 20,
-                ),
-              ),
-            const SizedBox(width: 8),
-            Text(
-              '${gameState.livesRemaining} vida${gameState.livesRemaining == 1 ? '' : 's'}',
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                color: gameState.livesRemaining == 1
-                    ? AppTheme.secondaryColor
-                    : Colors.white54,
-                fontWeight: gameState.livesRemaining == 1
-                    ? FontWeight.w700
-                    : FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        // Who is voting dropdown
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppTheme.surfaceColor,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white12),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              isExpanded: true,
-              hint: Text(
-                'Quien propone el voto?',
-                style: GoogleFonts.poppins(color: Colors.white38, fontSize: 14),
-              ),
-              value: selectedVoterValue,
-              dropdownColor: AppTheme.surfaceColor,
-              style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-              items: activePlayers.map((p) {
-                return DropdownMenuItem(
-                  value: p.name,
-                  child: Text(p.name),
-                );
-              }).toList(),
-              onChanged: (val) => setState(() => _votedBy = val),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // Player list
-        Expanded(
-          child: ListView.separated(
-            itemCount: activePlayers.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
-            itemBuilder: (context, index) {
-              final player = activePlayers[index];
-              final isSelected = _selectedPlayer == player.name;
-
-              return GestureDetector(
-                onTap: () {
-                  setState(() => _selectedPlayer = player.name);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppTheme.secondaryColor.withValues(alpha: 0.15)
-                        : AppTheme.cardColor,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppTheme.secondaryColor
-                          : Colors.white12,
-                      width: isSelected ? 2 : 1,
-                    ),
+  Widget _buildAutocompleteField({
+    required List<String> playerNames,
+    required String label,
+    required ValueChanged<String?> onSelected,
+  }) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Autocomplete<String>(
+          optionsBuilder: (textEditingValue) {
+            if (textEditingValue.text.isEmpty) return playerNames;
+            return playerNames.where(
+              (name) => name.toLowerCase().contains(
+                    textEditingValue.text.toLowerCase(),
                   ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppTheme.secondaryColor.withValues(alpha: 0.3)
-                              : AppTheme.primaryColor.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            player.name[0].toUpperCase(),
-                            style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: isSelected
-                                  ? AppTheme.secondaryColor
-                                  : Colors.white,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Text(
-                          player.name,
+            );
+          },
+          onSelected: (value) => onSelected(value),
+          fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
+            controller.addListener(() {
+              final text = controller.text;
+              final match = playerNames
+                  .where((n) => n.toLowerCase() == text.toLowerCase())
+                  .firstOrNull;
+              onSelected(match);
+            });
+
+            return TextField(
+              controller: controller,
+              focusNode: focusNode,
+              style: GoogleFonts.poppins(color: Colors.white, fontSize: 15),
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: label,
+                labelStyle:
+                    GoogleFonts.poppins(color: Colors.white38, fontSize: 14),
+                filled: true,
+                fillColor: AppTheme.surfaceColor,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.white12),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.white12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide:
+                      const BorderSide(color: AppTheme.primaryColor, width: 2),
+                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+            );
+          },
+          optionsViewBuilder: (context, onSelected, options) {
+            return Align(
+              alignment: Alignment.topLeft,
+              child: Material(
+                color: AppTheme.surfaceColor,
+                borderRadius: BorderRadius.circular(12),
+                elevation: 8,
+                child: SizedBox(
+                  width: constraints.maxWidth,
+                  child: ListView.builder(
+                    padding: EdgeInsets.zero,
+                    shrinkWrap: true,
+                    itemCount: options.length,
+                    itemBuilder: (context, index) {
+                      final option = options.elementAt(index);
+                      return ListTile(
+                        title: Text(
+                          option,
                           style: GoogleFonts.poppins(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
+                              color: Colors.white, fontSize: 14),
                         ),
-                      ),
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: 26,
-                        height: 26,
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? AppTheme.secondaryColor
-                              : Colors.transparent,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isSelected
-                                ? AppTheme.secondaryColor
-                                : Colors.white30,
-                            width: 2,
-                          ),
-                        ),
-                        child: isSelected
-                            ? const Icon(Icons.check, size: 16,
-                                color: Colors.white)
-                            : null,
-                      ),
-                    ],
+                        onTap: () => onSelected(option),
+                      );
+                    },
                   ),
                 ),
-              );
-            },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildVotingView(ActiveGame gameState) {
+    final playerNames =
+        gameState.activePlayers.map((p) => p.name).toList();
+
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 24),
+          // Header
+          Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.2),
+              shape: BoxShape.circle,
+              border: Border.all(color: AppTheme.primaryColor, width: 2),
+            ),
+            child: const Icon(
+              Icons.how_to_vote_rounded,
+              size: 34,
+              color: AppTheme.primaryColor,
+            ),
           ),
-        ),
-        const SizedBox(height: 16),
-        // Confirm button
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton(
-            onPressed:
-                _selectedPlayer != null && _votedBy != null ? _confirmVote : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondaryColor,
-              disabledBackgroundColor:
-                  AppTheme.secondaryColor.withValues(alpha: 0.3),
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              textStyle: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
+          const SizedBox(height: 16),
+          Text(
+            'Votación',
+            style: GoogleFonts.poppins(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          if (gameState.shouldShowStartingPlayer) ...[
+            const SizedBox(height: 12),
+            _buildStartingPlayerBanner(gameState.startingPlayerName!),
+          ],
+          const SizedBox(height: 4),
+          // Lives indicator
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (int i = 0; i < ActiveGame.maxLives; i++)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  child: Icon(
+                    i < gameState.livesRemaining
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: i < gameState.livesRemaining
+                        ? AppTheme.secondaryColor
+                        : Colors.white24,
+                    size: 20,
+                  ),
+                ),
+              const SizedBox(width: 8),
+              Text(
+                '${gameState.livesRemaining} vida${gameState.livesRemaining == 1 ? '' : 's'}',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  color: gameState.livesRemaining == 1
+                      ? AppTheme.secondaryColor
+                      : Colors.white54,
+                  fontWeight: gameState.livesRemaining == 1
+                      ? FontWeight.w700
+                      : FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // Who is voting
+          _buildAutocompleteField(
+            playerNames: playerNames,
+            label: '¿Quién está votando?',
+            onSelected: (val) => setState(() => _votedBy = val),
+          ),
+          const SizedBox(height: 16),
+          // Who to eliminate
+          _buildAutocompleteField(
+            playerNames: playerNames,
+            label: '¿A quién quieres eliminar?',
+            onSelected: (val) => setState(() => _selectedPlayer = val),
+          ),
+          const SizedBox(height: 32),
+          // Confirm button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _selectedPlayer != null && _votedBy != null
+                  ? _confirmVote
+                  : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.secondaryColor,
+                disabledBackgroundColor:
+                    AppTheme.secondaryColor.withValues(alpha: 0.3),
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                textStyle: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              child: const Text('Confirmar Voto'),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextButton(
+            onPressed: () => context.pop(),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.poppins(
+                color: Colors.white54,
+                fontSize: 15,
               ),
             ),
-            child: const Text('Confirmar Voto'),
           ),
-        ),
-        const SizedBox(height: 12),
-        TextButton(
-          onPressed: () => context.pop(),
-          child: Text(
-            'Cancelar',
-            style: GoogleFonts.poppins(
-              color: Colors.white54,
-              fontSize: 15,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-      ],
+          const SizedBox(height: 16),
+        ],
+      ),
     );
   }
 

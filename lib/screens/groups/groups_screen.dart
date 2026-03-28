@@ -207,7 +207,23 @@ class GroupsScreen extends ConsumerWidget {
     }
 
     if (context.mounted) {
-      context.push('/groups/$groupId');
+      _navigateWithLoading(context, '/groups/$groupId');
+    }
+  }
+
+  Future<void> _navigateWithLoading(BuildContext context, String route) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black54,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+      ),
+    );
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (context.mounted) {
+      Navigator.of(context).pop();
+      context.push(route);
     }
   }
 }
@@ -261,7 +277,7 @@ class _GroupCard extends ConsumerWidget {
           margin: EdgeInsets.zero,
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
-            onTap: () => context.push('/groups/${group.id}'),
+            onTap: () => _navigateWithLoading(context, '/groups/${group.id}'),
             onLongPress: () async {
               final shouldDelete = await _showDeleteConfirmation(context);
               if (shouldDelete == true && context.mounted) {
@@ -363,6 +379,22 @@ class _GroupCard extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _navigateWithLoading(BuildContext context, String route) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black54,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+      ),
+    );
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (context.mounted) {
+      Navigator.of(context).pop();
+      context.push(route);
+    }
   }
 
   Future<bool?> _showDeleteConfirmation(BuildContext context) {

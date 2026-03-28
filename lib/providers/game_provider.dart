@@ -24,19 +24,17 @@ class GameNotifier extends Notifier<ActiveGame?> {
   ActiveGame? build() => null;
 
   void startNewGame(GameConfig config) {
-    if (config.groupId == null) {
-      ref.read(lastQuickGamePresetProvider.notifier).save(
-            QuickGamePreset(
-        playerNames: List<String>.unmodifiable(config.playerNames),
-        impostorCount: config.impostorCount,
-        hintsEnabled: config.hintsEnabled,
-        durationSeconds: config.durationSeconds,
-        category: config.category,
-            ),
-          );
-    }
+    ref.read(lastQuickGamePresetProvider.notifier).save(
+          QuickGamePreset(
+      playerNames: List<String>.unmodifiable(config.playerNames),
+      impostorCount: config.impostorCount,
+      hintsEnabled: config.hintsEnabled,
+      durationSeconds: config.durationSeconds,
+      categories: List<WordCategory>.unmodifiable(config.categories),
+          ),
+        );
 
-    final wordEntry = WordBank.getRandomWord(config.category);
+    final wordEntry = WordBank.getRandomWordFromCategories(config.categories);
 
     final players = <GamePlayer>[];
     final shuffledNames = List<String>.from(config.playerNames)..shuffle(_random);
@@ -80,6 +78,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
     state = ActiveGame(
       config: config,
       secretWord: wordEntry.word,
+      wordCategory: wordEntry.category,
       wordHints: wordEntry.hints,
       players: orderedPlayers,
       startingPlayerName: startingPlayerName,
@@ -152,6 +151,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
           voter.role == PlayerRole.civil &&
           !voter.isEliminated) {
         voter.isEliminated = true;
+        voter.votedIncorrectly = true;
       }
     }
 
@@ -193,6 +193,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
     }
 
     guessingImpostor.isEliminated = true;
+    guessingImpostor.eliminatedByFailedGuess = true;
 
     if (game.allImpostorsFound) {
       _applyCivilWinScoring(game);
@@ -211,6 +212,11 @@ class GameNotifier extends Notifier<ActiveGame?> {
     for (final player in game.players) {
       if (player.role != PlayerRole.civil) continue;
 
+      if (player.votedIncorrectly) {
+        // Civil that voted wrong gets no points
+        continue;
+      }
+
       if (player.votedImpostorCorrectly) {
         player.points += 3;
       } else {
@@ -221,8 +227,14 @@ class GameNotifier extends Notifier<ActiveGame?> {
 
   void _applyImpostorSurvivalScoring(ActiveGame game) {
     for (final player in game.impostors) {
+      if (player.eliminatedByFailedGuess) {
+        // Impostor eliminated by failed guess gets no points
+        continue;
+      }
+
       if (player.isEliminated) {
-        player.points += 3;
+        // Eliminated by vote: gets 1 point for team win
+        player.points += 1;
       } else {
         player.points += 5;
       }
@@ -265,7 +277,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
 
       await gameDao.saveGame(
         groupId: game.config.groupId,
-        category: game.config.category.name,
+        category: game.wordCategory.name,
         word: game.secretWord,
         duration: game.config.durationSeconds,
         impostorCount: game.config.impostorCount,
@@ -317,6 +329,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
     return ActiveGame(
       config: game.config,
       secretWord: game.secretWord,
+      wordCategory: game.wordCategory,
       wordHints: game.wordHints,
       players: game.players,
       startingPlayerName: game.startingPlayerName,

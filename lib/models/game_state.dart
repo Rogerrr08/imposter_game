@@ -12,6 +12,10 @@ class GamePlayer {
   int points;
   /// Whether this civil correctly voted an impostor at least once.
   bool votedImpostorCorrectly;
+  /// Whether this civil voted incorrectly (voted a non-impostor).
+  bool votedIncorrectly;
+  /// Whether this impostor was eliminated by a failed guess (not by vote).
+  bool eliminatedByFailedGuess;
 
   GamePlayer({
     required this.name,
@@ -20,6 +24,8 @@ class GamePlayer {
     this.isEliminated = false,
     this.points = 0,
     this.votedImpostorCorrectly = false,
+    this.votedIncorrectly = false,
+    this.eliminatedByFailedGuess = false,
   });
 }
 
@@ -28,7 +34,7 @@ class GameConfig {
   final int impostorCount;
   final bool hintsEnabled;
   final int durationSeconds;
-  final WordCategory category;
+  final List<WordCategory> categories;
   final int? groupId;
 
   const GameConfig({
@@ -36,7 +42,7 @@ class GameConfig {
     required this.impostorCount,
     required this.hintsEnabled,
     required this.durationSeconds,
-    required this.category,
+    required this.categories,
     this.groupId,
   });
 }
@@ -46,6 +52,7 @@ class ActiveGame {
 
   final GameConfig config;
   final String secretWord;
+  final WordCategory wordCategory;
   final List<String> wordHints;
   final List<GamePlayer> players;
   final String? startingPlayerName;
@@ -64,6 +71,7 @@ class ActiveGame {
   ActiveGame({
     required this.config,
     required this.secretWord,
+    required this.wordCategory,
     required this.wordHints,
     required this.players,
     this.startingPlayerName,

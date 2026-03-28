@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'word_bank/categories/animales_words.dart';
 import 'word_bank/categories/cosas_words.dart';
 import 'word_bank/categories/deportes_words.dart';
 import 'word_bank/categories/entretenimiento_words.dart';
@@ -16,6 +17,7 @@ class WordBank {
     WordCategory.entretenimiento: entretenimientoWords,
     WordCategory.geografia: geografiaWords,
     WordCategory.deportes: deportesWords,
+    WordCategory.animales: animalesWords,
   };
 
   static final List<WordEntry> _allWords = _wordsByCategory.values
@@ -35,6 +37,14 @@ class WordBank {
 
   static WordEntry getRandomWord(WordCategory category) {
     final words = List<WordEntry>.from(getWordsByCategory(category));
+    words.shuffle(_random);
+    return words.first;
+  }
+
+  static WordEntry getRandomWordFromCategories(List<WordCategory> categories) {
+    final words = categories
+        .expand((c) => getWordsByCategory(c))
+        .toList();
     words.shuffle(_random);
     return words.first;
   }

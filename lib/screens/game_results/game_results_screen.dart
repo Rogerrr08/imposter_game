@@ -34,7 +34,10 @@ class GameResultsScreen extends ConsumerWidget {
               _buildResultHeader(civilsWon, impostorGuessed),
               const SizedBox(height: 32),
               // Secret word reveal
-              _buildWordReveal(game.secretWord, game.config.category.displayName),
+              _buildWordReveal(game.secretWord, game.wordCategory.displayName),
+              const SizedBox(height: 16),
+              // Impostor hints
+              _buildImpostorHints(game),
               const SizedBox(height: 32),
               // Player results
               _buildPlayerResults(game),
@@ -170,6 +173,72 @@ class GameResultsScreen extends ConsumerWidget {
               color: Colors.white38,
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImpostorHints(ActiveGame game) {
+    final impostorsWithHints =
+        game.impostors.where((p) => p.hint != null).toList();
+
+    if (impostorsWithHints.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.secondaryColor.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppTheme.secondaryColor.withValues(alpha: 0.2),
+        ),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.visibility_rounded,
+                size: 16,
+                color: AppTheme.secondaryColor.withValues(alpha: 0.7),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Pistas de los impostores',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  color: AppTheme.secondaryColor.withValues(alpha: 0.7),
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ...impostorsWithHints.map((p) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: [
+                    Text(
+                      '${p.name}: ',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white60,
+                      ),
+                    ),
+                    Text(
+                      p.hint!,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.secondaryColor,
+                      ),
+                    ),
+                  ],
+                ),
+              )),
         ],
       ),
     );

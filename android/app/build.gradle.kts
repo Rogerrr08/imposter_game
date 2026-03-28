@@ -46,7 +46,7 @@ android {
             val buildTypeName = variant.buildType.name
             val appVersion = variant.versionName ?: "0.0.0"
 
-            output.outputFileName = "yeyo-impostor-v${appVersion}-${buildTypeName}.apk"
+            output.outputFileName = "yeison-impostor-v${appVersion}-${buildTypeName}.apk"
         }
 
         val variantNameCapitalized =
@@ -62,7 +62,7 @@ android {
                 val genericApk = File(flutterApkDir, "app-$buildTypeName.apk")
                 val renamedApk = File(
                     flutterApkDir,
-                    "yeyo-impostor-v${appVersion}-${buildTypeName}.apk",
+                    "yeison-impostor-v${appVersion}-${buildTypeName}.apk",
                 )
 
                 if (genericApk.exists()) {
@@ -72,7 +72,7 @@ android {
                 val genericSha = File(flutterApkDir, "app-$buildTypeName.apk.sha1")
                 val renamedSha = File(
                     flutterApkDir,
-                    "yeyo-impostor-v${appVersion}-${buildTypeName}.apk.sha1",
+                    "yeison-impostor-v${appVersion}-${buildTypeName}.apk.sha1",
                 )
 
                 if (genericSha.exists()) {

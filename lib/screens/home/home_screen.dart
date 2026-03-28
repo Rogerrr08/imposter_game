@@ -36,38 +36,37 @@ class HomeScreen extends ConsumerWidget {
                 children: [
                   const Spacer(flex: 2),
                   // Logo / Title
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppTheme.primaryColor,
-                        width: 3,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.psychology_alt,
-                      size: 60,
-                      color: AppTheme.primaryColor,
-                    ),
+                  Image.asset(
+                    'assets/images/app_logo_no_bg.png',
+                    width: 240,
+                    height: 240,
+                    fit: BoxFit.contain,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 28),
                   Text(
-                    'IMPOSTOR',
+                    'YEISON',
                     style: GoogleFonts.poppins(
-                      fontSize: 40,
+                      fontSize: 42,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: 4,
+                      letterSpacing: 6,
                       color: Colors.white,
                     ),
                   ),
                   Text(
+                    'Impostor',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primaryColor,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
                     'El juego de la palabra secreta',
                     style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: Colors.white54,
+                      fontSize: 13,
+                      color: Colors.white38,
                       letterSpacing: 1,
                     ),
                   ),
@@ -76,7 +75,7 @@ class HomeScreen extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () => context.push('/setup'),
+                      onPressed: () => _navigateWithLoading(context, '/setup'),
                       icon: const Icon(Icons.play_arrow_rounded, size: 28),
                       label: const Text('Juego Rápido'),
                       style: ElevatedButton.styleFrom(
@@ -94,7 +93,7 @@ class HomeScreen extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () => context.push('/groups'),
+                      onPressed: () => _navigateWithLoading(context, '/groups'),
                       icon: const Icon(Icons.group, size: 24),
                       label: const Text('Mis Grupos'),
                       style: OutlinedButton.styleFrom(
@@ -139,6 +138,22 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _navigateWithLoading(BuildContext context, String route) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black54,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+      ),
+    );
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (context.mounted) {
+      Navigator.of(context).pop();
+      context.push(route);
+    }
+  }
+
   void _showHowToPlay(BuildContext context) {
     showDialog(
       context: context,
@@ -155,7 +170,7 @@ class HomeScreen extends ConsumerWidget {
               _howToPlayStep('1', 'Agrega los jugadores (3-20 personas).'),
               _howToPlayStep(
                 '2',
-                'Selecciona la categoría, cantidad de impostores y el tiempo.',
+                'Selecciona las categorías, cantidad de impostores y el tiempo. La palabra se elige al azar de las categorías activas.',
               ),
               _howToPlayStep(
                 '3',
@@ -183,12 +198,12 @@ class HomeScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 4),
               _pointsRow('+5', 'Impostor sobrevive hasta el final'),
-              _pointsRow('+3', 'Impostor eliminado (si ganan impostores)'),
-              _pointsRow(
-                '+3',
-                'Impostor adivina la palabra / Civil que descubre impostor',
-              ),
-              _pointsRow('+1', 'Otros impostores / civiles del equipo ganador'),
+              _pointsRow('+3', 'Impostor adivina la palabra'),
+              _pointsRow('+3', 'Civil que descubre a un impostor'),
+              _pointsRow('+1', 'Civil del equipo ganador que no votó mal'),
+              _pointsRow('+1', 'Impostor eliminado por votación (si ganan impostores)'),
+              _pointsRow('+0', 'Civil que votó mal (sin puntos aunque ganen)'),
+              _pointsRow('+0', 'Impostor eliminado por adivinar mal'),
             ],
           ),
         ),
