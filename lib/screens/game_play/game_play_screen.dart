@@ -46,6 +46,155 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
     });
   }
 
+  void _verifyImpostorAndNavigate() {
+    final gameState = ref.read(gameProvider);
+    if (gameState == null) return;
+
+    final impostorHints = gameState.activePlayers
+        .where((p) => p.role == PlayerRole.impostor && p.hint != null)
+        .map((p) => p.hint!.toLowerCase())
+        .toSet();
+
+    // If no hints are enabled, go directly
+    if (impostorHints.isEmpty) {
+      _timer?.cancel();
+      context.push('/impostor-guess').then((_) {
+        if (mounted) _startTimer();
+      });
+      return;
+    }
+
+    final hintController = TextEditingController();
+
+    _timer?.cancel();
+    showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        String? errorText;
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: Text(
+              'Verificación',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Escribe tu pista para confirmar que eres impostor.',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white70,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: hintController,
+                    autofocus: true,
+                    style: GoogleFonts.poppins(color: Colors.white),
+                    textCapitalization: TextCapitalization.words,
+                    decoration: InputDecoration(
+                      hintText: 'Tu pista...',
+                      hintStyle: GoogleFonts.poppins(color: Colors.white30),
+                      errorText: errorText,
+                    ),
+                    onSubmitted: (_) {
+                      final input = hintController.text.trim().toLowerCase();
+                      if (impostorHints.contains(input)) {
+                        Navigator.pop(dialogContext, true);
+                      } else {
+                        setDialogState(() => errorText = 'Pista incorrecta');
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: Text(
+                  'Cancelar',
+                  style: GoogleFonts.poppins(color: Colors.white54),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  final input = hintController.text.trim().toLowerCase();
+                  if (impostorHints.contains(input)) {
+                    Navigator.pop(dialogContext, true);
+                  } else {
+                    setDialogState(() => errorText = 'Pista incorrecta');
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.secondaryColor,
+                ),
+                child: Text(
+                  'Confirmar',
+                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    ).then((verified) {
+      if (verified == true && mounted) {
+        context.push('/impostor-guess').then((_) {
+          if (mounted) _startTimer();
+        });
+      } else {
+        if (mounted) _startTimer();
+      }
+    });
+  }
+
+  void _confirmCancelGame() {
+    _timer?.cancel();
+    showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Cancelar partida',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          '¿Seguro que quieres cancelar la partida? Se perderá todo el progreso.',
+          style: GoogleFonts.poppins(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              'Seguir jugando',
+              style: GoogleFonts.poppins(color: Colors.white54),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondaryColor,
+            ),
+            child: Text(
+              'Cancelar partida',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    ).then((confirmed) {
+      if (confirmed == true) {
+        ref.read(gameProvider.notifier).clearGame();
+        if (mounted) context.go('/');
+      } else {
+        if (mounted) _startTimer();
+      }
+    });
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -82,14 +231,32 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
           child: Column(
             children: [
               const SizedBox(height: 16),
-              // Header
-              Text(
-                'Discusion en curso',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white70,
-                ),
+              // Header with cancel button
+              Row(
+                children: [
+                  const Spacer(),
+                  Text(
+                    'Discusion en curso',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        onPressed: _confirmCancelGame,
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Colors.white38,
+                        ),
+                        tooltip: 'Cancelar partida',
+                      ),
+                    ),
+                  ),
+                ],
               ),
               if (gameState.shouldShowStartingPlayer) ...[
                 const SizedBox(height: 12),
@@ -98,39 +265,6 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
               const SizedBox(height: 24),
               // Circular timer
               _buildCircularTimer(timeString, progress, isLowTime),
-              const SizedBox(height: 20),
-              // Lives indicator
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  for (int i = 0; i < ActiveGame.maxLives; i++)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 3),
-                      child: Icon(
-                        i < gameState.livesRemaining
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color: i < gameState.livesRemaining
-                            ? AppTheme.secondaryColor
-                            : Colors.white24,
-                        size: 22,
-                      ),
-                    ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '${gameState.livesRemaining} vida${gameState.livesRemaining == 1 ? '' : 's'}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: gameState.livesRemaining == 1
-                          ? AppTheme.secondaryColor
-                          : Colors.white54,
-                      fontWeight: gameState.livesRemaining == 1
-                          ? FontWeight.w700
-                          : FontWeight.w400,
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 20),
               // Player list header
               Align(
@@ -153,7 +287,11 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                 children: [
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: () => context.push('/vote'),
+                      onPressed: () async {
+                        _timer?.cancel();
+                        await context.push('/vote');
+                        if (mounted) _startTimer();
+                      },
                       icon: const Icon(Icons.how_to_vote_rounded, size: 22),
                       label: const Text('Votar'),
                       style: ElevatedButton.styleFrom(
@@ -169,7 +307,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => context.push('/impostor-guess'),
+                      onPressed: _verifyImpostorAndNavigate,
                       icon: const Icon(Icons.psychology_alt_rounded, size: 22),
                       label: const Text(
                         'Impostor adivina',

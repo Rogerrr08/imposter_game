@@ -73,10 +73,20 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: _buildGuessForm(),
+          child: SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height -
+                    MediaQuery.of(context).padding.top -
+                    MediaQuery.of(context).padding.bottom,
+              ),
+              child: _buildGuessForm(),
+            ),
+          ),
         ),
       ),
     );
@@ -104,7 +114,8 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
     final selectedImpostor = _resolveSelectedImpostor();
     final hasSingleImpostor = activeImpostors.length == 1;
 
-    return Column(
+    return IntrinsicHeight(
+      child: Column(
       children: [
         const SizedBox(height: 24),
         // Back button
@@ -318,6 +329,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
         ),
         const SizedBox(height: 32),
       ],
+    ),
     );
   }
 }

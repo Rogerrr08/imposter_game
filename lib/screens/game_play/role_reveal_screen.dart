@@ -112,7 +112,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                   onPressed: _revealed ? _hideAndNext : _reveal,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _revealed
-                        ? AppTheme.secondaryColor
+                        ? (isLastPlayer ? AppTheme.successColor : AppTheme.primaryColor)
                         : AppTheme.primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 18),
                     textStyle: GoogleFonts.poppins(

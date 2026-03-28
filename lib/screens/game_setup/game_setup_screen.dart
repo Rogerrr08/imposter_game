@@ -25,10 +25,11 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   final _scrollController = ScrollController();
 
   final List<String> _manualPlayers = [];
-  List<GroupPlayer> _groupPlayers = const [];
+  List<GroupPlayer> _groupPlayers = [];
   final Set<int> _excludedGroupPlayerIds = <int>{};
+  int? _draggingIndex;
 
-  WordCategory _selectedCategory = WordCategory.cosas;
+  Set<WordCategory> _selectedCategories = {...WordCategory.values};
   int _impostorCount = 1;
   bool _hintsEnabled = true;
   int _durationSeconds = 120;
@@ -46,6 +47,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
 
   static const Map<WordCategory, _CategoryInfo> _categoryData = {
     WordCategory.cosas: _CategoryInfo('Cosas', '📦'),
+    WordCategory.animales: _CategoryInfo('Animales', '🐾'),
     WordCategory.entretenimiento: _CategoryInfo('Entretenimiento', '🎬'),
     WordCategory.geografia: _CategoryInfo('Geografia', '🌍'),
     WordCategory.deportes: _CategoryInfo('Deportes', '⚽'),
@@ -69,15 +71,15 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   @override
   void initState() {
     super.initState();
-    if (!_isGroupMode) {
-      final preset = ref.read(lastQuickGamePresetProvider);
-      if (preset != null) {
+    final preset = ref.read(lastQuickGamePresetProvider);
+    if (preset != null) {
+      if (!_isGroupMode) {
         _manualPlayers.addAll(preset.playerNames);
-        _selectedCategory = preset.category;
-        _impostorCount = preset.impostorCount;
-        _hintsEnabled = preset.hintsEnabled;
-        _durationSeconds = preset.durationSeconds;
       }
+      _selectedCategories = {...preset.categories};
+      _impostorCount = preset.impostorCount;
+      _hintsEnabled = preset.hintsEnabled;
+      _durationSeconds = preset.durationSeconds;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -119,7 +121,6 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       _playerController.clear();
       _clampImpostorCount();
     });
-    _playerFocusNode.requestFocus();
   }
 
   void _removePlayer(int index) {
@@ -141,23 +142,34 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   }
 
   void _syncGroupPlayers(List<GroupPlayer> players) {
-    final hasChanged = players.length != _groupPlayers.length ||
-        players.asMap().entries.any((entry) {
-          final index = entry.key;
-          if (index >= _groupPlayers.length) return true;
+    final currentIds = _groupPlayers.map((p) => p.id).toSet();
+    final newIds = players.map((p) => p.id).toSet();
 
-          final previous = _groupPlayers[index];
-          final current = entry.value;
-          return previous.id != current.id || previous.name != current.name;
-        });
+    // Only sync if players were added/removed/renamed, not just reordered
+    final added = newIds.difference(currentIds);
+    final removed = currentIds.difference(newIds);
+    final nameChanged = players.any((p) {
+      final existing = _groupPlayers.where((g) => g.id == p.id).firstOrNull;
+      return existing != null && existing.name != p.name;
+    });
 
-    if (!hasChanged) return;
+    if (added.isEmpty && removed.isEmpty && !nameChanged) return;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       setState(() {
-        _groupPlayers = List<GroupPlayer>.from(players);
-        final validIds = players.map((player) => player.id).toSet();
+        // Remove deleted players
+        _groupPlayers.removeWhere((p) => removed.contains(p.id));
+        // Update renamed players
+        for (final p in players) {
+          final idx = _groupPlayers.indexWhere((g) => g.id == p.id);
+          if (idx != -1) _groupPlayers[idx] = p;
+        }
+        // Append new players at the end
+        for (final p in players) {
+          if (added.contains(p.id)) _groupPlayers.add(p);
+        }
+        final validIds = newIds;
         _excludedGroupPlayerIds.removeWhere((id) => !validIds.contains(id));
         _clampImpostorCount();
       });
@@ -170,7 +182,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     );
   }
 
-  void _startGame() {
+  Future<void> _startGame() async {
     final playerNames = _currentPlayers;
     if (playerNames.length < _minPlayers) {
       _showSnackBar('Se necesitan al menos $_minPlayers jugadores');
@@ -182,12 +194,25 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       impostorCount: _impostorCount,
       hintsEnabled: _hintsEnabled,
       durationSeconds: _durationSeconds,
-      category: _selectedCategory,
+      categories: _selectedCategories.toList(),
       groupId: widget.groupId,
     );
 
     ref.read(gameProvider.notifier).startNewGame(config);
-    context.push('/role-reveal');
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black54,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+      ),
+    );
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (context.mounted) {
+      Navigator.of(context).pop();
+      context.push('/role-reveal');
+    }
   }
 
   @override
@@ -387,7 +412,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                 size: 20,
               ),
             ),
-            onSubmitted: (_) => _addPlayer(),
+            onEditingComplete: _addPlayer,
           ),
         ),
         const SizedBox(width: 12),
@@ -406,6 +431,34 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
         ),
       ],
     );
+  }
+
+  void _onReorderPlayers(int oldIndex, int newIndex) {
+    setState(() {
+      if (newIndex > oldIndex) newIndex--;
+      if (_isGroupMode) {
+        final active = _activeGroupPlayers;
+        final player = active[oldIndex];
+        final oldGlobalIndex = _groupPlayers.indexOf(player);
+        _groupPlayers.removeAt(oldGlobalIndex);
+        // Find insert position in the global list
+        if (newIndex >= active.length - 1) {
+          // Moving to end: insert after the last active player
+          final lastActive = active.where((p) => p != player).lastOrNull;
+          final insertAfter = lastActive != null
+              ? _groupPlayers.indexOf(lastActive) + 1
+              : _groupPlayers.length;
+          _groupPlayers.insert(insertAfter, player);
+        } else {
+          final target = active[newIndex >= oldIndex ? newIndex + 1 : newIndex];
+          final newGlobalIndex = _groupPlayers.indexOf(target);
+          _groupPlayers.insert(newGlobalIndex, player);
+        }
+      } else {
+        final player = _manualPlayers.removeAt(oldIndex);
+        _manualPlayers.insert(newIndex, player);
+      }
+    });
   }
 
   Widget _buildPlayerChips() {
@@ -440,111 +493,166 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       );
     }
 
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: List<Widget>.generate(players.length, (index) {
+    return ReorderableListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      proxyDecorator: (child, index, animation) {
+        return _ShakeWidget(child: child);
+      },
+      onReorderStart: (index) => setState(() => _draggingIndex = index),
+      onReorderEnd: (_) => setState(() => _draggingIndex = null),
+      itemCount: players.length,
+      onReorder: _onReorderPlayers,
+      itemBuilder: (context, index) {
         final playerName = players[index];
-        return Chip(
-          label: Text(
-            playerName,
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: Colors.white,
+        final isDragging = _draggingIndex == index;
+        return Container(
+          key: ValueKey(playerName),
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: isDragging
+                ? AppTheme.primaryColor.withValues(alpha: 0.15)
+                : AppTheme.cardColor,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDragging
+                  ? AppTheme.secondaryColor
+                  : AppTheme.primaryColor.withValues(alpha: 0.3),
+              width: isDragging ? 2 : 1,
             ),
           ),
-          avatar: CircleAvatar(
-            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.4),
-            child: Text(
-              playerName[0].toUpperCase(),
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
+          child: Row(
+            children: [
+              Icon(
+                Icons.drag_handle_rounded,
+                color: isDragging ? AppTheme.secondaryColor : Colors.white24,
+                size: 20,
               ),
-            ),
-          ),
-          deleteIcon: const Icon(Icons.close_rounded, size: 16),
-          deleteIconColor: Colors.white54,
-          onDeleted: _isGroupMode ? null : () => _removePlayer(index),
-          backgroundColor: AppTheme.cardColor,
-          side: BorderSide(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+              const SizedBox(width: 10),
+              CircleAvatar(
+                radius: 14,
+                backgroundColor: isDragging
+                    ? AppTheme.secondaryColor.withValues(alpha: 0.4)
+                    : AppTheme.primaryColor.withValues(alpha: 0.4),
+                child: Text(
+                  playerName[0].toUpperCase(),
+                  style: GoogleFonts.poppins(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  playerName,
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: isDragging ? AppTheme.secondaryColor : Colors.white,
+                  ),
+                ),
+              ),
+              if (!_isGroupMode)
+                GestureDetector(
+                  onTap: () => _removePlayer(index),
+                  child: const Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: Colors.white54,
+                  ),
+                ),
+            ],
           ),
         );
-      }),
+      },
     );
   }
 
+  void _toggleCategory(WordCategory category) {
+    setState(() {
+      if (_selectedCategories.contains(category)) {
+        if (_selectedCategories.length > 1) {
+          _selectedCategories.remove(category);
+        }
+      } else {
+        _selectedCategories.add(category);
+      }
+    });
+  }
+
   Widget _buildCategorySection() {
+    final allSelected =
+        _selectedCategories.length == WordCategory.values.length;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _sectionHeader(
           icon: Icons.category_rounded,
-          title: 'Categoria',
+          title: 'Categorías (aleatorio)',
         ),
         const SizedBox(height: 12),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 1.7,
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
           children: WordCategory.values.map((category) {
             final info = _categoryData[category]!;
-            final isSelected = _selectedCategory == category;
+            final isSelected = _selectedCategories.contains(category);
 
-            return GestureDetector(
-              onTap: () => setState(() => _selectedCategory = category),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppTheme.primaryColor.withValues(alpha: 0.2)
-                      : AppTheme.cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected
-                        ? AppTheme.primaryColor
-                        : Colors.white.withValues(alpha: 0.06),
-                    width: isSelected ? 2 : 1,
-                  ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.25),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(info.emoji, style: const TextStyle(fontSize: 28)),
-                    const SizedBox(height: 6),
-                    Text(
-                      info.label,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w500,
-                        color: isSelected ? Colors.white : Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
+            return FilterChip(
+              selected: isSelected,
+              label: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(info.emoji, style: const TextStyle(fontSize: 16)),
+                  const SizedBox(width: 6),
+                  Text(info.label),
+                ],
               ),
+              labelStyle: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                color: isSelected ? Colors.white : Colors.white60,
+              ),
+              backgroundColor: AppTheme.cardColor,
+              selectedColor: AppTheme.primaryColor.withValues(alpha: 0.25),
+              checkmarkColor: Colors.white,
+              side: BorderSide(
+                color: isSelected
+                    ? AppTheme.primaryColor
+                    : Colors.white.withValues(alpha: 0.1),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              onSelected: (_) => _toggleCategory(category),
             );
           }).toList(),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: () {
+            setState(() {
+              if (allSelected) {
+                // Can't deselect all, do nothing
+              } else {
+                _selectedCategories = {...WordCategory.values};
+              }
+            });
+          },
+          child: Text(
+            allSelected
+                ? 'Todas seleccionadas'
+                : 'Seleccionar todas',
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: allSelected ? Colors.white38 : AppTheme.primaryColor,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
       ],
     );
@@ -853,4 +961,45 @@ class _CategoryInfo {
   final String emoji;
 
   const _CategoryInfo(this.label, this.emoji);
+}
+
+class _ShakeWidget extends StatefulWidget {
+  final Widget child;
+
+  const _ShakeWidget({required this.child});
+
+  @override
+  State<_ShakeWidget> createState() => _ShakeWidgetState();
+}
+
+class _ShakeWidgetState extends State<_ShakeWidget>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 80),
+      vsync: this,
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, child) => Transform.rotate(
+        angle: (_controller.value - 0.5) * 0.04,
+        child: child,
+      ),
+      child: widget.child,
+    );
+  }
 }

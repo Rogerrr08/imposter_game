@@ -3,5 +3,5 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 final appVersionLabelProvider = FutureProvider<String>((ref) async {
   final packageInfo = await PackageInfo.fromPlatform();
-  return 'v${packageInfo.version} (${packageInfo.buildNumber})';
+  return 'v${packageInfo.version}';
 });

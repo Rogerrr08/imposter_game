@@ -2,7 +2,8 @@ enum WordCategory {
   cosas,
   entretenimiento,
   geografia,
-  deportes;
+  deportes,
+  animales;
 
   String get displayName {
     switch (this) {
@@ -14,6 +15,8 @@ enum WordCategory {
         return 'Geografía';
       case WordCategory.deportes:
         return 'Deportes';
+      case WordCategory.animales:
+        return 'Animales';
     }
   }
 
@@ -27,6 +30,8 @@ enum WordCategory {
         return '🌍';
       case WordCategory.deportes:
         return '⚽';
+      case WordCategory.animales:
+        return '🐾';
     }
   }
 }
