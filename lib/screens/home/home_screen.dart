@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../providers/app_info_provider.dart';
+import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -12,10 +13,26 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appVersionLabelAsync = ref.watch(appVersionLabelProvider);
+    final isDark = ref.watch(isDarkModeProvider);
 
     return Scaffold(
       body: SafeArea(
-        child: Center(
+        child: Stack(
+          children: [
+            // Dark mode toggle (top right)
+            Positioned(
+              top: 12,
+              right: 16,
+              child: IconButton(
+                onPressed: () => ref.read(isDarkModeProvider.notifier).toggle(),
+                icon: Icon(
+                  isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+                  color: AppTheme.textSecondary,
+                ),
+                tooltip: isDark ? 'Modo claro' : 'Modo oscuro',
+              ),
+            ),
+            Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: TweenAnimationBuilder<double>(
@@ -49,7 +66,7 @@ class HomeScreen extends ConsumerWidget {
                       fontSize: 42,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 6,
-                      color: Colors.white,
+                      color: AppTheme.textPrimary,
                     ),
                   ),
                   Text(
@@ -66,7 +83,7 @@ class HomeScreen extends ConsumerWidget {
                     'El juego de la palabra secreta',
                     style: GoogleFonts.poppins(
                       fontSize: 13,
-                      color: Colors.white38,
+                      color: AppTheme.textSecondary,
                       letterSpacing: 1,
                     ),
                   ),
@@ -112,7 +129,7 @@ class HomeScreen extends ConsumerWidget {
                     icon: const Icon(Icons.help_outline, size: 20),
                     label: Text(
                       'Cómo jugar',
-                      style: GoogleFonts.poppins(color: Colors.white54),
+                      style: GoogleFonts.poppins(color: AppTheme.textSecondary),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -121,7 +138,7 @@ class HomeScreen extends ConsumerWidget {
                       label,
                       style: GoogleFonts.poppins(
                         fontSize: 12,
-                        color: Colors.white38,
+                        color: AppTheme.textSecondary.withValues(alpha: 0.5),
                         letterSpacing: 0.4,
                       ),
                     ),
@@ -133,6 +150,8 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
           ),
+          ),
+          ],
         ),
       ),
     );
@@ -142,8 +161,8 @@ class HomeScreen extends ConsumerWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black54,
-      builder: (_) => const Center(
+      barrierColor: Colors.black.withValues(alpha: 0.16),
+      builder: (_) => Center(
         child: CircularProgressIndicator(color: AppTheme.primaryColor),
       ),
     );
@@ -226,7 +245,7 @@ class HomeScreen extends ConsumerWidget {
           Container(
             width: 24,
             height: 24,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppTheme.primaryColor,
               shape: BoxShape.circle,
             ),
@@ -245,7 +264,7 @@ class HomeScreen extends ConsumerWidget {
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.poppins(fontSize: 13, color: Colors.white70),
+              style: GoogleFonts.poppins(fontSize: 13, color: AppTheme.textSecondary),
             ),
           ),
         ],
@@ -269,7 +288,7 @@ class HomeScreen extends ConsumerWidget {
           Expanded(
             child: Text(
               description,
-              style: GoogleFonts.poppins(fontSize: 12, color: Colors.white60),
+              style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary),
             ),
           ),
         ],

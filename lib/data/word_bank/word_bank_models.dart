@@ -1,5 +1,6 @@
 enum WordCategory {
   cosas,
+  comidas,
   entretenimiento,
   geografia,
   deportes,
@@ -9,6 +10,8 @@ enum WordCategory {
     switch (this) {
       case WordCategory.cosas:
         return 'Cosas';
+      case WordCategory.comidas:
+        return 'Comidas';
       case WordCategory.entretenimiento:
         return 'Entretenimiento';
       case WordCategory.geografia:
@@ -23,15 +26,17 @@ enum WordCategory {
   String get icon {
     switch (this) {
       case WordCategory.cosas:
-        return '📦';
+        return '\u{1F4E6}';
+      case WordCategory.comidas:
+        return '\u{1F37D}\uFE0F';
       case WordCategory.entretenimiento:
-        return '🎬';
+        return '\u{1F3AC}';
       case WordCategory.geografia:
-        return '🌍';
+        return '\u{1F30D}';
       case WordCategory.deportes:
-        return '⚽';
+        return '\u{26BD}';
       case WordCategory.animales:
-        return '🐾';
+        return '\u{1F43E}';
     }
   }
 }

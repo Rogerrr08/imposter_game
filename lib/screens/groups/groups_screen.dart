@@ -38,7 +38,7 @@ class GroupsScreen extends ConsumerWidget {
         ),
       ),
       body: groupsAsync.when(
-        loading: () => const Center(
+        loading: () => Center(
           child: CircularProgressIndicator(color: AppTheme.primaryColor),
         ),
         error: (error, stack) => Center(
@@ -47,21 +47,21 @@ class GroupsScreen extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
+                Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
                 const SizedBox(height: 16),
                 Text(
                   'Error al cargar los grupos',
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppTheme.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   error.toString(),
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.white54),
+                  style: GoogleFonts.poppins(fontSize: 13, color: AppTheme.textSecondary),
                 ),
               ],
             ),
@@ -86,7 +86,7 @@ class GroupsScreen extends ConsumerWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -95,7 +95,7 @@ class GroupsScreen extends ConsumerWidget {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 14,
-                        color: Colors.white54,
+                        color: AppTheme.textSecondary,
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -142,10 +142,10 @@ class GroupsScreen extends ConsumerWidget {
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del grupo',
-              hintStyle: GoogleFonts.poppins(color: Colors.white38),
-              prefixIcon: const Icon(Icons.group_rounded, color: AppTheme.primaryColor),
+              hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+              prefixIcon: Icon(Icons.group_rounded, color: AppTheme.primaryColor),
             ),
-            style: GoogleFonts.poppins(color: Colors.white),
+            style: GoogleFonts.poppins(color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Ingresa un nombre para el grupo';
@@ -168,7 +168,7 @@ class GroupsScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: Colors.white54),
+              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -215,8 +215,8 @@ class GroupsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black54,
-      builder: (_) => const Center(
+      barrierColor: AppTheme.textSecondary,
+      builder: (_) => Center(
         child: CircularProgressIndicator(color: AppTheme.primaryColor),
       ),
     );
@@ -250,7 +250,7 @@ class _GroupCard extends ConsumerWidget {
             color: AppTheme.secondaryColor.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.delete_rounded,
             color: AppTheme.secondaryColor,
             size: 28,
@@ -296,7 +296,7 @@ class _GroupCard extends ConsumerWidget {
                       color: AppTheme.primaryColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.group_rounded,
                       color: AppTheme.primaryColor,
                       size: 28,
@@ -313,7 +313,7 @@ class _GroupCard extends ConsumerWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppTheme.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -322,7 +322,7 @@ class _GroupCard extends ConsumerWidget {
                             Icon(
                               Icons.person_rounded,
                               size: 14,
-                              color: Colors.white.withValues(alpha: 0.5),
+                              color: AppTheme.textSecondary.withValues(alpha: 0.5),
                             ),
                             const SizedBox(width: 4),
                             playersAsync.when(
@@ -330,21 +330,21 @@ class _GroupCard extends ConsumerWidget {
                                 '...',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  color: Colors.white54,
+                                  color: AppTheme.textSecondary,
                                 ),
                               ),
                               error: (_, __) => Text(
                                 '?',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  color: Colors.white54,
+                                  color: AppTheme.textSecondary,
                                 ),
                               ),
                               data: (players) => Text(
                                 '${players.length} jugador${players.length == 1 ? '' : 'es'}',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  color: Colors.white54,
+                                  color: AppTheme.textSecondary,
                                 ),
                               ),
                             ),
@@ -352,14 +352,14 @@ class _GroupCard extends ConsumerWidget {
                             Icon(
                               Icons.calendar_today_rounded,
                               size: 12,
-                              color: Colors.white.withValues(alpha: 0.5),
+                              color: AppTheme.textSecondary.withValues(alpha: 0.5),
                             ),
                             const SizedBox(width: 4),
                             Text(
                               dateFormat.format(group.createdAt),
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
-                                color: Colors.white54,
+                                color: AppTheme.textSecondary,
                               ),
                             ),
                           ],
@@ -370,7 +370,7 @@ class _GroupCard extends ConsumerWidget {
                   // Arrow
                   Icon(
                     Icons.chevron_right_rounded,
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: AppTheme.textSecondary.withValues(alpha: 0.3),
                   ),
                 ],
               ),
@@ -385,8 +385,8 @@ class _GroupCard extends ConsumerWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black54,
-      builder: (_) => const Center(
+      barrierColor: AppTheme.textSecondary,
+      builder: (_) => Center(
         child: CircularProgressIndicator(color: AppTheme.primaryColor),
       ),
     );
@@ -407,14 +407,14 @@ class _GroupCard extends ConsumerWidget {
         ),
         content: Text(
           '\u00bfEst\u00e1s seguro de que quieres eliminar el grupo "${group.name}"?\n\nEsta acci\u00f3n no se puede deshacer.',
-          style: GoogleFonts.poppins(color: Colors.white70),
+          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: Colors.white54),
+              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(

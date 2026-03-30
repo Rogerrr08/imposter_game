@@ -15,37 +15,19 @@ class ImpostorGuessScreen extends ConsumerStatefulWidget {
       _ImpostorGuessScreenState();
 }
 
-class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
-    with SingleTickerProviderStateMixin {
+class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
   final _guessController = TextEditingController();
   String? _selectedImpostor;
-
-  late AnimationController _animController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
     _guessController.addListener(() => setState(() {}));
-    _animController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _scaleAnimation = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.elasticOut,
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeIn,
-    );
   }
 
   @override
   void dispose() {
     _guessController.dispose();
-    _animController.dispose();
     super.dispose();
   }
 
@@ -123,24 +105,14 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
           alignment: Alignment.centerLeft,
           child: IconButton(
             onPressed: () => context.pop(),
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white70),
+            icon: Icon(Icons.arrow_back_rounded, color: AppTheme.textSecondary),
           ),
         ),
         const Spacer(flex: 1),
-        // Header icon
-        Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            color: AppTheme.secondaryColor.withValues(alpha: 0.15),
-            shape: BoxShape.circle,
-            border: Border.all(color: AppTheme.secondaryColor, width: 3),
-          ),
-          child: const Icon(
-            Icons.psychology_alt_rounded,
-            size: 50,
-            color: AppTheme.secondaryColor,
-          ),
+        Image.asset(
+          'assets/images/player_impostor.png',
+          width: 130,
+          height: 130,
         ),
         const SizedBox(height: 24),
         Text(
@@ -148,7 +120,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
           style: GoogleFonts.poppins(
             fontSize: 22,
             fontWeight: FontWeight.w800,
-            color: Colors.white,
+            color: AppTheme.textPrimary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -157,7 +129,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
           'Escribe la palabra secreta que crees que es',
           style: GoogleFonts.poppins(
             fontSize: 14,
-            color: Colors.white54,
+            color: AppTheme.textSecondary,
           ),
           textAlign: TextAlign.center,
         ),
@@ -169,7 +141,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
             decoration: BoxDecoration(
               color: AppTheme.surfaceColor,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white12),
+              border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.15)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,7 +149,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
                 Text(
                   'Impostor que está adivinando',
                   style: GoogleFonts.poppins(
-                    color: Colors.white38,
+                    color: AppTheme.textSecondary,
                     fontSize: 12,
                   ),
                 ),
@@ -185,7 +157,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
                 Text(
                   selectedImpostor ?? activeImpostors.first.name,
                   style: GoogleFonts.poppins(
-                    color: Colors.white,
+                    color: AppTheme.textPrimary,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
@@ -200,19 +172,19 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
             decoration: BoxDecoration(
               color: AppTheme.surfaceColor,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white12),
+              border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.15)),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 isExpanded: true,
                 hint: Text(
-                  'Que impostor esta adivinando?',
+                  '\u00BFQu\u00E9 impostor est\u00E1 adivinando?',
                   style:
-                      GoogleFonts.poppins(color: Colors.white38, fontSize: 14),
+                      GoogleFonts.poppins(color: AppTheme.textSecondary, fontSize: 14),
                 ),
                 value: selectedImpostor,
                 dropdownColor: AppTheme.surfaceColor,
-                style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+                style: GoogleFonts.poppins(color: AppTheme.textPrimary, fontSize: 14),
                 items: activeImpostors.map((player) {
                   return DropdownMenuItem<String>(
                     value: player.name,
@@ -243,7 +215,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
             style: GoogleFonts.poppins(
               fontSize: 20,
               fontWeight: FontWeight.w600,
-              color: Colors.white,
+              color: AppTheme.textPrimary,
             ),
             textAlign: TextAlign.center,
             textCapitalization: TextCapitalization.words,
@@ -251,7 +223,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
               hintText: 'Escribe tu respuesta...',
               hintStyle: GoogleFonts.poppins(
                 fontSize: 16,
-                color: Colors.white30,
+                color: AppTheme.textSecondary.withValues(alpha: 0.5),
               ),
               filled: true,
               fillColor: AppTheme.cardColor,
@@ -261,7 +233,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(
+                borderSide: BorderSide(
                   color: AppTheme.secondaryColor,
                   width: 2,
                 ),
@@ -287,7 +259,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen>
           ),
           child: Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.warning_amber_rounded,
                 color: AppTheme.warningColor,
                 size: 22,

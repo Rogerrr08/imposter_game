@@ -63,7 +63,7 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
                   shape: BoxShape.circle,
                   border: Border.all(color: AppTheme.primaryColor, width: 3),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.play_arrow_rounded,
                   size: 56,
                   color: AppTheme.primaryColor,
@@ -74,7 +74,7 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
                 'Empieza la ronda',
                 style: GoogleFonts.poppins(
                   fontSize: 18,
-                  color: Colors.white54,
+                  color: AppTheme.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -84,7 +84,7 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
                 style: GoogleFonts.poppins(
                   fontSize: 34,
                   fontWeight: FontWeight.w800,
-                  color: Colors.white,
+                  color: AppTheme.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -93,7 +93,7 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
                 'La ronda comienza en un momento.',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  color: Colors.white38,
+                  color: AppTheme.textSecondary.withValues(alpha: 0.7),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -108,7 +108,7 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
                       value: value,
                       minHeight: 10,
                       backgroundColor: AppTheme.surfaceColor,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
+                      valueColor: AlwaysStoppedAnimation<Color>(
                         AppTheme.primaryColor,
                       ),
                     ),

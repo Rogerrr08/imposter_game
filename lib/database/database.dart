@@ -551,6 +551,93 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
     );
   }
 
+  /// Replace an existing game's result: reverse old stats, delete old records,
+  /// then save the corrected result.
+  Future<int> replaceGameResult({
+    required int oldGameId,
+    required int? groupId,
+    required String category,
+    required String word,
+    required int duration,
+    required int impostorCount,
+    required bool hintsEnabled,
+    required bool newCivilsWon,
+    required bool newImpostorGuessedWord,
+    required bool oldCivilsWon,
+    required List<GamePlayerEntry> oldPlayerResults,
+    required List<GamePlayerEntry> newPlayerResults,
+  }) async {
+    return transaction(() async {
+      // Reverse old stats if group game
+      if (groupId != null) {
+        for (final player in oldPlayerResults) {
+          final oldCivilWin =
+              !player.wasImpostor && oldCivilsWon ? 1 : 0;
+          final oldImpostorWin =
+              player.wasImpostor && !oldCivilsWon ? 1 : 0;
+
+          for (final scope in [_overallStatsScope, category]) {
+            await _reversePlayerStats(
+              groupId: groupId,
+              scope: scope,
+              playerName: player.playerName,
+              points: player.points,
+              civilWins: oldCivilWin,
+              impostorWins: oldImpostorWin,
+            );
+          }
+        }
+      }
+
+      // Delete old game records
+      await (delete(gamePlayersTable)
+            ..where((p) => p.gameId.equals(oldGameId)))
+          .go();
+      await (delete(games)..where((g) => g.id.equals(oldGameId))).go();
+
+      // Save new result (this also updates stats with new values)
+      return saveGame(
+        groupId: groupId,
+        category: category,
+        word: word,
+        duration: duration,
+        impostorCount: impostorCount,
+        hintsEnabled: hintsEnabled,
+        civilsWon: newCivilsWon,
+        impostorGuessedWord: newImpostorGuessedWord,
+        playerResults: newPlayerResults,
+      );
+    });
+  }
+
+  Future<void> _reversePlayerStats({
+    required int groupId,
+    required String scope,
+    required String playerName,
+    required int points,
+    required int civilWins,
+    required int impostorWins,
+  }) {
+    return customStatement(
+      '''
+      UPDATE player_stats SET
+        games_played = MAX(0, games_played - 1),
+        civil_wins = MAX(0, civil_wins - ?),
+        impostor_wins = MAX(0, impostor_wins - ?),
+        total_points = MAX(0, total_points - ?)
+      WHERE group_id = ? AND scope = ? AND player_name = ?
+      ''',
+      [
+        civilWins,
+        impostorWins,
+        points,
+        groupId,
+        scope,
+        playerName,
+      ],
+    );
+  }
+
   Future<void> trimGameHistory(int groupId) async {
     final rows = await customSelect(
       '''
@@ -610,6 +697,28 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
 
   int _readInt(QueryRow row, String columnName) {
     return row.read<int>(columnName);
+  }
+
+  /// Batch-load details for multiple games in a single query.
+  Future<List<GameDetails>> getGamesWithPlayers(List<Game> gamesList) async {
+    if (gamesList.isEmpty) return [];
+
+    final gameIds = gamesList.map((g) => g.id).toList();
+    final allPlayers = await (select(gamePlayersTable)
+          ..where((p) => p.gameId.isIn(gameIds)))
+        .get();
+
+    final playersByGameId = <int, List<GamePlayersTableData>>{};
+    for (final player in allPlayers) {
+      playersByGameId.putIfAbsent(player.gameId, () => []).add(player);
+    }
+
+    return gamesList
+        .map((game) => GameDetails(
+              game: game,
+              players: playersByGameId[game.id] ?? [],
+            ))
+        .toList();
   }
 
   /// Full details for a single game, including all player entries.
