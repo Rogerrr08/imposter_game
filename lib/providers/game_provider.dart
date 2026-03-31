@@ -29,6 +29,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
   // Shuffle bag for impostor selection: keyed by sorted player names,
   // each bag contains player names that haven't been impostor yet.
   static final Map<String, List<String>> _impostorBags = {};
+  static final Map<String, List<String>> _startingPlayerBags = {};
   static final _staticRandom = Random();
 
   @override
@@ -57,6 +58,24 @@ class GameNotifier extends Notifier<ActiveGame?> {
       }
     }
     return picked;
+  }
+
+  static String? _pickStartingPlayerFromBag(
+    List<String> playerNames, {
+    required bool hintsEnabled,
+  }) {
+    if (playerNames.isEmpty) return null;
+
+    final sorted = List<String>.from(playerNames)..sort();
+    final bagKey = '${hintsEnabled ? 'hints' : 'no_hints'}|${sorted.join('|')}';
+    final bag = _startingPlayerBags.putIfAbsent(bagKey, () => <String>[]);
+
+    if (bag.isEmpty) {
+      bag.addAll(sorted);
+      bag.shuffle(_staticRandom);
+    }
+
+    return bag.removeLast();
   }
 
   void startNewGame(GameConfig config) {
@@ -519,7 +538,21 @@ class GameNotifier extends Notifier<ActiveGame?> {
   }) {
     if (players.isEmpty) return null;
 
-    final randomStartingIndex = _random.nextInt(players.length);
+    final startingCandidateName = _pickStartingPlayerFromBag(
+      players.map((player) => player.name).toList(),
+      hintsEnabled: hintsEnabled,
+    );
+
+    if (startingCandidateName == null) return null;
+
+    final randomStartingIndex = players.indexWhere(
+      (player) => player.name == startingCandidateName,
+    );
+
+    if (randomStartingIndex == -1) {
+      return players[_random.nextInt(players.length)].name;
+    }
+
     final randomStartingPlayer = players[randomStartingIndex];
 
     if (hintsEnabled) {
