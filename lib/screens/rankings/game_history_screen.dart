@@ -37,6 +37,14 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
     });
   }
 
+  void _handleBackNavigation() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go('/groups/${widget.groupId}');
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupId = widget.groupId;
@@ -46,30 +54,37 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
       gameHistoryProvider(request),
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/groups/$groupId'),
-        ),
-        title: Text(
-          'Historial',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Borrar historial',
-            icon: const Icon(Icons.delete_outline_rounded),
-            onPressed: _confirmClearHistory,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          _handleBackNavigation();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: _handleBackNavigation,
           ),
-          IconButton(
-            tooltip: 'Refrescar',
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => ref.invalidate(gameHistoryProvider(request)),
+          title: Text(
+            'Historial',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
           ),
-        ],
-      ),
-      body: Column(
+          actions: [
+            IconButton(
+              tooltip: 'Borrar historial',
+              icon: const Icon(Icons.delete_outline_rounded),
+              onPressed: _confirmClearHistory,
+            ),
+            IconButton(
+              tooltip: 'Refrescar',
+              icon: const Icon(Icons.refresh_rounded),
+              onPressed: () => ref.invalidate(gameHistoryProvider(request)),
+            ),
+          ],
+        ),
+        body: Column(
         children: [
           // Category filter chips
           CategoryFilterBar(
@@ -161,6 +176,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }

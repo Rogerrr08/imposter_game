@@ -10,115 +10,131 @@ import '../../providers/group_provider.dart';
 class GroupsScreen extends ConsumerWidget {
   const GroupsScreen({super.key});
 
+  void _handleBackNavigation(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go('/');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final groupsAsync = ref.watch(groupsProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Mis Grupos',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateGroupDialog(context, ref),
-        backgroundColor: AppTheme.primaryColor,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: Text(
-          'Nuevo Grupo',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          _handleBackNavigation(context);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'Mis Grupos',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => _handleBackNavigation(context),
           ),
         ),
-      ),
-      body: groupsAsync.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: AppTheme.primaryColor),
-        ),
-        error: (error, stack) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
-                const SizedBox(height: 16),
-                Text(
-                  'Error al cargar los grupos',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  error.toString(),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(fontSize: 13, color: AppTheme.textSecondary),
-                ),
-              ],
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _showCreateGroupDialog(context, ref),
+          backgroundColor: AppTheme.primaryColor,
+          icon: const Icon(Icons.add_rounded, color: Colors.white),
+          label: Text(
+            'Nuevo Grupo',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
             ),
           ),
         ),
-        data: (groups) {
-          if (groups.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.group_add_rounded,
-                      size: 80,
-                      color: AppTheme.primaryColor.withValues(alpha: 0.4),
+        body: groupsAsync.when(
+          loading: () => Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryColor),
+          ),
+          error: (error, stack) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error al cargar los grupos',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textPrimary,
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'No hay grupos a\u00fan',
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Crea un grupo para guardar jugadores\ny llevar un historial de partidas.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    ElevatedButton.icon(
-                      onPressed: () => _showCreateGroupDialog(context, ref),
-                      icon: const Icon(Icons.add_rounded),
-                      label: const Text('Crear Grupo'),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    error.toString(),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(fontSize: 13, color: AppTheme.textSecondary),
+                  ),
+                ],
               ),
-            );
-          }
+            ),
+          ),
+          data: (groups) {
+            if (groups.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.group_add_rounded,
+                        size: 80,
+                        color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'No hay grupos aún',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Crea un grupo para guardar jugadores\ny llevar un historial de partidas.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      ElevatedButton.icon(
+                        onPressed: () => _showCreateGroupDialog(context, ref),
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text('Crear Grupo'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
 
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-            itemCount: groups.length,
-            itemBuilder: (context, index) {
-              final group = groups[index];
-              return _GroupCard(group: group);
-            },
-          );
-        },
+            return ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+              itemCount: groups.length,
+              itemBuilder: (context, index) {
+                final group = groups[index];
+                return _GroupCard(group: group);
+              },
+            );
+          },
+        ),
       ),
     );
   }

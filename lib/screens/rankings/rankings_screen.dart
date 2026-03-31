@@ -41,6 +41,14 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
     });
   }
 
+  void _handleBackNavigation() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go('/groups/${widget.groupId}');
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupId = widget.groupId;
@@ -50,126 +58,132 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
       rankingsProvider(request),
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/groups/$groupId'),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          _handleBackNavigation();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: _handleBackNavigation,
+          ),
+          title: Text(
+            'Rankings',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          ),
+          actions: [
+            IconButton(
+              tooltip: 'Borrar ranking',
+              icon: const Icon(Icons.delete_outline_rounded),
+              onPressed: _confirmClearRanking,
+            ),
+            IconButton(
+              tooltip: 'Refrescar',
+              icon: const Icon(Icons.refresh_rounded),
+              onPressed: () => ref.invalidate(rankingsProvider(request)),
+            ),
+          ],
         ),
-        title: Text(
-          'Rankings',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Borrar ranking',
-            icon: const Icon(Icons.delete_outline_rounded),
-            onPressed: _confirmClearRanking,
-          ),
-          IconButton(
-            tooltip: 'Refrescar',
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => ref.invalidate(rankingsProvider(request)),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Category filter chips
-          CategoryFilterBar(
-            selectedCategory: selectedCategory,
-            onCategorySelected: (category) => ref
-                .read(rankingCategoryFilterProvider.notifier)
-                .setCategory(category),
-          ),
-          const SizedBox(height: 8),
+        body: Column(
+          children: [
+            CategoryFilterBar(
+              selectedCategory: selectedCategory,
+              onCategorySelected: (category) => ref
+                  .read(rankingCategoryFilterProvider.notifier)
+                  .setCategory(category),
+            ),
+            const SizedBox(height: 8),
 
-          // Rankings list
-          Expanded(
-            child: rankingsAsync.when(
-              loading: () => Center(
-                child: CircularProgressIndicator(color: AppTheme.primaryColor),
-              ),
-              error: (error, _) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 48,
-                        color: AppTheme.secondaryColor,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Error al cargar rankings',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textPrimary,
+            Expanded(
+              child: rankingsAsync.when(
+                loading: () => Center(
+                  child: CircularProgressIndicator(color: AppTheme.primaryColor),
+                ),
+                error: (error, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: AppTheme.secondaryColor,
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: () => ref.invalidate(rankingsProvider(request)),
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Reintentar'),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error al cargar rankings',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          onPressed: () => ref.invalidate(rankingsProvider(request)),
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: const Text('Reintentar'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              data: (rankings) {
-                if (rankings.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.leaderboard_rounded,
-                            size: 80,
-                            color: AppTheme.warningColor.withValues(alpha: 0.3),
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'No hay rankings a\u00fan',
-                            style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.textPrimary,
+                data: (rankings) {
+                  if (rankings.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.leaderboard_rounded,
+                              size: 80,
+                              color: AppTheme.warningColor.withValues(alpha: 0.3),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Juega partidas con este grupo\npara ver las clasificaciones.',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: AppTheme.textSecondary,
+                            const SizedBox(height: 24),
+                            Text(
+                              'No hay rankings aún',
+                              style: GoogleFonts.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.textPrimary,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              'Juega partidas con este grupo\npara ver las clasificaciones.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }
+                    );
+                  }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                  itemCount: rankings.length,
-                  itemBuilder: (context, index) {
-                    final ranking = rankings[index];
-                    final position = index + 1;
-                    return _buildRankingItem(ranking, position);
-                  },
-                );
-              },
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    itemCount: rankings.length,
+                    itemBuilder: (context, index) {
+                      final ranking = rankings[index];
+                      final position = index + 1;
+                      return _buildRankingItem(ranking, position);
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

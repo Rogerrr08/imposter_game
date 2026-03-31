@@ -22,6 +22,14 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
   final _addPlayerController = TextEditingController();
   final _addPlayerFocusNode = FocusNode();
 
+  void _handleBackNavigation() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go('/groups');
+  }
+
   Future<void> _openGroupGameSetup() async {
     showDialog(
       context: context,
@@ -49,189 +57,191 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     final groupAsync = ref.watch(groupDetailProvider(widget.groupId));
     final playersAsync = ref.watch(groupPlayersProvider(widget.groupId));
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/groups'),
-        ),
-        title: groupAsync.when(
-          loading: () => Text(
-            'Cargando...',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          _handleBackNavigation();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: _handleBackNavigation,
           ),
-          error: (_, __) => Text(
-            'Error',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-          ),
-          data: (group) => Text(
-            group?.name ?? 'Grupo',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-          ),
-        ),
-        actions: [
-          groupAsync.whenOrNull(
-                data: (group) => group == null
-                    ? null
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit_rounded, size: 22),
-                            tooltip: 'Editar nombre',
-                            onPressed: () =>
-                                _showEditGroupNameDialog(context, group.name),
-                          ),
-                          IconButton(
-                            icon: const Icon(
-                              Icons.delete_outline_rounded,
-                              size: 22,
-                            ),
-                            tooltip: 'Eliminar grupo',
-                            onPressed: () =>
-                                _confirmDeleteGroup(context, group.name),
-                          ),
-                        ],
-                      ),
-              ) ??
-              const SizedBox.shrink(),
-        ],
-      ),
-      body: groupAsync.when(
-        loading: () => Center(
-          child: CircularProgressIndicator(color: AppTheme.primaryColor),
-        ),
-        error: (error, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
-                const SizedBox(height: 16),
-                Text(
-                  'Error al cargar el grupo',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-              ],
+          title: groupAsync.when(
+            loading: () => Text(
+              'Cargando...',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+            ),
+            error: (_, __) => Text(
+              'Error',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+            ),
+            data: (group) => Text(
+              group?.name ?? 'Grupo',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
             ),
           ),
+          actions: [
+            groupAsync.whenOrNull(
+                  data: (group) => group == null
+                      ? null
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit_rounded, size: 22),
+                              tooltip: 'Editar nombre',
+                              onPressed: () =>
+                                  _showEditGroupNameDialog(context, group.name),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete_outline_rounded,
+                                size: 22,
+                              ),
+                              tooltip: 'Eliminar grupo',
+                              onPressed: () =>
+                                  _confirmDeleteGroup(context, group.name),
+                            ),
+                          ],
+                        ),
+                ) ??
+                const SizedBox.shrink(),
+          ],
         ),
-        data: (group) => SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // ---- Players section ----
-              _buildSectionHeader(
-                icon: Icons.people_rounded,
-                title: 'Jugadores',
-              ),
-              const SizedBox(height: 12),
-
-              // Add player row
-              _buildAddPlayerRow(),
-              const SizedBox(height: 12),
-
-              // Players list
-              _buildPlayersList(playersAsync),
-
-              const SizedBox(height: 32),
-
-              // ---- Action buttons ----
-              _buildSectionHeader(
-                icon: Icons.sports_esports_rounded,
-                title: 'Acciones',
-              ),
-              const SizedBox(height: 16),
-
-              // Play with this group
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _openGroupGameSetup,
-                  icon: const Icon(Icons.play_arrow_rounded, size: 24),
-                  label: Text(
-                    'Jugar con este grupo',
+        body: groupAsync.when(
+          loading: () => Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryColor),
+          ),
+          error: (error, _) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error al cargar el grupo',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Rankings and History row
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        final selectedCategory =
-                            ref.read(rankingCategoryFilterProvider);
-                        ref.invalidate(
-                          rankingsProvider(
-                            (
-                              groupId: widget.groupId,
-                              category: selectedCategory,
-                            ),
-                          ),
-                        );
-                        context.push('/rankings/${widget.groupId}');
-                      },
-                      icon: const Icon(Icons.leaderboard_rounded, size: 20),
-                      label: Text(
-                        'Rankings',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.warningColor,
-                        side: BorderSide(color: AppTheme.warningColor),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        final selectedCategory =
-                            ref.read(historyCategoryFilterProvider);
-                        ref.invalidate(
-                          gameHistoryProvider(
-                            (
-                              groupId: widget.groupId,
-                              category: selectedCategory,
-                            ),
-                          ),
-                        );
-                        context.push('/history/${widget.groupId}');
-                      },
-                      icon: const Icon(Icons.history_rounded, size: 20),
-                      label: Text(
-                        'Historial',
-                        style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.successColor,
-                        side: BorderSide(color: AppTheme.successColor),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textPrimary,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 32),
-            ],
+            ),
+          ),
+          data: (group) => SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildSectionHeader(
+                  icon: Icons.people_rounded,
+                  title: 'Jugadores',
+                ),
+                const SizedBox(height: 12),
+
+                _buildAddPlayerRow(),
+                const SizedBox(height: 12),
+
+                _buildPlayersList(playersAsync),
+
+                const SizedBox(height: 32),
+
+                _buildSectionHeader(
+                  icon: Icons.sports_esports_rounded,
+                  title: 'Acciones',
+                ),
+                const SizedBox(height: 16),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _openGroupGameSetup,
+                    icon: const Icon(Icons.play_arrow_rounded, size: 24),
+                    label: Text(
+                      'Jugar con este grupo',
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          final selectedCategory =
+                              ref.read(rankingCategoryFilterProvider);
+                          ref.invalidate(
+                            rankingsProvider(
+                              (
+                                groupId: widget.groupId,
+                                category: selectedCategory,
+                              ),
+                            ),
+                          );
+                          context.push('/rankings/${widget.groupId}');
+                        },
+                        icon: const Icon(Icons.leaderboard_rounded, size: 20),
+                        label: Text(
+                          'Rankings',
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.warningColor,
+                          side: BorderSide(color: AppTheme.warningColor),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          final selectedCategory =
+                              ref.read(historyCategoryFilterProvider);
+                          ref.invalidate(
+                            gameHistoryProvider(
+                              (
+                                groupId: widget.groupId,
+                                category: selectedCategory,
+                              ),
+                            ),
+                          );
+                          context.push('/history/${widget.groupId}');
+                        },
+                        icon: const Icon(Icons.history_rounded, size: 20),
+                        label: Text(
+                          'Historial',
+                          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppTheme.successColor,
+                          side: BorderSide(color: AppTheme.successColor),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
           ),
         ),
       ),

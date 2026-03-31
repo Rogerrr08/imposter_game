@@ -10,6 +10,7 @@ import '../../theme/app_theme.dart';
 import '../../providers/game_provider.dart';
 import '../../models/game_state.dart';
 import '../../utils/text_normalize.dart';
+import 'widgets/active_game_cancel_dialog.dart';
 
 class GamePlayScreen extends ConsumerStatefulWidget {
   const GamePlayScreen({super.key});
@@ -219,43 +220,9 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   }
   void _confirmCancelGame() {
     _timer?.cancel();
-    showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          'Cancelar partida',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-        ),
-        content: Text(
-          '\u00BFSeguro que quieres cancelar la partida? Se perder\u00E1 todo el progreso.',
-          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(
-              'Seguir jugando',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondaryColor,
-            ),
-            child: Text(
-              'Cancelar partida',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    ).then((confirmed) {
-      if (confirmed == true) {
-        ref.read(gameProvider.notifier).clearGame();
-        if (mounted) context.go('/');
-      } else {
-        if (mounted) _startTimer();
+    showActiveGameCancelDialog(context, ref).then((confirmed) {
+      if (!confirmed && mounted) {
+        _startTimer();
       }
     });
   }
@@ -289,12 +256,19 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
         gameState.timeRemainingSeconds / gameState.config.durationSeconds;
     final isLowTime = gameState.timeRemainingSeconds <= 30;
 
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          _confirmCancelGame();
+        }
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
             children: [
               const SizedBox(height: 16),
               // Header with cancel button
@@ -395,6 +369,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
               ),
               const SizedBox(height: 24),
             ],
+            ),
           ),
         ),
       ),
@@ -596,5 +571,4 @@ class _CircularTimerPainter extends CustomPainter {
     return oldDelegate.progress != progress || oldDelegate.color != color;
   }
 }
-
 

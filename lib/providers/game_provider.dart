@@ -18,6 +18,11 @@ final lastQuickGamePresetProvider =
   QuickGamePresetNotifier.new,
 );
 
+final lastGroupGamePresetsProvider =
+    NotifierProvider<GroupGamePresetNotifier, Map<int, QuickGamePreset>>(
+  GroupGamePresetNotifier.new,
+);
+
 class GameNotifier extends Notifier<ActiveGame?> {
   final _random = Random();
 
@@ -641,6 +646,26 @@ class QuickGamePresetNotifier extends Notifier<QuickGamePreset?> {
 
   void clear() {
     state = null;
+  }
+}
+
+class GroupGamePresetNotifier extends Notifier<Map<int, QuickGamePreset>> {
+  @override
+  Map<int, QuickGamePreset> build() => <int, QuickGamePreset>{};
+
+  QuickGamePreset? getForGroup(int groupId) => state[groupId];
+
+  void saveForGroup(int groupId, QuickGamePreset preset) {
+    state = {
+      ...state,
+      groupId: preset,
+    };
+  }
+
+  void clearForGroup(int groupId) {
+    final next = Map<int, QuickGamePreset>.from(state);
+    next.remove(groupId);
+    state = next;
   }
 }
 

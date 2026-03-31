@@ -73,7 +73,9 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   @override
   void initState() {
     super.initState();
-    final preset = ref.read(lastQuickGamePresetProvider);
+    final preset = _isGroupMode
+        ? ref.read(lastGroupGamePresetsProvider)[widget.groupId!]
+        : ref.read(lastQuickGamePresetProvider);
     if (preset != null) {
       if (!_isGroupMode) {
         _manualPlayers.addAll(preset.playerNames);
@@ -216,6 +218,20 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     );
   }
 
+  void _handleBackNavigation() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+
+    if (widget.groupId != null) {
+      context.go('/groups/${widget.groupId}');
+      return;
+    }
+
+    context.go('/');
+  }
+
   Future<void> _startGame() async {
     final playerNames = _currentPlayers;
     if (playerNames.length < _minPlayers) {
@@ -233,17 +249,23 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     );
 
     // Save preset (including group state) before starting
-    ref.read(lastQuickGamePresetProvider.notifier).save(
-          QuickGamePreset(
-            playerNames: List<String>.unmodifiable(playerNames),
-            impostorCount: _impostorCount,
-            hintsEnabled: _hintsEnabled,
-            durationSeconds: _durationSeconds,
-            categories: _selectedCategories.toList(),
-            excludedGroupPlayerIds: Set<int>.from(_excludedGroupPlayerIds),
-            groupPlayerOrder: _groupPlayers.map((p) => p.id).toList(),
-          ),
-        );
+    final preset = QuickGamePreset(
+      playerNames: List<String>.unmodifiable(playerNames),
+      impostorCount: _impostorCount,
+      hintsEnabled: _hintsEnabled,
+      durationSeconds: _durationSeconds,
+      categories: _selectedCategories.toList(),
+      excludedGroupPlayerIds: Set<int>.from(_excludedGroupPlayerIds),
+      groupPlayerOrder: _groupPlayers.map((p) => p.id).toList(),
+    );
+
+    if (_isGroupMode) {
+      ref
+          .read(lastGroupGamePresetsProvider.notifier)
+          .saveForGroup(widget.groupId!, preset);
+    } else {
+      ref.read(lastQuickGamePresetProvider.notifier).save(preset);
+    }
 
     ref.read(gameProvider.notifier).startNewGame(config);
 
@@ -264,84 +286,88 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Nueva Partida',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          _handleBackNavigation();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'Nueva Partida',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: _handleBackNavigation,
+          ),
         ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.canPop()
-              ? context.pop()
-              : widget.groupId != null
-                  ? context.go('/groups/${widget.groupId}')
-                  : context.go('/'),
-        ),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPlayersSection(),
-                    const SizedBox(height: 28),
-                    CategorySection(
-                      selectedCategories: _selectedCategories,
-                      onToggle: (category) => setState(() {
-                        if (_selectedCategories.contains(category)) {
-                          if (_selectedCategories.length > 1) {
-                            _selectedCategories.remove(category);
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPlayersSection(),
+                      const SizedBox(height: 28),
+                      CategorySection(
+                        selectedCategories: _selectedCategories,
+                        onToggle: (category) => setState(() {
+                          if (_selectedCategories.contains(category)) {
+                            if (_selectedCategories.length > 1) {
+                              _selectedCategories.remove(category);
+                            }
+                          } else {
+                            _selectedCategories.add(category);
                           }
-                        } else {
-                          _selectedCategories.add(category);
-                        }
-                      }),
-                      onSelectAll: () => setState(() {
-                        _selectedCategories = {...WordCategory.values};
-                      }),
-                    ),
-                    const SizedBox(height: 28),
-                    ImpostorCountSection(
-                      impostorCount: _impostorCount,
-                      maxImpostors: _maxImpostors,
-                      playerCount: _playerCount,
-                      minPlayers: _minPlayers,
-                      onDecrement: _impostorCount > 1
-                          ? () => setState(() => _impostorCount--)
-                          : null,
-                      onIncrement: _impostorCount < _maxImpostors
-                          ? () => setState(() => _impostorCount++)
-                          : null,
-                    ),
-                    const SizedBox(height: 28),
-                    HintsToggle(
-                      hintsEnabled: _hintsEnabled,
-                      onChanged: (value) =>
-                          setState(() => _hintsEnabled = value),
-                    ),
-                    const SizedBox(height: 28),
-                    TimerSection(
-                      durationSeconds: _durationSeconds,
-                      onDurationChanged: (value) =>
-                          setState(() => _durationSeconds = value),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+                        }),
+                        onSelectAll: () => setState(() {
+                          _selectedCategories = {...WordCategory.values};
+                        }),
+                      ),
+                      const SizedBox(height: 28),
+                      ImpostorCountSection(
+                        impostorCount: _impostorCount,
+                        maxImpostors: _maxImpostors,
+                        playerCount: _playerCount,
+                        minPlayers: _minPlayers,
+                        onDecrement: _impostorCount > 1
+                            ? () => setState(() => _impostorCount--)
+                            : null,
+                        onIncrement: _impostorCount < _maxImpostors
+                            ? () => setState(() => _impostorCount++)
+                            : null,
+                      ),
+                      const SizedBox(height: 28),
+                      HintsToggle(
+                        hintsEnabled: _hintsEnabled,
+                        onChanged: (value) =>
+                            setState(() => _hintsEnabled = value),
+                      ),
+                      const SizedBox(height: 28),
+                      TimerSection(
+                        durationSeconds: _durationSeconds,
+                        onDurationChanged: (value) =>
+                            setState(() => _durationSeconds = value),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            StartButton(
-              playerCount: _playerCount,
-              minPlayers: _minPlayers,
-              onStart: _startGame,
-            ),
-          ],
+              StartButton(
+                playerCount: _playerCount,
+                minPlayers: _minPlayers,
+                onStart: _startGame,
+              ),
+            ],
+          ),
         ),
       ),
     );
