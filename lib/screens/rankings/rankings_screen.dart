@@ -7,6 +7,7 @@ import '../../database/database.dart';
 import '../../providers/database_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/game_provider.dart';
+import '../../widgets/category_filter_bar.dart';
 
 class RankingsScreen extends ConsumerStatefulWidget {
   final int groupId;
@@ -22,14 +23,6 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
   static const _goldColor = Color(0xFFFFD700);
   static const _silverColor = Color(0xFFC0C0C0);
   static const _bronzeColor = Color(0xFFCD7F32);
-
-  static const _categoryLabels = <String?, String>{
-    null: 'Todas',
-    'cosas': 'Cosas',
-    'entretenimiento': 'Entretenimiento',
-    'geografia': 'Geograf\u00eda',
-    'deportes': 'Deportes',
-  };
 
   @override
   void initState() {
@@ -48,6 +41,14 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
     });
   }
 
+  void _handleBackNavigation() {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go('/groups/${widget.groupId}');
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupId = widget.groupId;
@@ -57,163 +58,132 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
       rankingsProvider(request),
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/groups/$groupId'),
-        ),
-        title: Text(
-          'Rankings',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Borrar ranking',
-            icon: const Icon(Icons.delete_outline_rounded),
-            onPressed: _confirmClearRanking,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          _handleBackNavigation();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: _handleBackNavigation,
           ),
-          IconButton(
-            tooltip: 'Refrescar',
-            icon: const Icon(Icons.refresh_rounded),
-            onPressed: () => ref.invalidate(rankingsProvider(request)),
+          title: Text(
+            'Rankings',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Category filter chips
-          _buildCategoryFilter(ref, selectedCategory),
-          const SizedBox(height: 8),
+          actions: [
+            IconButton(
+              tooltip: 'Borrar ranking',
+              icon: const Icon(Icons.delete_outline_rounded),
+              onPressed: _confirmClearRanking,
+            ),
+            IconButton(
+              tooltip: 'Refrescar',
+              icon: const Icon(Icons.refresh_rounded),
+              onPressed: () => ref.invalidate(rankingsProvider(request)),
+            ),
+          ],
+        ),
+        body: Column(
+          children: [
+            CategoryFilterBar(
+              selectedCategory: selectedCategory,
+              onCategorySelected: (category) => ref
+                  .read(rankingCategoryFilterProvider.notifier)
+                  .setCategory(category),
+            ),
+            const SizedBox(height: 8),
 
-          // Rankings list
-          Expanded(
-            child: rankingsAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppTheme.primaryColor),
-              ),
-              error: (error, _) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        size: 48,
-                        color: AppTheme.secondaryColor,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Error al cargar rankings',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+            Expanded(
+              child: rankingsAsync.when(
+                loading: () => Center(
+                  child: CircularProgressIndicator(color: AppTheme.primaryColor),
+                ),
+                error: (error, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: AppTheme.secondaryColor,
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: () => ref.invalidate(rankingsProvider(request)),
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Reintentar'),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error al cargar rankings',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          onPressed: () => ref.invalidate(rankingsProvider(request)),
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: const Text('Reintentar'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              data: (rankings) {
-                if (rankings.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.leaderboard_rounded,
-                            size: 80,
-                            color: AppTheme.warningColor.withValues(alpha: 0.3),
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'No hay rankings a\u00fan',
-                            style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                data: (rankings) {
+                  if (rankings.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.leaderboard_rounded,
+                              size: 80,
+                              color: AppTheme.warningColor.withValues(alpha: 0.3),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Juega partidas con este grupo\npara ver las clasificaciones.',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: Colors.white54,
+                            const SizedBox(height: 24),
+                            Text(
+                              'No hay rankings aún',
+                              style: GoogleFonts.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.textPrimary,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              'Juega partidas con este grupo\npara ver las clasificaciones.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    itemCount: rankings.length,
+                    itemBuilder: (context, index) {
+                      final ranking = rankings[index];
+                      final position = index + 1;
+                      return _buildRankingItem(ranking, position);
+                    },
                   );
-                }
-
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                  itemCount: rankings.length,
-                  itemBuilder: (context, index) {
-                    final ranking = rankings[index];
-                    final position = index + 1;
-                    return _buildRankingItem(ranking, position);
-                  },
-                );
-              },
+                },
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryFilter(WidgetRef ref, String? selectedCategory) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: _categoryLabels.entries.map((entry) {
-          final isSelected = selectedCategory == entry.key;
-          return Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: FilterChip(
-              selected: isSelected,
-              label: Text(
-                entry.value,
-                style: GoogleFonts.poppins(
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected ? Colors.white : Colors.white70,
-                ),
-              ),
-              backgroundColor: AppTheme.cardColor,
-              selectedColor: AppTheme.primaryColor,
-              checkmarkColor: Colors.white,
-              side: BorderSide(
-                color: isSelected
-                    ? AppTheme.primaryColor
-                    : Colors.white.withValues(alpha: 0.15),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              onSelected: (_) {
-                ref
-                    .read(rankingCategoryFilterProvider.notifier)
-                    .setCategory(entry.key);
-              },
-            ),
-          );
-        }).toList(),
+          ],
+        ),
       ),
     );
   }
@@ -243,7 +213,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
         break;
       default:
         positionDisplay = '#$position';
-        positionColor = Colors.white54;
+        positionColor = AppTheme.textSecondary;
         fontSize = 14;
     }
 
@@ -302,8 +272,8 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                         fontSize: isTop3 ? 17 : 15,
                         fontWeight: isTop3 ? FontWeight.w700 : FontWeight.w500,
                         color: isTop3
-                            ? Colors.white
-                            : Colors.white.withValues(alpha: 0.85),
+                            ? AppTheme.textPrimary
+                            : AppTheme.textPrimary.withValues(alpha: 0.85),
                       ),
                     ),
                     if (ranking.gamesPlayed > 0)
@@ -311,7 +281,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                         'Partidas jugadas: ${ranking.gamesPlayed}  |  Victorias como civil: ${ranking.civilWins}  |  Victorias como impostor: ${ranking.impostorWins}',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
-                          color: Colors.white54,
+                          color: AppTheme.textSecondary,
                         ),
                       ),
                   ],
@@ -337,7 +307,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                       style: GoogleFonts.poppins(
                         fontSize: isTop3 ? 20 : 16,
                         fontWeight: FontWeight.w800,
-                        color: isTop3 ? positionColor : Colors.white,
+                        color: isTop3 ? positionColor : AppTheme.textPrimary,
                       ),
                     ),
                     Text(
@@ -347,7 +317,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                         fontWeight: FontWeight.w500,
                         color: isTop3
                             ? positionColor.withValues(alpha: 0.7)
-                            : Colors.white54,
+                            : AppTheme.textSecondary,
                       ),
                     ),
                   ],
@@ -370,14 +340,14 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
         ),
         content: Text(
           'Esto borrará el ranking acumulado de este grupo. Esta acción no se puede deshacer.',
-          style: GoogleFonts.poppins(color: Colors.white70),
+          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: Colors.white54),
+              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(

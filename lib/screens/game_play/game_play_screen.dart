@@ -9,6 +9,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/game_provider.dart';
 import '../../models/game_state.dart';
+import '../../utils/text_normalize.dart';
+import 'widgets/active_game_cancel_dialog.dart';
 
 class GamePlayScreen extends ConsumerStatefulWidget {
   const GamePlayScreen({super.key});
@@ -49,13 +51,10 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   void _verifyImpostorAndNavigate() {
     final gameState = ref.read(gameProvider);
     if (gameState == null) return;
-
     final impostorHints = gameState.activePlayers
         .where((p) => p.role == PlayerRole.impostor && p.hint != null)
-        .map((p) => p.hint!.toLowerCase())
+        .map((p) => normalizeText(p.hint!))
         .toSet();
-
-    // If no hints are enabled, go directly
     if (impostorHints.isEmpty) {
       _timer?.cancel();
       context.push('/impostor-guess').then((_) {
@@ -63,81 +62,149 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
       });
       return;
     }
-
     final hintController = TextEditingController();
-
     _timer?.cancel();
     showDialog<bool>(
       context: context,
+      barrierDismissible: false,
       builder: (dialogContext) {
         String? errorText;
         return StatefulBuilder(
-          builder: (context, setDialogState) => AlertDialog(
-            title: Text(
-              'Verificación',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          builder: (context, setDialogState) => AnimatedPadding(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            padding: EdgeInsets.fromLTRB(
+              24,
+              24,
+              24,
+              MediaQuery.of(context).viewInsets.bottom + 24,
             ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Escribe tu pista para confirmar que eres impostor.',
-                    style: GoogleFonts.poppins(
-                      color: Colors.white70,
-                      fontSize: 14,
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 420),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: AppTheme.cardColor,
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '\u{1F6A8} Verificaci\u00f3n de impostor',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppTheme.warningColor.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppTheme.warningColor.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('\u{26A0}\u{FE0F}', style: TextStyle(fontSize: 18)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'OJO: Escribe tu PISTA, NO la palabra que intentas adivinar. '
+                                    'Esto es solo para verificar que eres impostor.',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppTheme.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: hintController,
+                            autofocus: true,
+                            style: GoogleFonts.poppins(color: AppTheme.textPrimary),
+                            textCapitalization: TextCapitalization.words,
+                            decoration: InputDecoration(
+                              hintText: 'Escribe tu pista aquí...',
+                              hintStyle: GoogleFonts.poppins(
+                                color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                              ),
+                              errorText: errorText,
+                            ),
+                            onSubmitted: (_) {
+                              final input = normalizeText(hintController.text);
+                              if (impostorHints.contains(input)) {
+                                Navigator.pop(dialogContext, true);
+                              } else {
+                                setDialogState(() => errorText = 'Pista incorrecta');
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          Column(
+                            children: [
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    final input = normalizeText(hintController.text);
+                                    if (impostorHints.contains(input)) {
+                                      Navigator.pop(dialogContext, true);
+                                    } else {
+                                      setDialogState(() => errorText = 'Pista incorrecta');
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppTheme.secondaryColor,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                  ),
+                                  child: Text(
+                                    'Confirmar',
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              SizedBox(
+                                width: double.infinity,
+                                child: TextButton(
+                                  onPressed: () => Navigator.pop(dialogContext, false),
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                  ),
+                                  child: Text(
+                                    'Cancelar',
+                                    style: GoogleFonts.poppins(
+                                      color: AppTheme.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: hintController,
-                    autofocus: true,
-                    style: GoogleFonts.poppins(color: Colors.white),
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      hintText: 'Tu pista...',
-                      hintStyle: GoogleFonts.poppins(color: Colors.white30),
-                      errorText: errorText,
-                    ),
-                    onSubmitted: (_) {
-                      final input = hintController.text.trim().toLowerCase();
-                      if (impostorHints.contains(input)) {
-                        Navigator.pop(dialogContext, true);
-                      } else {
-                        setDialogState(() => errorText = 'Pista incorrecta');
-                      }
-                    },
-                  ),
-                ],
+                ),
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: Text(
-                  'Cancelar',
-                  style: GoogleFonts.poppins(color: Colors.white54),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  final input = hintController.text.trim().toLowerCase();
-                  if (impostorHints.contains(input)) {
-                    Navigator.pop(dialogContext, true);
-                  } else {
-                    setDialogState(() => errorText = 'Pista incorrecta');
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.secondaryColor,
-                ),
-                child: Text(
-                  'Confirmar',
-                  style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
           ),
         );
       },
@@ -151,46 +218,11 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
       }
     });
   }
-
   void _confirmCancelGame() {
     _timer?.cancel();
-    showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          'Cancelar partida',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-        ),
-        content: Text(
-          '¿Seguro que quieres cancelar la partida? Se perderá todo el progreso.',
-          style: GoogleFonts.poppins(color: Colors.white70),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(
-              'Seguir jugando',
-              style: GoogleFonts.poppins(color: Colors.white54),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondaryColor,
-            ),
-            child: Text(
-              'Cancelar partida',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    ).then((confirmed) {
-      if (confirmed == true) {
-        ref.read(gameProvider.notifier).clearGame();
-        if (mounted) context.go('/');
-      } else {
-        if (mounted) _startTimer();
+    showActiveGameCancelDialog(context, ref).then((confirmed) {
+      if (!confirmed && mounted) {
+        _startTimer();
       }
     });
   }
@@ -224,11 +256,19 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
         gameState.timeRemainingSeconds / gameState.config.durationSeconds;
     final isLowTime = gameState.timeRemainingSeconds <= 30;
 
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          _confirmCancelGame();
+        }
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
             children: [
               const SizedBox(height: 16),
               // Header with cancel button
@@ -236,11 +276,11 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                 children: [
                   const Spacer(),
                   Text(
-                    'Discusion en curso',
+                    'Discusi\u00F3n en curso',
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white70,
+                      color: AppTheme.textSecondary,
                     ),
                   ),
                   Expanded(
@@ -248,9 +288,9 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                       alignment: Alignment.centerRight,
                       child: IconButton(
                         onPressed: _confirmCancelGame,
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.close_rounded,
-                          color: Colors.white38,
+                          color: AppTheme.textSecondary.withValues(alpha: 0.5),
                         ),
                         tooltip: 'Cancelar partida',
                       ),
@@ -259,76 +299,77 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                 ],
               ),
               if (gameState.shouldShowStartingPlayer) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 _buildStartingPlayerBanner(gameState.startingPlayerName!),
               ],
-              const SizedBox(height: 24),
+              // Center everything vertically
+              const Spacer(flex: 2),
               // Circular timer
               _buildCircularTimer(timeString, progress, isLowTime),
-              const SizedBox(height: 20),
-              // Player list header
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Jugadores',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+              const SizedBox(height: 12),
+              // Eliminated players (compact chips)
+              _buildEliminatedChips(gameState),
+              const Spacer(flex: 3),
+              // Action section: vote
+              Text(
+                '\u00BFEres civil? \u{1F50D} Vota aqu\u00ED:',
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimary,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    _timer?.cancel();
+                    await context.push('/vote');
+                    if (mounted) _startTimer();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    textStyle: GoogleFonts.poppins(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
+                  child: const Text('Votar'),
                 ),
               ),
-              const SizedBox(height: 12),
-              // Player list
-              Expanded(child: _buildPlayerList(gameState)),
-              const SizedBox(height: 16),
-              // Action buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        _timer?.cancel();
-                        await context.push('/vote');
-                        if (mounted) _startTimer();
-                      },
-                      icon: const Icon(Icons.how_to_vote_rounded, size: 22),
-                      label: const Text('Votar'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryColor,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        textStyle: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
+              const SizedBox(height: 20),
+              // Action section: impostor guess
+              Text(
+                '\u00BFNo? Entonces eres impostor \u{1F480}\nIntenta adivinar la palabra...',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: AppTheme.textPrimary.withValues(alpha: 0.7),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _verifyImpostorAndNavigate,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.secondaryColor,
+                    side: BorderSide(color: AppTheme.secondaryColor),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    textStyle: GoogleFonts.poppins(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: _verifyImpostorAndNavigate,
-                      icon: const Icon(Icons.psychology_alt_rounded, size: 22),
-                      label: const Text(
-                        'Impostor adivina',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: AppTheme.secondaryColor,
-                        side: const BorderSide(color: AppTheme.secondaryColor),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        textStyle: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                  child: const Text('Adivinar'),
+                ),
               ),
               const SizedBox(height: 24),
             ],
+            ),
           ),
         ),
       ),
@@ -421,7 +462,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
+          Icon(
             Icons.play_arrow_rounded,
             color: AppTheme.primaryColor,
             size: 20,
@@ -433,7 +474,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: AppTheme.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -443,84 +484,50 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
     );
   }
 
-  Widget _buildPlayerList(ActiveGame gameState) {
-    return ListView.separated(
-      itemCount: gameState.players.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
-      itemBuilder: (context, index) {
-        final player = gameState.players[index];
-        final isEliminated = player.isEliminated;
+  Widget _buildEliminatedChips(ActiveGame gameState) {
+    final eliminated = gameState.players.where((p) => p.isEliminated).toList();
 
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: isEliminated
-                ? AppTheme.surfaceColor.withValues(alpha: 0.5)
-                : AppTheme.cardColor,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isEliminated
-                  ? Colors.white12
-                  : AppTheme.primaryColor.withValues(alpha: 0.2),
-              width: 1,
-            ),
+    if (eliminated.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      children: [
+        Text(
+          'Eliminados (${eliminated.length})',
+          style: GoogleFonts.poppins(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.textSecondary,
           ),
-          child: Row(
-            children: [
-              // Avatar
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: isEliminated
-                      ? Colors.white12
-                      : AppTheme.primaryColor.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    player.name[0].toUpperCase(),
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: isEliminated ? Colors.white24 : Colors.white,
-                    ),
-                  ),
+        ),
+        const SizedBox(height: 6),
+        Wrap(
+          spacing: 8,
+          runSpacing: 6,
+          alignment: WrapAlignment.center,
+          children: eliminated.map((player) {
+            return Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppTheme.surfaceColor,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppTheme.textSecondary.withValues(alpha: 0.25),
                 ),
               ),
-              const SizedBox(width: 14),
-              // Player name
-              Expanded(
-                child: Text(
-                  player.name,
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: isEliminated ? Colors.white30 : Colors.white,
-                    decoration: isEliminated
-                        ? TextDecoration.lineThrough
-                        : null,
-                    decorationColor: Colors.white30,
-                  ),
+              child: Text(
+                player.name,
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: AppTheme.textSecondary,
+                  decoration: TextDecoration.lineThrough,
+                  decorationColor: AppTheme.textSecondary.withValues(alpha: 0.6),
                 ),
               ),
-              // Status icon
-              if (isEliminated)
-                const Icon(
-                  Icons.close_rounded,
-                  color: AppTheme.secondaryColor,
-                  size: 22,
-                )
-              else
-                Icon(
-                  Icons.circle,
-                  color: AppTheme.successColor.withValues(alpha: 0.6),
-                  size: 12,
-                ),
-            ],
-          ),
-        );
-      },
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }
@@ -564,3 +571,4 @@ class _CircularTimerPainter extends CustomPainter {
     return oldDelegate.progress != progress || oldDelegate.color != color;
   }
 }
+

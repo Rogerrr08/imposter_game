@@ -8,16 +8,16 @@ class GamePlayer {
   final String name;
   final PlayerRole role;
   final String? hint;
-  bool isEliminated;
-  int points;
+  final bool isEliminated;
+  final int points;
   /// Whether this civil correctly voted an impostor at least once.
-  bool votedImpostorCorrectly;
+  final bool votedImpostorCorrectly;
   /// Whether this civil voted incorrectly (voted a non-impostor).
-  bool votedIncorrectly;
+  final bool votedIncorrectly;
   /// Whether this impostor was eliminated by a failed guess (not by vote).
-  bool eliminatedByFailedGuess;
+  final bool eliminatedByFailedGuess;
 
-  GamePlayer({
+  const GamePlayer({
     required this.name,
     required this.role,
     this.hint,
@@ -27,6 +27,25 @@ class GamePlayer {
     this.votedIncorrectly = false,
     this.eliminatedByFailedGuess = false,
   });
+
+  GamePlayer copyWith({
+    bool? isEliminated,
+    int? points,
+    bool? votedImpostorCorrectly,
+    bool? votedIncorrectly,
+    bool? eliminatedByFailedGuess,
+  }) {
+    return GamePlayer(
+      name: name,
+      role: role,
+      hint: hint,
+      isEliminated: isEliminated ?? this.isEliminated,
+      points: points ?? this.points,
+      votedImpostorCorrectly: votedImpostorCorrectly ?? this.votedImpostorCorrectly,
+      votedIncorrectly: votedIncorrectly ?? this.votedIncorrectly,
+      eliminatedByFailedGuess: eliminatedByFailedGuess ?? this.eliminatedByFailedGuess,
+    );
+  }
 }
 
 class GameConfig {
@@ -56,17 +75,20 @@ class ActiveGame {
   final List<String> wordHints;
   final List<GamePlayer> players;
   final String? startingPlayerName;
-  GamePhase phase;
-  int currentRevealIndex;
-  int timeRemainingSeconds;
-  bool civilsWon;
-  bool impostorGuessedWord;
+  final GamePhase phase;
+  final int currentRevealIndex;
+  final int timeRemainingSeconds;
+  final bool civilsWon;
+  final bool impostorGuessedWord;
 
   /// Incorrect votes remaining. Civils lose if this reaches 0.
-  int livesRemaining;
+  final int livesRemaining;
 
   /// Name of the impostor who guessed the word (for scoring).
-  String? impostorWhoGuessed;
+  final String? impostorWhoGuessed;
+
+  /// Database ID of the saved game (for result overrides).
+  final int? savedGameId;
 
   ActiveGame({
     required this.config,
@@ -82,6 +104,7 @@ class ActiveGame {
     this.impostorGuessedWord = false,
     this.livesRemaining = maxLives,
     this.impostorWhoGuessed,
+    this.savedGameId,
   }) : timeRemainingSeconds = timeRemainingSeconds ?? config.durationSeconds;
 
   List<GamePlayer> get activePlayers =>

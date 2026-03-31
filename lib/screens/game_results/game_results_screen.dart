@@ -29,23 +29,19 @@ class GameResultsScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              const SizedBox(height: 20),
-              // Result header
+              const SizedBox(height: 8),
               _buildResultHeader(civilsWon, impostorGuessed),
+              const SizedBox(height: 24),
+              _buildSpotlightSection(game),
+              if (civilsWon && !impostorGuessed) ...[
+                const SizedBox(height: 18),
+                _buildImpostorOverrideButton(context, ref, game),
+              ],
               const SizedBox(height: 32),
-              // Secret word reveal
-              _buildWordReveal(game.secretWord, game.wordCategory.displayName),
-              const SizedBox(height: 16),
-              // Impostor hints
-              _buildImpostorHints(game),
-              const SizedBox(height: 32),
-              // Player results
               _buildPlayerResults(game),
               const SizedBox(height: 32),
-              // Points summary
               _buildPointsSummary(game),
               const SizedBox(height: 40),
-              // Action buttons
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -91,8 +87,35 @@ class GameResultsScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildSpotlightSection(ActiveGame game) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppTheme.cardColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: AppTheme.primaryColor.withValues(alpha: 0.14),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          _buildWordReveal(game.secretWord, game.wordCategory.displayName),
+          const SizedBox(height: 16),
+          _buildImpostorHints(game),
+        ],
+      ),
+    );
+  }
+
   Widget _buildResultHeader(bool civilsWon, bool impostorGuessed) {
-    final icon = civilsWon ? Icons.shield : Icons.psychology_alt;
     final color = civilsWon ? AppTheme.successColor : AppTheme.secondaryColor;
     final title = civilsWon ? '¡Civiles Ganan!' : '¡Impostores Ganan!';
     final subtitle = civilsWon
@@ -103,32 +126,37 @@ class GameResultsScreen extends ConsumerWidget {
 
     return Column(
       children: [
-        Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.2),
-            shape: BoxShape.circle,
-            border: Border.all(color: color, width: 3),
-          ),
-          child: Icon(icon, size: 50, color: color),
+        Image.asset(
+          civilsWon
+              ? 'assets/images/player_civil.png'
+              : 'assets/images/player_impostor.png',
+          width: 188,
+          height: 188,
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         Text(
           title,
+          textAlign: TextAlign.center,
           style: GoogleFonts.poppins(
-            fontSize: 28,
+            fontSize: 36,
             fontWeight: FontWeight.w900,
             color: color,
+            height: 1,
           ),
         ),
-        Text(
-          subtitle,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            color: Colors.white60,
+        const SizedBox(height: 10),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 320),
+          child: Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 15,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.textSecondary,
+              height: 1.35,
+            ),
           ),
-          textAlign: TextAlign.center,
         ),
       ],
     );
@@ -137,13 +165,13 @@ class GameResultsScreen extends ConsumerWidget {
   Widget _buildWordReveal(String word, String category) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
       decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(16),
+        color: AppTheme.backgroundColor.withValues(alpha: 0.45),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: AppTheme.primaryColor.withValues(alpha: 0.5),
-          width: 1,
+          color: AppTheme.primaryColor.withValues(alpha: 0.38),
+          width: 1.2,
         ),
       ),
       child: Column(
@@ -151,26 +179,37 @@ class GameResultsScreen extends ConsumerWidget {
           Text(
             'La Palabra Secreta',
             style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.white54,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: AppTheme.textSecondary,
               letterSpacing: 2,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             word,
+            textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-              fontSize: 32,
+              fontSize: 38,
               fontWeight: FontWeight.w800,
               color: AppTheme.warningColor,
+              height: 1.05,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            category,
-            style: GoogleFonts.poppins(
-              fontSize: 12,
-              color: Colors.white38,
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              category,
+              style: GoogleFonts.poppins(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.primaryColor,
+              ),
             ),
           ),
         ],
@@ -180,65 +219,93 @@ class GameResultsScreen extends ConsumerWidget {
 
   Widget _buildImpostorHints(ActiveGame game) {
     final impostorsWithHints =
-        game.impostors.where((p) => p.hint != null).toList();
+        game.impostors.where((player) => player.hint != null).toList();
 
     if (impostorsWithHints.isEmpty) return const SizedBox.shrink();
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: AppTheme.secondaryColor.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: AppTheme.secondaryColor.withValues(alpha: 0.2),
         ),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.visibility_rounded,
-                size: 16,
-                color: AppTheme.secondaryColor.withValues(alpha: 0.7),
+                size: 18,
+                color: AppTheme.secondaryColor.withValues(alpha: 0.75),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               Text(
                 'Pistas de los impostores',
                 style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  color: AppTheme.secondaryColor.withValues(alpha: 0.7),
-                  letterSpacing: 1,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.secondaryColor,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          ...impostorsWithHints.map((p) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+          const SizedBox(height: 14),
+          ...impostorsWithHints.map(
+            (player) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppTheme.cardColor.withValues(alpha: 0.82),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: AppTheme.secondaryColor.withValues(alpha: 0.14),
+                  ),
+                ),
                 child: Row(
                   children: [
-                    Text(
-                      '${p.name}: ',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white60,
+                    Expanded(
+                      child: Text(
+                        player.name,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                        ),
                       ),
                     ),
-                    Text(
-                      p.hint!,
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.secondaryColor,
+                    const SizedBox(width: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color:
+                            AppTheme.secondaryColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        player.hint!,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.secondaryColor,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              )),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -253,18 +320,19 @@ class GameResultsScreen extends ConsumerWidget {
           style: GoogleFonts.poppins(
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: Colors.white,
+            color: AppTheme.textPrimary,
           ),
         ),
         const SizedBox(height: 12),
-        ...game.players.map((player) => _buildPlayerCard(player)),
+        ...game.players.map(_buildPlayerCard),
       ],
     );
   }
 
   Widget _buildPlayerCard(GamePlayer player) {
     final isImpostor = player.role == PlayerRole.impostor;
-    final roleColor = isImpostor ? AppTheme.secondaryColor : AppTheme.successColor;
+    final roleColor =
+        isImpostor ? AppTheme.secondaryColor : AppTheme.successColor;
     final roleText = isImpostor ? 'IMPOSTOR' : 'CIVIL';
     final roleIcon = isImpostor ? Icons.psychology_alt : Icons.shield;
 
@@ -278,7 +346,6 @@ class GameResultsScreen extends ConsumerWidget {
           color: isImpostor
               ? AppTheme.secondaryColor.withValues(alpha: 0.3)
               : Colors.transparent,
-          width: 1,
         ),
       ),
       child: Row(
@@ -294,10 +361,9 @@ class GameResultsScreen extends ConsumerWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                    decoration: player.isEliminated
-                        ? TextDecoration.lineThrough
-                        : null,
+                    color: AppTheme.textPrimary,
+                    decoration:
+                        player.isEliminated ? TextDecoration.lineThrough : null,
                   ),
                 ),
                 Text(
@@ -316,14 +382,14 @@ class GameResultsScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: Colors.white10,
+                color: AppTheme.textSecondary.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 'Eliminado',
                 style: GoogleFonts.poppins(
                   fontSize: 10,
-                  color: Colors.white38,
+                  color: AppTheme.textSecondary.withValues(alpha: 0.6),
                 ),
               ),
             ),
@@ -349,8 +415,12 @@ class GameResultsScreen extends ConsumerWidget {
   }
 
   Widget _buildPointsSummary(ActiveGame game) {
-    final totalPoints = game.players.fold<int>(0, (sum, p) => sum + p.points);
-    final impostorPoints = game.impostors.fold<int>(0, (sum, p) => sum + p.points);
+    final totalPoints = game.players.fold<int>(0, (sum, player) {
+      return sum + player.points;
+    });
+    final impostorPoints = game.impostors.fold<int>(0, (sum, player) {
+      return sum + player.points;
+    });
     final civilPoints = totalPoints - impostorPoints;
 
     return Container(
@@ -367,9 +437,143 @@ class GameResultsScreen extends ConsumerWidget {
           Container(
             width: 1,
             height: 40,
-            color: Colors.white12,
+            color: AppTheme.textSecondary.withValues(alpha: 0.15),
           ),
           _pointColumn('Impostores', impostorPoints, AppTheme.secondaryColor),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImpostorOverrideButton(
+    BuildContext context,
+    WidgetRef ref,
+    ActiveGame game,
+  ) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () => _showImpostorOverrideDialog(context, ref, game),
+        icon: const Icon(Icons.psychology_alt, size: 20),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppTheme.secondaryColor,
+          side: BorderSide(
+            color: AppTheme.secondaryColor.withValues(alpha: 0.4),
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+        ),
+        label: Text(
+          'Darle victoria al impostor',
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showImpostorOverrideDialog(
+    BuildContext context,
+    WidgetRef ref,
+    ActiveGame game,
+  ) {
+    final impostors = game.impostors;
+
+    if (impostors.length == 1) {
+      _confirmOverride(context, ref, impostors.first.name);
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          '¿Qué impostor adivinó?',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: impostors.map((impostor) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                    _confirmOverride(context, ref, impostor.name);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.secondaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: Text(
+                    impostor.name,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmOverride(
+    BuildContext context,
+    WidgetRef ref,
+    String impostorName,
+  ) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Confirmar cambio',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Se cambiará el resultado a victoria de impostores. '
+          '$impostorName recibirá 3 pts y los demás impostores 1 pt. '
+          'Los civiles no recibirán puntos.',
+          style: GoogleFonts.poppins(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              ref
+                  .read(gameProvider.notifier)
+                  .overrideImpostorGuessedCorrectly(impostorName);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondaryColor,
+            ),
+            child: Text(
+              'Confirmar',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
+          ),
         ],
       ),
     );
@@ -390,7 +594,7 @@ class GameResultsScreen extends ConsumerWidget {
           label,
           style: GoogleFonts.poppins(
             fontSize: 12,
-            color: Colors.white54,
+            color: AppTheme.textSecondary,
           ),
         ),
       ],

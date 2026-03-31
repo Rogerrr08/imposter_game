@@ -1,11 +1,16 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../theme/app_theme.dart';
-import '../../providers/game_provider.dart';
 import '../../models/game_state.dart';
+import '../../providers/game_provider.dart';
+import '../../theme/app_theme.dart';
+
+// Panel colors are resolved at runtime based on theme brightness
+// See AppTheme.panelColors(isDark)
 
 class RoleRevealScreen extends ConsumerStatefulWidget {
   const RoleRevealScreen({super.key});
@@ -16,54 +21,78 @@ class RoleRevealScreen extends ConsumerStatefulWidget {
 
 class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     with SingleTickerProviderStateMixin {
-  bool _revealed = false;
-  late AnimationController _animController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
+  bool _hasRevealed = false;
+  double _dragOffset = 0;
+  late final AnimationController _snapBackController;
+  double _snapFrom = 0;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+    _snapBackController = AnimationController(
       vsync: this,
-    );
-    _scaleAnimation = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.elasticOut,
-    );
-    _fadeAnimation = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeIn,
-    );
+      duration: const Duration(milliseconds: 350),
+    )..addListener(() {
+        final curved = Curves.easeOut.transform(_snapBackController.value);
+        setState(() {
+          _dragOffset = lerpDouble(_snapFrom, 0, curved) ?? 0;
+        });
+      });
   }
 
   @override
   void dispose() {
-    _animController.dispose();
+    _snapBackController.dispose();
     super.dispose();
   }
 
-  void _reveal() {
-    setState(() => _revealed = true);
-    _animController.forward(from: 0);
+  void _onDragUpdate(DragUpdateDetails details) {
+    if (_snapBackController.isAnimating) {
+      _snapBackController.stop();
+    }
+
+    final maxDrag = -MediaQuery.of(context).size.height * 0.85;
+    setState(() {
+      _dragOffset = (_dragOffset + details.delta.dy).clamp(maxDrag, 0.0);
+
+      // Enable button as soon as user drags up a little
+      if (!_hasRevealed && _dragOffset < -40) {
+        _hasRevealed = true;
+      }
+    });
   }
 
-  void _hideAndNext() {
+  void _onDragEnd(DragEndDetails details) {
+    final velocity = details.velocity.pixelsPerSecond.dy;
+
+    // Also enable on any upward flick
+    if (!_hasRevealed && (velocity < -200 || _dragOffset < -40)) {
+      setState(() => _hasRevealed = true);
+    }
+
+    _snapFrom = _dragOffset;
+    _snapBackController.forward(from: 0);
+  }
+
+  void _nextPlayer() {
     final gameState = ref.read(gameProvider);
     if (gameState == null) return;
-
-    _animController.reset();
 
     final isLastPlayer =
         gameState.currentRevealIndex >= gameState.players.length - 1;
 
     if (isLastPlayer) {
       context.go('/round-start');
-    } else {
-      ref.read(gameProvider.notifier).nextReveal();
-      setState(() => _revealed = false);
+      return;
     }
+
+    ref.read(gameProvider.notifier).nextReveal();
+    setState(() {
+      _hasRevealed = false;
+      _dragOffset = 0;
+      _snapFrom = 0;
+      _snapBackController.reset();
+    });
   }
 
   @override
@@ -79,55 +108,83 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     final currentPlayer = gameState.players[gameState.currentRevealIndex];
     final playerNumber = gameState.currentRevealIndex + 1;
     final totalPlayers = gameState.players.length;
-    final isLastPlayer = gameState.currentRevealIndex >= gameState.players.length - 1;
+    final isLastPlayer = gameState.currentRevealIndex >= totalPlayers - 1;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = AppTheme.panelColors(isDark);
+    final panelColor =
+        colors[gameState.currentRevealIndex % colors.length];
 
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             children: [
-              const SizedBox(height: 24),
-              // Progress indicator
-              _buildProgressBar(playerNumber, totalPlayers),
               const SizedBox(height: 16),
+              _buildProgressBar(playerNumber, totalPlayers),
+              const SizedBox(height: 8),
               Text(
                 'Jugador $playerNumber de $totalPlayers',
                 style: GoogleFonts.poppins(
                   fontSize: 14,
-                  color: Colors.white54,
+                  color: AppTheme.textSecondary,
                 ),
               ),
-              const Spacer(flex: 2),
-              if (!_revealed) ...[
-                _buildPreReveal(currentPlayer.name),
-              ] else ...[
-                _buildPostReveal(currentPlayer, gameState),
-              ],
-              const Spacer(flex: 2),
-              // Action button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _revealed ? _hideAndNext : _reveal,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _revealed
-                        ? (isLastPlayer ? AppTheme.successColor : AppTheme.primaryColor)
-                        : AppTheme.primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+              const SizedBox(height: 12),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Background: Role info, aligned to bottom
+                      Positioned.fill(
+                        child:
+                            _buildRoleInfo(currentPlayer, gameState),
+                      ),
+                      // Foreground: Draggable cover panel
+                      Positioned.fill(
+                        child: GestureDetector(
+                          onVerticalDragUpdate: _onDragUpdate,
+                          onVerticalDragEnd: _onDragEnd,
+                          child: Transform.translate(
+                            offset: Offset(0, _dragOffset),
+                            child: _buildCoverPanel(
+                                currentPlayer, panelColor),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _hasRevealed ? _nextPlayer : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: isLastPlayer
+                          ? AppTheme.successColor
+                          : AppTheme.primaryColor,
+                      disabledBackgroundColor:
+                          AppTheme.textSecondary.withValues(alpha: 0.18),
+                      disabledForegroundColor:
+                          AppTheme.textSecondary.withValues(alpha: 0.55),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      textStyle: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    child: Text(
+                      isLastPlayer ? 'Empezar Juego' : 'Jugador Siguiente',
                     ),
                   ),
-                  child: Text(
-                    _revealed
-                        ? (isLastPlayer ? 'Empezar Juego' : 'Ocultar y Pasar')
-                        : 'Revelar Rol',
-                  ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -142,207 +199,222 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
         value: current / total,
         minHeight: 6,
         backgroundColor: AppTheme.surfaceColor,
-        valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
+        valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
       ),
     );
   }
 
-  Widget _buildPreReveal(String playerName) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.2),
-            shape: BoxShape.circle,
-            border: Border.all(color: AppTheme.primaryColor, width: 3),
+  Widget _buildCoverPanel(GamePlayer player, Color color) {
+    return SizedBox.expand(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              color,
+              Color.alphaBlend(
+                Colors.black.withValues(alpha: 0.15),
+                color,
+              ),
+            ],
           ),
-          child: const Icon(
-            Icons.visibility_off_rounded,
-            size: 48,
-            color: AppTheme.primaryColor,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.35),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+          child: Column(
+            children: [
+              const Spacer(flex: 1),
+              // Player name - main focus
+              Text(
+                player.name,
+                style: GoogleFonts.poppins(
+                  fontSize: 38,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: 1,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 28),
+              // Logo image
+              Expanded(
+                flex: 4,
+                child: Center(
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: Image.asset(
+                      'assets/images/app_logo_no_bg.png',
+                      width: 200,
+                      height: 200,
+                    ),
+                  ),
+                ),
+              ),
+              const Spacer(flex: 2),
+              // Drag hint
+              Icon(
+                Icons.keyboard_double_arrow_up_rounded,
+                color: Colors.white.withValues(alpha: 0.75),
+                size: 32,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Desliza hacia arriba para\nrevelar tu rol',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '\u00A1Que nadie m\u00E1s vea la pantalla!',
+                style: GoogleFonts.poppins(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white.withValues(alpha: 0.6),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 32),
-        Text(
-          'Pasa el telefono a',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            color: Colors.white54,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          playerName,
-          style: GoogleFonts.poppins(
-            fontSize: 32,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Asegurate de que nadie mas vea la pantalla',
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            color: Colors.white38,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildPostReveal(GamePlayer player, ActiveGame gameState) {
+  Widget _buildRoleInfo(GamePlayer player, ActiveGame gameState) {
     final isImpostor = player.role == PlayerRole.impostor;
+    final roleColor =
+        isImpostor ? AppTheme.secondaryColor : AppTheme.successColor;
 
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Role icon
-            Container(
-              width: 110,
-              height: 110,
-              decoration: BoxDecoration(
-                color: (isImpostor
-                        ? AppTheme.secondaryColor
-                        : AppTheme.successColor)
-                    .withValues(alpha: 0.2),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isImpostor
-                      ? AppTheme.secondaryColor
-                      : AppTheme.successColor,
-                  width: 3,
-                ),
-              ),
-              child: Icon(
-                isImpostor
-                    ? Icons.psychology_alt_rounded
-                    : Icons.shield_rounded,
-                size: 54,
-                color: isImpostor
-                    ? AppTheme.secondaryColor
-                    : AppTheme.successColor,
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Player name
-            Text(
-              player.name,
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Colors.white70,
+    return Column(
+      children: [
+        // Push content toward the bottom so it's visible with a small drag
+        const Spacer(flex: 1),
+        // Role image
+        Image.asset(
+          isImpostor
+              ? 'assets/images/player_impostor.png'
+              : 'assets/images/player_civil.png',
+          width: 110,
+          height: 110,
+        ),
+        const SizedBox(height: 8),
+        // Role text
+        Text(
+          isImpostor ? 'IMPOSTOR' : 'CIVIL',
+          style: GoogleFonts.poppins(
+            fontSize: 32,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 4,
+            color: roleColor,
+          ),
+        ),
+        const SizedBox(height: 14),
+        // Word / hint card
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: AppTheme.cardColor,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: roleColor.withValues(alpha: 0.3),
+                width: 1.5,
               ),
             ),
-            const SizedBox(height: 8),
-            // Role text
-            Text(
-              isImpostor ? 'IMPOSTOR' : 'CIVIL',
-              style: GoogleFonts.poppins(
-                fontSize: 36,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 4,
-                color: isImpostor
-                    ? AppTheme.secondaryColor
-                    : AppTheme.successColor,
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Word or hint
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppTheme.cardColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: (isImpostor
-                          ? AppTheme.secondaryColor
-                          : AppTheme.successColor)
-                      .withValues(alpha: 0.3),
-                  width: 1.5,
-                ),
-              ),
-              child: Column(
-                children: [
-                  if (!isImpostor) ...[
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (!isImpostor) ...[
+                  Text(
+                    'La palabra secreta es:',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    gameState.secretWord,
+                    style: GoogleFonts.poppins(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.textPrimary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ] else ...[
+                  if (player.hint != null) ...[
                     Text(
-                      'La palabra secreta es:',
+                      'Tu pista:',
                       style: GoogleFonts.poppins(
                         fontSize: 13,
-                        color: Colors.white54,
+                        color: AppTheme.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Text(
-                      gameState.secretWord,
+                      player.hint!,
                       style: GoogleFonts.poppins(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.warningColor,
                       ),
                       textAlign: TextAlign.center,
                     ),
                   ] else ...[
-                    if (player.hint != null) ...[
-                      Text(
-                        'Tu pista:',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: Colors.white54,
-                        ),
+                    Icon(
+                      Icons.block_rounded,
+                      size: 28,
+                      color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'No tienes pistas',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textSecondary.withValues(alpha: 0.5),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        player.hint!,
-                        style: GoogleFonts.poppins(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.warningColor,
-                        ),
-                        textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Descubre la palabra escuchando a los dem\u00E1s',
+                      style: GoogleFonts.poppins(
+                        fontSize: 12,
+                        color: AppTheme.textSecondary.withValues(alpha: 0.3),
                       ),
-                    ] else ...[
-                      const Icon(
-                        Icons.block_rounded,
-                        size: 32,
-                        color: Colors.white38,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'No tienes pistas',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white38,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Descubre la palabra escuchando a los demas',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: Colors.white24,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                      textAlign: TextAlign.center,
+                    ),
                   ],
                 ],
-              ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+        const SizedBox(height: 12),
+        Text(
+          'Pasa al siguiente jugador.',
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            color: AppTheme.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
     );
   }
 }

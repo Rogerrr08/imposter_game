@@ -10,115 +10,131 @@ import '../../providers/group_provider.dart';
 class GroupsScreen extends ConsumerWidget {
   const GroupsScreen({super.key});
 
+  void _handleBackNavigation(BuildContext context) {
+    if (context.canPop()) {
+      context.pop();
+      return;
+    }
+    context.go('/');
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final groupsAsync = ref.watch(groupsProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Mis Grupos',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateGroupDialog(context, ref),
-        backgroundColor: AppTheme.primaryColor,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: Text(
-          'Nuevo Grupo',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          _handleBackNavigation(context);
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            'Mis Grupos',
+            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => _handleBackNavigation(context),
           ),
         ),
-      ),
-      body: groupsAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppTheme.primaryColor),
-        ),
-        error: (error, stack) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
-                const SizedBox(height: 16),
-                Text(
-                  'Error al cargar los grupos',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  error.toString(),
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(fontSize: 13, color: Colors.white54),
-                ),
-              ],
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _showCreateGroupDialog(context, ref),
+          backgroundColor: AppTheme.primaryColor,
+          icon: const Icon(Icons.add_rounded, color: Colors.white),
+          label: Text(
+            'Nuevo Grupo',
+            style: GoogleFonts.poppins(
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
             ),
           ),
         ),
-        data: (groups) {
-          if (groups.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.group_add_rounded,
-                      size: 80,
-                      color: AppTheme.primaryColor.withValues(alpha: 0.4),
+        body: groupsAsync.when(
+          loading: () => Center(
+            child: CircularProgressIndicator(color: AppTheme.primaryColor),
+          ),
+          error: (error, stack) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error al cargar los grupos',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textPrimary,
                     ),
-                    const SizedBox(height: 24),
-                    Text(
-                      'No hay grupos a\u00fan',
-                      style: GoogleFonts.poppins(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Crea un grupo para guardar jugadores\ny llevar un historial de partidas.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: Colors.white54,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    ElevatedButton.icon(
-                      onPressed: () => _showCreateGroupDialog(context, ref),
-                      icon: const Icon(Icons.add_rounded),
-                      label: const Text('Crear Grupo'),
-                    ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    error.toString(),
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(fontSize: 13, color: AppTheme.textSecondary),
+                  ),
+                ],
               ),
-            );
-          }
+            ),
+          ),
+          data: (groups) {
+            if (groups.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.group_add_rounded,
+                        size: 80,
+                        color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'No hay grupos aún',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Crea un grupo para guardar jugadores\ny llevar un historial de partidas.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      ElevatedButton.icon(
+                        onPressed: () => _showCreateGroupDialog(context, ref),
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text('Crear Grupo'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
 
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
-            itemCount: groups.length,
-            itemBuilder: (context, index) {
-              final group = groups[index];
-              return _GroupCard(group: group);
-            },
-          );
-        },
+            return ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
+              itemCount: groups.length,
+              itemBuilder: (context, index) {
+                final group = groups[index];
+                return _GroupCard(group: group);
+              },
+            );
+          },
+        ),
       ),
     );
   }
@@ -142,10 +158,10 @@ class GroupsScreen extends ConsumerWidget {
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del grupo',
-              hintStyle: GoogleFonts.poppins(color: Colors.white38),
-              prefixIcon: const Icon(Icons.group_rounded, color: AppTheme.primaryColor),
+              hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+              prefixIcon: Icon(Icons.group_rounded, color: AppTheme.primaryColor),
             ),
-            style: GoogleFonts.poppins(color: Colors.white),
+            style: GoogleFonts.poppins(color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Ingresa un nombre para el grupo';
@@ -168,7 +184,7 @@ class GroupsScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: Colors.white54),
+              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -215,8 +231,8 @@ class GroupsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black54,
-      builder: (_) => const Center(
+      barrierColor: AppTheme.textSecondary,
+      builder: (_) => Center(
         child: CircularProgressIndicator(color: AppTheme.primaryColor),
       ),
     );
@@ -250,7 +266,7 @@ class _GroupCard extends ConsumerWidget {
             color: AppTheme.secondaryColor.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.delete_rounded,
             color: AppTheme.secondaryColor,
             size: 28,
@@ -296,7 +312,7 @@ class _GroupCard extends ConsumerWidget {
                       color: AppTheme.primaryColor.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.group_rounded,
                       color: AppTheme.primaryColor,
                       size: 28,
@@ -313,7 +329,7 @@ class _GroupCard extends ConsumerWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppTheme.textPrimary,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -322,7 +338,7 @@ class _GroupCard extends ConsumerWidget {
                             Icon(
                               Icons.person_rounded,
                               size: 14,
-                              color: Colors.white.withValues(alpha: 0.5),
+                              color: AppTheme.textSecondary.withValues(alpha: 0.5),
                             ),
                             const SizedBox(width: 4),
                             playersAsync.when(
@@ -330,21 +346,21 @@ class _GroupCard extends ConsumerWidget {
                                 '...',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  color: Colors.white54,
+                                  color: AppTheme.textSecondary,
                                 ),
                               ),
                               error: (_, __) => Text(
                                 '?',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  color: Colors.white54,
+                                  color: AppTheme.textSecondary,
                                 ),
                               ),
                               data: (players) => Text(
                                 '${players.length} jugador${players.length == 1 ? '' : 'es'}',
                                 style: GoogleFonts.poppins(
                                   fontSize: 12,
-                                  color: Colors.white54,
+                                  color: AppTheme.textSecondary,
                                 ),
                               ),
                             ),
@@ -352,14 +368,14 @@ class _GroupCard extends ConsumerWidget {
                             Icon(
                               Icons.calendar_today_rounded,
                               size: 12,
-                              color: Colors.white.withValues(alpha: 0.5),
+                              color: AppTheme.textSecondary.withValues(alpha: 0.5),
                             ),
                             const SizedBox(width: 4),
                             Text(
                               dateFormat.format(group.createdAt),
                               style: GoogleFonts.poppins(
                                 fontSize: 12,
-                                color: Colors.white54,
+                                color: AppTheme.textSecondary,
                               ),
                             ),
                           ],
@@ -370,7 +386,7 @@ class _GroupCard extends ConsumerWidget {
                   // Arrow
                   Icon(
                     Icons.chevron_right_rounded,
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: AppTheme.textSecondary.withValues(alpha: 0.3),
                   ),
                 ],
               ),
@@ -385,8 +401,8 @@ class _GroupCard extends ConsumerWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black54,
-      builder: (_) => const Center(
+      barrierColor: AppTheme.textSecondary,
+      builder: (_) => Center(
         child: CircularProgressIndicator(color: AppTheme.primaryColor),
       ),
     );
@@ -407,14 +423,14 @@ class _GroupCard extends ConsumerWidget {
         ),
         content: Text(
           '\u00bfEst\u00e1s seguro de que quieres eliminar el grupo "${group.name}"?\n\nEsta acci\u00f3n no se puede deshacer.',
-          style: GoogleFonts.poppins(color: Colors.white70),
+          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: Colors.white54),
+              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
