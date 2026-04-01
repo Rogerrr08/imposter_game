@@ -64,7 +64,7 @@ class GameModeSection extends StatelessWidget {
                         children: [
                           Text(
                             mode.displayName,
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.nunito(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textPrimary,
@@ -73,7 +73,7 @@ class GameModeSection extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             mode.subtitle,
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.nunito(
                               fontSize: 12,
                               color: AppTheme.textSecondary,
                               height: 1.3,

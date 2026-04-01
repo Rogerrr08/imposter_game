@@ -137,7 +137,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           const SizedBox(height: 28),
           Text(
             'Revelando resultado...',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.nunito(
               fontSize: 24,
               fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
@@ -147,7 +147,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           Text(
             'Un poco de suspenso antes de mostrar lo que pasó',
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.nunito(
               fontSize: 14,
               color: AppTheme.textSecondary,
             ),
@@ -174,7 +174,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                     const SizedBox(height: 10),
                     Text(
                       '${(_controller.value * 100).round()}%',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textSecondary,
@@ -224,7 +224,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         const SizedBox(height: 32),
         Text(
           widget.reveal.subjectText,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 24,
             fontWeight: FontWeight.w700,
             color: AppTheme.textPrimary,
@@ -234,7 +234,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         const SizedBox(height: 8),
         Text(
           config.title,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 30,
             fontWeight: FontWeight.w900,
             color: config.color,
@@ -244,7 +244,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         const SizedBox(height: 12),
         Text(
           config.subtitle,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 15,
             color: AppTheme.textSecondary,
           ),
@@ -288,7 +288,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: config.color,
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                textStyle: GoogleFonts.poppins(
+                textStyle: GoogleFonts.nunito(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
@@ -322,7 +322,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         children: [
           Text(
             'Resultados de la votaci\u00F3n',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.nunito(
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: AppTheme.textSecondary,
@@ -339,7 +339,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                     width: 100,
                     child: Text(
                       entry.key,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: 13,
                         fontWeight:
                             isEliminated ? FontWeight.w700 : FontWeight.w500,
@@ -384,7 +384,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                   const SizedBox(width: 10),
                   Text(
                     '${entry.value}',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: isEliminated
@@ -435,7 +435,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                   Center(
                     child: Text(
                       'Siguiente...',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: _autoAdvanceController!.value < 0.5

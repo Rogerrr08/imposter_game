@@ -62,7 +62,7 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: 28),
                   Text(
                     'YEISON',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       fontSize: 42,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 6,
@@ -71,7 +71,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   Text(
                     'Impostor',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.primaryColor,
@@ -81,7 +81,7 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Text(
                     'El juego de la palabra secreta',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       fontSize: 13,
                       color: AppTheme.textSecondary,
                       letterSpacing: 1,
@@ -98,7 +98,7 @@ class HomeScreen extends ConsumerWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryColor,
                         padding: const EdgeInsets.symmetric(vertical: 18),
-                        textStyle: GoogleFonts.poppins(
+                        textStyle: GoogleFonts.nunito(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
@@ -115,7 +115,7 @@ class HomeScreen extends ConsumerWidget {
                       label: const Text('Mis Grupos'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 18),
-                        textStyle: GoogleFonts.poppins(
+                        textStyle: GoogleFonts.nunito(
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
@@ -125,18 +125,18 @@ class HomeScreen extends ConsumerWidget {
                   const Spacer(flex: 1),
                   // How to play
                   TextButton.icon(
-                    onPressed: () => _showHowToPlay(context),
+                    onPressed: () => context.push('/how-to-play'),
                     icon: const Icon(Icons.help_outline, size: 20),
                     label: Text(
-                      'Cómo jugar',
-                      style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+                      'C\u00F3mo jugar',
+                      style: GoogleFonts.nunito(color: AppTheme.textSecondary),
                     ),
                   ),
                   const SizedBox(height: 4),
                   appVersionLabelAsync.when(
                     data: (label) => Text(
                       label,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: 12,
                         color: AppTheme.textSecondary.withValues(alpha: 0.5),
                         letterSpacing: 0.4,
@@ -173,126 +173,4 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
-  void _showHowToPlay(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Cómo jugar',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _howToPlayStep('1', 'Agrega los jugadores (3-20 personas).'),
-              _howToPlayStep(
-                '2',
-                'Selecciona las categorías, cantidad de impostores y el tiempo. La palabra se elige al azar de las categorías activas.',
-              ),
-              _howToPlayStep(
-                '3',
-                'Cada jugador ve su rol en secreto pasándose el teléfono.',
-              ),
-              _howToPlayStep(
-                '4',
-                'Los civiles conocen la palabra secreta. Los impostores NO.',
-              ),
-              _howToPlayStep(
-                '5',
-                'Discutan y hagan preguntas para encontrar al impostor.',
-              ),
-              _howToPlayStep(
-                '6',
-                'Voten para eliminar al sospechoso. Tienen 3 vidas: si votan mal 3 veces, ganan los impostores.',
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Puntuación:',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.warningColor,
-                ),
-              ),
-              const SizedBox(height: 4),
-              _pointsRow('+5', 'Impostor sobrevive hasta el final'),
-              _pointsRow('+3', 'Impostor adivina la palabra'),
-              _pointsRow('+3', 'Civil que descubre a un impostor'),
-              _pointsRow('+1', 'Civil del equipo ganador que no votó mal'),
-              _pointsRow('+1', 'Impostor eliminado por votación (si ganan impostores)'),
-              _pointsRow('+0', 'Civil que votó mal (sin puntos aunque ganen)'),
-              _pointsRow('+0', 'Impostor eliminado por adivinar mal'),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Entendido'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _howToPlayStep(String number, String text) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                number,
-                style: GoogleFonts.poppins(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.poppins(fontSize: 13, color: AppTheme.textSecondary),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _pointsRow(String points, String description) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          Text(
-            points,
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w700,
-              color: AppTheme.successColor,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              description,
-              style: GoogleFonts.poppins(fontSize: 12, color: AppTheme.textSecondary),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

@@ -26,7 +26,7 @@ class HintsToggle extends StatelessWidget {
         contentPadding: EdgeInsets.zero,
         title: Text(
           'Pistas para impostores',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 15,
             fontWeight: FontWeight.w500,
             color: AppTheme.textPrimary,
@@ -36,7 +36,7 @@ class HintsToggle extends StatelessWidget {
           hintsEnabled
               ? 'Los impostores reciben una pista m\u00E1s sutil'
               : 'Sin pistas, mayor dificultad',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 12,
             color: AppTheme.textSecondary.withValues(alpha: 0.8),
           ),

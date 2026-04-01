@@ -97,7 +97,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                         children: [
                           Text(
                             '\u{1F6A8} Verificaci\u00f3n de impostor',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.nunito(
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
                               color: AppTheme.textPrimary,
@@ -122,7 +122,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                                   child: Text(
                                     'OJO: Escribe tu PISTA, NO la palabra que intentas adivinar. '
                                     'Esto es solo para verificar que eres impostor.',
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.nunito(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                       color: AppTheme.textPrimary,
@@ -136,11 +136,11 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                           TextField(
                             controller: hintController,
                             autofocus: false,
-                            style: GoogleFonts.poppins(color: AppTheme.textPrimary),
+                            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
                             textCapitalization: TextCapitalization.words,
                             decoration: InputDecoration(
                               hintText: 'Escribe tu pista aquí...',
-                              hintStyle: GoogleFonts.poppins(
+                              hintStyle: GoogleFonts.nunito(
                                 color: AppTheme.textSecondary.withValues(alpha: 0.5),
                               ),
                               errorText: errorText,
@@ -174,7 +174,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                                   ),
                                   child: Text(
                                     'Confirmar',
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.nunito(
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -190,7 +190,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                                   ),
                                   child: Text(
                                     'Cancelar',
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.nunito(
                                       color: AppTheme.textSecondary,
                                     ),
                                   ),
@@ -287,7 +287,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                   const Spacer(),
                   Text(
                     'Discusi\u00F3n en curso',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textSecondary,
@@ -324,7 +324,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                 isClassicMode
                     ? 'Cuando termine la ronda de palabras, inicia la votaci\u00F3n an\u00F3nima.'
                     : '\u00BFEres civil? \u{1F50D} Vota aqu\u00ED:',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.textPrimary,
@@ -346,7 +346,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    textStyle: GoogleFonts.poppins(
+                    textStyle: GoogleFonts.nunito(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -358,7 +358,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                 const SizedBox(height: 20),
                 Text(
                   '\u00BFNo? Entonces eres impostor \u{1F480}\nIntenta adivinar la palabra...',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.nunito(
                     fontSize: 14,
                     color: AppTheme.textPrimary.withValues(alpha: 0.7),
                   ),
@@ -373,7 +373,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                       foregroundColor: AppTheme.secondaryColor,
                       side: BorderSide(color: AppTheme.secondaryColor),
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      textStyle: GoogleFonts.poppins(
+                      textStyle: GoogleFonts.nunito(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                       ),
@@ -450,7 +450,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
               const SizedBox(height: 4),
               Text(
                 timeString,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 36,
                   fontWeight: FontWeight.w800,
                   color: timerColor,
@@ -486,7 +486,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
           Flexible(
             child: Text(
               'Empieza: $playerName',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.nunito(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
@@ -508,7 +508,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
       children: [
         Text(
           'Eliminados (${eliminated.length})',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: AppTheme.textSecondary,
@@ -531,7 +531,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
               ),
               child: Text(
                 player.name,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: AppTheme.textSecondary,

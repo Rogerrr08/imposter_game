@@ -73,15 +73,15 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           title: groupAsync.when(
             loading: () => Text(
               'Cargando...',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
             ),
             error: (_, __) => Text(
               'Error',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
             ),
             data: (group) => Text(
               group?.name ?? 'Grupo',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
             ),
           ),
           actions: [
@@ -126,7 +126,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                   const SizedBox(height: 16),
                   Text(
                     'Error al cargar el grupo',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textPrimary,
@@ -167,7 +167,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                     icon: const Icon(Icons.play_arrow_rounded, size: 24),
                     label: Text(
                       'Jugar con este grupo',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
@@ -203,7 +203,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                         icon: const Icon(Icons.leaderboard_rounded, size: 20),
                         label: Text(
                           'Rankings',
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                          style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
                         ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.warningColor,
@@ -234,7 +234,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                         icon: const Icon(Icons.history_rounded, size: 20),
                         label: Text(
                           'Historial',
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                          style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
                         ),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppTheme.successColor,
@@ -261,7 +261,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         const SizedBox(width: 8),
         Text(
           title,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: AppTheme.textPrimary,
@@ -285,12 +285,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 textCapitalization: TextCapitalization.words,
                 decoration: InputDecoration(
                   hintText: 'Nombre del jugador',
-                  hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary.withValues(alpha: 0.5), fontSize: 14),
+                  hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withValues(alpha: 0.5), fontSize: 14),
                   border: InputBorder.none,
                   filled: false,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 ),
-                style: GoogleFonts.poppins(color: AppTheme.textPrimary, fontSize: 14),
+                style: GoogleFonts.nunito(color: AppTheme.textPrimary, fontSize: 14),
                 onSubmitted: (_) => _addPlayer(),
               ),
             ),
@@ -336,7 +336,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
         padding: const EdgeInsets.all(16),
         child: Text(
           'Error al cargar jugadores',
-          style: GoogleFonts.poppins(color: AppTheme.secondaryColor),
+          style: GoogleFonts.nunito(color: AppTheme.secondaryColor),
         ),
       ),
       data: (players) {
@@ -355,7 +355,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                   const SizedBox(height: 12),
                   Text(
                     'No hay jugadores a\u00fan',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       fontSize: 14,
                       color: AppTheme.textSecondary,
                     ),
@@ -363,7 +363,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                   const SizedBox(height: 4),
                   Text(
                     'Agrega jugadores usando el campo de arriba',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       fontSize: 12,
                       color: AppTheme.textSecondary.withValues(alpha: 0.5),
                     ),
@@ -407,7 +407,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Editar Nombre',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         content: Form(
           key: formKey,
@@ -417,10 +417,10 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del grupo',
-              hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+              hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
               prefixIcon: Icon(Icons.group_rounded, color: AppTheme.primaryColor),
             ),
-            style: GoogleFonts.poppins(color: AppTheme.textPrimary),
+            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'El nombre no puede estar vac\u00edo';
@@ -443,7 +443,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -458,7 +458,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             child: Text(
               'Guardar',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -472,18 +472,18 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Eliminar grupo',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Se eliminarán el grupo "$groupName", sus jugadores, su historial y su ranking. Esta acción no se puede deshacer.',
-          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -493,7 +493,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             ),
             child: Text(
               'Eliminar',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -547,7 +547,7 @@ class _PlayerTile extends ConsumerWidget {
           backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
           child: Text(
             '$index',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.nunito(
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color: AppTheme.primaryColor,
@@ -556,7 +556,7 @@ class _PlayerTile extends ConsumerWidget {
         ),
         title: Text(
           player.name,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 15,
             fontWeight: FontWeight.w500,
             color: AppTheme.textPrimary,
@@ -596,18 +596,18 @@ class _PlayerTile extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Eliminar jugador',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         content: Text(
           '\u00bfEliminar a "${player.name}" del grupo?',
-          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -617,7 +617,7 @@ class _PlayerTile extends ConsumerWidget {
             ),
             child: Text(
               'Eliminar',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -634,7 +634,7 @@ class _PlayerTile extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Editar Jugador',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         content: Form(
           key: formKey,
@@ -644,10 +644,10 @@ class _PlayerTile extends ConsumerWidget {
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del jugador',
-              hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+              hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
               prefixIcon: Icon(Icons.person_rounded, color: AppTheme.primaryColor),
             ),
-            style: GoogleFonts.poppins(color: AppTheme.textPrimary),
+            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'El nombre no puede estar vac\u00edo';
@@ -669,7 +669,7 @@ class _PlayerTile extends ConsumerWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -683,7 +683,7 @@ class _PlayerTile extends ConsumerWidget {
             },
             child: Text(
               'Guardar',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
           ),
         ],

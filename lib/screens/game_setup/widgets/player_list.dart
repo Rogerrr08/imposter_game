@@ -56,7 +56,7 @@ class PlayerList extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Agrega al menos $minPlayers jugadores',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.nunito(
                 fontSize: 13,
                 color: AppTheme.textSecondary,
               ),
@@ -122,7 +122,7 @@ class PlayerList extends StatelessWidget {
                         : AppTheme.primaryColor.withValues(alpha: 0.6),
                 child: Text(
                   player.name[0].toUpperCase(),
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.nunito(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -133,7 +133,7 @@ class PlayerList extends StatelessWidget {
               Expanded(
                 child: Text(
                   player.name,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.nunito(
                     fontSize: 14,
                     fontWeight: isExcluded ? FontWeight.w400 : FontWeight.w600,
                     color: isExcluded

@@ -46,7 +46,7 @@ class CategorySection extends StatelessWidget {
                   Text(category.displayName),
                 ],
               ),
-              labelStyle: GoogleFonts.poppins(
+              labelStyle: GoogleFonts.nunito(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 color:
@@ -72,7 +72,7 @@ class CategorySection extends StatelessWidget {
           onTap: allSelected ? null : onSelectAll,
           child: Text(
             allSelected ? 'Todas seleccionadas' : 'Seleccionar todas',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.nunito(
               fontSize: 12,
               color:
                   allSelected ? AppTheme.textSecondary : AppTheme.primaryColor,

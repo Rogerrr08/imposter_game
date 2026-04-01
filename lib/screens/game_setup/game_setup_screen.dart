@@ -217,7 +217,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message, style: GoogleFonts.poppins())),
+      SnackBar(content: Text(message, style: GoogleFonts.nunito())),
     );
   }
 
@@ -302,7 +302,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
         appBar: AppBar(
           title: Text(
             'Nueva Partida',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
@@ -451,7 +451,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
             ),
             child: Text(
               'Error cargando jugadores del grupo',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.nunito(
                 color: AppTheme.secondaryColor,
                 fontSize: 13,
               ),
@@ -482,7 +482,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                 ),
                 child: Text(
                   'Este grupo no tiene jugadores todavia.',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.nunito(
                     fontSize: 13,
                     color: AppTheme.textSecondary,
                   ),
@@ -531,11 +531,11 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           child: TextField(
             controller: _playerController,
             focusNode: _playerFocusNode,
-            style: GoogleFonts.poppins(color: AppTheme.textPrimary),
+            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del jugador',
-              hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+              hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
               prefixIcon: Icon(
                 Icons.person_add_alt_1_rounded,
                 color: AppTheme.textSecondary.withValues(alpha: 0.5),

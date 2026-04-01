@@ -9,8 +9,8 @@ enum GameMode {
   classic;
 
   String get displayName => switch (this) {
-        GameMode.express => 'Modo Express',
-        GameMode.classic => 'Modo Cl\u00E1sico',
+        GameMode.express => '\u26A1 Modo Express',
+        GameMode.classic => '\u{1F3DB}\uFE0F Modo Cl\u00E1sico',
       };
 
   String get subtitle => switch (this) {

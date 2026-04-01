@@ -75,7 +75,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
           ),
           title: Text(
             'Historial',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
           ),
           actions: [
             IconButton(
@@ -125,7 +125,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
                         const SizedBox(height: 16),
                         Text(
                           'Error al cargar el historial',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.nunito(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textPrimary,
@@ -159,7 +159,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
                             const SizedBox(height: 24),
                             Text(
                               'No hay partidas registradas',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.nunito(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.textPrimary,
@@ -169,7 +169,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
                             Text(
                               'Las partidas jugadas con este grupo\naparecer\u00E1n aqu\u00ED.',
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.nunito(
                                 fontSize: 14,
                                 color: AppTheme.textSecondary,
                               ),
@@ -202,18 +202,18 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Borrar historial',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Esto borrara el historial guardado de este grupo. El ranking no se vera afectado.',
-          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -223,7 +223,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
             ),
             child: Text(
               'Borrar',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -254,10 +254,10 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
   String _modeDisplay(String mode) {
     switch (mode) {
       case 'classic':
-        return 'Clasico';
+        return '\u{1F3DB}\uFE0F Cl\u00E1sico';
       case 'express':
       default:
-        return 'Express';
+        return '\u26A1 Express';
     }
   }
 
@@ -317,7 +317,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     const SizedBox(width: 6),
                     Text(
                       dateFormat.format(game.playedAt),
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: 12,
                         color: AppTheme.textSecondary,
                       ),
@@ -331,7 +331,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     const SizedBox(width: 4),
                     Text(
                       durationText,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: 12,
                         color: AppTheme.textSecondary,
                       ),
@@ -366,7 +366,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                       ),
                       child: Text(
                         modeDisplay,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.nunito(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: AppTheme.textPrimary,
@@ -384,7 +384,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                       ),
                       child: Text(
                         categoryDisplay,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.nunito(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: AppTheme.primaryColor,
@@ -393,7 +393,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     ),
                     Text(
                       'Palabra: ${game.word}',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.textPrimary,
@@ -414,7 +414,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     Expanded(
                       child: RichText(
                         text: TextSpan(
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.nunito(
                             fontSize: 13,
                             color: AppTheme.textSecondary,
                           ),
@@ -422,7 +422,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                             const TextSpan(text: 'Impostor: '),
                             TextSpan(
                               text: impostors.map((p) => p.playerName).join(', '),
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.nunito(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.secondaryColor,
@@ -451,7 +451,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                       const SizedBox(width: 8),
                       Text(
                         resultText,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.nunito(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: resultColor,
@@ -470,7 +470,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                           ),
                           child: Text(
                             'Adivino la palabra',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.nunito(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: AppTheme.warningColor,
@@ -490,7 +490,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                   const SizedBox(height: 16),
                   Text(
                     'Puntuaci\u00F3n',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
@@ -521,7 +521,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                               children: [
                                 Text(
                                   player.playerName,
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.nunito(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                     color: isImpostor
@@ -546,7 +546,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                                     ),
                                     child: Text(
                                       'eliminado',
-                                      style: GoogleFonts.poppins(
+                                      style: GoogleFonts.nunito(
                                         fontSize: 10,
                                         color: AppTheme.textSecondary.withValues(
                                           alpha: 0.6,
@@ -573,7 +573,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                             ),
                             child: Text(
                               points > 0 ? '+$points pts' : '0 pts',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.nunito(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 color: points > 0

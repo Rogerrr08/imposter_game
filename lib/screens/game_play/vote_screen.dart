@@ -168,18 +168,18 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Voto no v\u00E1lido',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         content: Text(
           message,
-          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
         ),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Entendido',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -254,7 +254,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                     ? 'Empate en la votaci\u00F3n'
                     : 'Votaci\u00F3n an\u00F3nima',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -266,7 +266,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                     ? 'Entre todos decidan cual de los empatados sera eliminado.'
                     : 'Participante $progress de $totalVoters',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 14,
                   color: AppTheme.textSecondary,
                 ),
@@ -287,7 +287,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                     children: [
                       Text(
                         'Ahora vota',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.nunito(
                           fontSize: 13,
                           color: AppTheme.textSecondary,
                         ),
@@ -295,7 +295,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                       const SizedBox(height: 6),
                       Text(
                         currentVoter ?? '-',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.nunito(
                           fontSize: 30,
                           fontWeight: FontWeight.w800,
                           color: AppTheme.primaryColor,
@@ -311,7 +311,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                   tieCandidates.isNotEmpty
                       ? 'Seleccionen al eliminado:'
                       : 'Selecciona a quien eliminar:',
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.nunito(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
@@ -355,7 +355,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                             Expanded(
                               child: Text(
                                 name,
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.nunito(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                   color: AppTheme.textPrimary,
@@ -392,7 +392,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                     disabledBackgroundColor:
                         AppTheme.secondaryColor.withValues(alpha: 0.3),
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: GoogleFonts.poppins(
+                    textStyle: GoogleFonts.nunito(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -477,7 +477,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
         const SizedBox(height: 24),
         Text(
           stepTitle,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 26,
             fontWeight: FontWeight.w800,
             color: AppTheme.textPrimary,
@@ -487,7 +487,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
         const SizedBox(height: 8),
         Text(
           stepSubtitle,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 14,
             color: AppTheme.textSecondary,
           ),
@@ -553,14 +553,14 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                   onSelected(match);
                 }
               },
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.nunito(
                 color: AppTheme.textPrimary,
                 fontSize: 18,
               ),
               textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: GoogleFonts.poppins(
+                hintStyle: GoogleFonts.nunito(
                   color: AppTheme.textSecondary.withValues(alpha: 0.5),
                   fontSize: 16,
                 ),
@@ -622,7 +622,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                         dense: true,
                         title: Text(
                           option,
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.nunito(
                             color: AppTheme.textPrimary,
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
@@ -672,7 +672,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
             children: [
               Text(
                 'Confirmar voto',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -707,7 +707,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
               padding: const EdgeInsets.symmetric(vertical: 18),
-              textStyle: GoogleFonts.poppins(
+              textStyle: GoogleFonts.nunito(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
@@ -720,7 +720,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
           onPressed: _stepBack,
           child: Text(
             'Cambiar',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.nunito(
               color: AppTheme.textSecondary,
               fontSize: 15,
             ),
@@ -740,7 +740,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
       children: [
         Text(
           label,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 13,
             color: AppTheme.textSecondary,
           ),
@@ -748,7 +748,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
         const SizedBox(height: 4),
         Text(
           name,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 24,
             fontWeight: FontWeight.w800,
             color: color,

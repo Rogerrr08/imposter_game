@@ -469,7 +469,10 @@ class GameNotifier extends Notifier<ActiveGame?> {
 
     return players.map((player) {
       if (player.role == PlayerRole.civil && penalizedVoters.contains(player.name)) {
-        return player.copyWith(points: player.points - 1);
+        return player.copyWith(
+          points: player.points - 1,
+          votedIncorrectly: true,
+        );
       }
       return player;
     }).toList();
@@ -496,7 +499,8 @@ class GameNotifier extends Notifier<ActiveGame?> {
   List<GamePlayer> _applyClassicCivilWinScoring(List<GamePlayer> players) {
     return players.map((player) {
       if (player.role != PlayerRole.civil) return player;
-      return player.copyWith(points: player.points + 1);
+      if (player.votedIncorrectly) return player;
+      return player.copyWith(points: player.points + 2);
     }).toList();
   }
 

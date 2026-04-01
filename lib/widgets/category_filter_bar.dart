@@ -37,7 +37,7 @@ class CategoryFilterBar extends StatelessWidget {
               selected: isSelected,
               label: Text(
                 entry.value,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   color: isSelected ? Colors.white : AppTheme.textPrimary,

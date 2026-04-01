@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../screens/home/home_screen.dart';
+import '../screens/home/how_to_play_screen.dart';
 import '../screens/game_setup/game_setup_screen.dart';
 import '../screens/game_play/role_reveal_screen.dart';
 import '../screens/game_play/round_start_screen.dart';
@@ -24,6 +25,11 @@ class AppRouter {
       GoRoute(
         path: '/',
         pageBuilder: (context, state) => _buildPage(state, const HomeScreen()),
+      ),
+      GoRoute(
+        path: '/how-to-play',
+        pageBuilder: (context, state) =>
+            _buildPage(state, const HowToPlayScreen()),
       ),
       GoRoute(
         path: '/setup',

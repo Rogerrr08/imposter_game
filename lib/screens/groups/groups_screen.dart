@@ -33,7 +33,7 @@ class GroupsScreen extends ConsumerWidget {
         appBar: AppBar(
           title: Text(
             'Mis Grupos',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
@@ -46,7 +46,7 @@ class GroupsScreen extends ConsumerWidget {
           icon: const Icon(Icons.add_rounded, color: Colors.white),
           label: Text(
             'Nuevo Grupo',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.nunito(
               fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
@@ -66,7 +66,7 @@ class GroupsScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Text(
                     'Error al cargar los grupos',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textPrimary,
@@ -76,7 +76,7 @@ class GroupsScreen extends ConsumerWidget {
                   Text(
                     error.toString(),
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.poppins(fontSize: 13, color: AppTheme.textSecondary),
+                    style: GoogleFonts.nunito(fontSize: 13, color: AppTheme.textSecondary),
                   ),
                 ],
               ),
@@ -98,7 +98,7 @@ class GroupsScreen extends ConsumerWidget {
                       const SizedBox(height: 24),
                       Text(
                         'No hay grupos aún',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.nunito(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
@@ -108,7 +108,7 @@ class GroupsScreen extends ConsumerWidget {
                       Text(
                         'Crea un grupo para guardar jugadores\ny llevar un historial de partidas.',
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.nunito(
                           fontSize: 14,
                           color: AppTheme.textSecondary,
                         ),
@@ -148,7 +148,7 @@ class GroupsScreen extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Nuevo Grupo',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         content: Form(
           key: formKey,
@@ -158,10 +158,10 @@ class GroupsScreen extends ConsumerWidget {
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del grupo',
-              hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+              hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
               prefixIcon: Icon(Icons.group_rounded, color: AppTheme.primaryColor),
             ),
-            style: GoogleFonts.poppins(color: AppTheme.textPrimary),
+            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'Ingresa un nombre para el grupo';
@@ -184,7 +184,7 @@ class GroupsScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -197,7 +197,7 @@ class GroupsScreen extends ConsumerWidget {
             ),
             child: Text(
               'Crear',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -279,7 +279,7 @@ class _GroupCard extends ConsumerWidget {
             SnackBar(
               content: Text(
                 'Grupo "${group.name}" eliminado',
-                style: GoogleFonts.poppins(),
+                style: GoogleFonts.nunito(),
               ),
               action: SnackBarAction(
                 label: 'OK',
@@ -326,7 +326,7 @@ class _GroupCard extends ConsumerWidget {
                       children: [
                         Text(
                           group.name,
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.nunito(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textPrimary,
@@ -344,21 +344,21 @@ class _GroupCard extends ConsumerWidget {
                             playersAsync.when(
                               loading: () => Text(
                                 '...',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.nunito(
                                   fontSize: 12,
                                   color: AppTheme.textSecondary,
                                 ),
                               ),
                               error: (_, __) => Text(
                                 '?',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.nunito(
                                   fontSize: 12,
                                   color: AppTheme.textSecondary,
                                 ),
                               ),
                               data: (players) => Text(
                                 '${players.length} jugador${players.length == 1 ? '' : 'es'}',
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.nunito(
                                   fontSize: 12,
                                   color: AppTheme.textSecondary,
                                 ),
@@ -373,7 +373,7 @@ class _GroupCard extends ConsumerWidget {
                             const SizedBox(width: 4),
                             Text(
                               dateFormat.format(group.createdAt),
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.nunito(
                                 fontSize: 12,
                                 color: AppTheme.textSecondary,
                               ),
@@ -419,18 +419,18 @@ class _GroupCard extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Eliminar grupo',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         content: Text(
           '\u00bfEst\u00e1s seguro de que quieres eliminar el grupo "${group.name}"?\n\nEsta acci\u00f3n no se puede deshacer.',
-          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -440,7 +440,7 @@ class _GroupCard extends ConsumerWidget {
             ),
             child: Text(
               'Eliminar',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
           ),
         ],

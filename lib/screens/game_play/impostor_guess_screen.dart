@@ -127,7 +127,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
             isClassicMode
                 ? 'El impostor eliminado intenta adivinar'
                 : 'El impostor intenta adivinar',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.nunito(
               fontSize: 22,
               fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
@@ -137,7 +137,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
           const SizedBox(height: 8),
           Text(
             'Escribe la palabra secreta que crees que es',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.nunito(
               fontSize: 14,
               color: AppTheme.textSecondary,
             ),
@@ -162,7 +162,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
                     isClassicMode
                         ? 'Impostor eliminado que est\u00E1 adivinando'
                         : 'Impostor que est\u00E1 adivinando',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       color: AppTheme.textSecondary,
                       fontSize: 12,
                     ),
@@ -170,7 +170,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
                   const SizedBox(height: 6),
                   Text(
                     selectedImpostor ?? activeImpostors.first.name,
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       color: AppTheme.textPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -195,14 +195,14 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
                   isExpanded: true,
                   hint: Text(
                     '\u00BFQu\u00E9 impostor est\u00E1 adivinando?',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       color: AppTheme.textSecondary,
                       fontSize: 14,
                     ),
                   ),
                   value: selectedImpostor,
                   dropdownColor: AppTheme.surfaceColor,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.nunito(
                     color: AppTheme.textPrimary,
                     fontSize: 14,
                   ),
@@ -232,7 +232,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
             ),
             child: TextField(
               controller: _guessController,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.nunito(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
@@ -241,7 +241,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
               textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
                 hintText: 'Escribe tu respuesta...',
-                hintStyle: GoogleFonts.poppins(
+                hintStyle: GoogleFonts.nunito(
                   fontSize: 16,
                   color: AppTheme.textSecondary.withValues(alpha: 0.5),
                 ),
@@ -289,7 +289,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
                     isClassicMode
                         ? 'Si fallas, pierdes tu oportunidad y el juego contin\u00FAa.'
                         : 'Si fallas, el juego contin\u00FAa y los civiles sabr\u00E1n que eres impostor.',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.nunito(
                       fontSize: 12,
                       color: AppTheme.warningColor.withValues(alpha: 0.8),
                     ),
@@ -311,7 +311,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
                 disabledBackgroundColor:
                     AppTheme.secondaryColor.withValues(alpha: 0.3),
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                textStyle: GoogleFonts.poppins(
+                textStyle: GoogleFonts.nunito(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),

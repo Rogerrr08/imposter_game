@@ -6,8 +6,8 @@ import '../theme/app_theme.dart';
 
 const gameModeLabels = <GameMode?, String>{
   null: 'Todas',
-  GameMode.express: 'Express',
-  GameMode.classic: 'Clasico',
+  GameMode.express: '\u26A1 Express',
+  GameMode.classic: '\u{1F3DB}\uFE0F Cl\u00E1sico',
 };
 
 class GameModeFilterBar extends StatelessWidget {
@@ -34,7 +34,7 @@ class GameModeFilterBar extends StatelessWidget {
               selected: isSelected,
               label: Text(
                 entry.value,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   color: isSelected ? Colors.white : AppTheme.textPrimary,
