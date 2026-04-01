@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../database/database.dart';
+import '../../models/game_state.dart';
 import '../../providers/database_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/game_provider.dart';
 import '../../widgets/category_filter_bar.dart';
+import '../../widgets/game_mode_filter_bar.dart';
 
 class RankingsScreen extends ConsumerStatefulWidget {
   final int groupId;
@@ -19,7 +21,6 @@ class RankingsScreen extends ConsumerStatefulWidget {
 }
 
 class _RankingsScreenState extends ConsumerState<RankingsScreen> {
-
   static const _goldColor = Color(0xFFFFD700);
   static const _silverColor = Color(0xFFC0C0C0);
   static const _bronzeColor = Color(0xFFCD7F32);
@@ -30,11 +31,13 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final selectedCategory = ref.read(rankingCategoryFilterProvider);
+      final selectedMode = ref.read(rankingGameModeFilterProvider);
       ref.invalidate(
         rankingsProvider(
           (
             groupId: widget.groupId,
             category: selectedCategory,
+            mode: selectedMode,
           ),
         ),
       );
@@ -53,7 +56,12 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
   Widget build(BuildContext context) {
     final groupId = widget.groupId;
     final selectedCategory = ref.watch(rankingCategoryFilterProvider);
-    final request = (groupId: groupId, category: selectedCategory);
+    final selectedMode = ref.watch(rankingGameModeFilterProvider);
+    final request = (
+      groupId: groupId,
+      category: selectedCategory,
+      mode: selectedMode,
+    );
     final rankingsAsync = ref.watch(
       rankingsProvider(request),
     );
@@ -90,6 +98,12 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
         ),
         body: Column(
           children: [
+            GameModeFilterBar(
+              selectedMode: selectedMode,
+              onModeSelected: (mode) => ref
+                  .read(rankingGameModeFilterProvider.notifier)
+                  .setMode(mode),
+            ),
             CategoryFilterBar(
               selectedCategory: selectedCategory,
               onCategorySelected: (category) => ref

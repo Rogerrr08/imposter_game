@@ -397,15 +397,20 @@ class GameResultsScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: AppTheme.warningColor.withValues(alpha: 0.15),
+              color: (player.points >= 0
+                      ? AppTheme.successColor
+                      : AppTheme.errorColor)
+                  .withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
-              '+${player.points}',
+              '${player.points >= 0 ? '+' : ''}${player.points}',
               style: GoogleFonts.poppins(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: AppTheme.warningColor,
+                color: player.points >= 0
+                    ? AppTheme.successColor
+                    : AppTheme.errorColor,
               ),
             ),
           ),

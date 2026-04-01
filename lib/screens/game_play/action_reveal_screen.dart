@@ -29,7 +29,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
 
   bool get _shouldAutoAdvance {
     final reveal = widget.reveal;
-    // Auto-advance when civil was innocent (vote fail) or impostor guessed wrong
+    if (reveal.voteTallies.isNotEmpty) return false;
     return (reveal.type == ActionRevealType.vote && !reveal.success) ||
         (reveal.type == ActionRevealType.guess && !reveal.success);
   }
@@ -82,6 +82,14 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
     final gameState = ref.read(gameProvider);
     if (gameState == null) {
       context.go('/');
+      return;
+    }
+
+    if (gameState.config.mode == GameMode.classic &&
+        widget.reveal.type == ActionRevealType.vote &&
+        widget.reveal.success &&
+        gameState.awaitingClassicGuessDecision) {
+      context.go('/classic-impostor-choice');
       return;
     }
 
@@ -265,6 +273,10 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
             ],
           ),
         ],
+        if (widget.reveal.voteTallies.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          _buildVoteTallies(config.color),
+        ],
         const Spacer(flex: 2),
         if (_shouldAutoAdvance && _autoAdvanceController != null)
           _buildAutoAdvanceBar(config.color)
@@ -286,6 +298,106 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           ),
         const SizedBox(height: 32),
       ],
+    );
+  }
+
+  Widget _buildVoteTallies(Color accentColor) {
+    final tallies = widget.reveal.voteTallies;
+    final sorted = tallies.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final maxVotes = sorted.first.value;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.textSecondary.withValues(alpha: 0.1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Resultados de la votaci\u00F3n',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...sorted.map((entry) {
+            final isEliminated = entry.key == widget.reveal.subjectText;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      entry.key,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight:
+                            isEliminated ? FontWeight.w700 : FontWeight.w500,
+                        color: isEliminated
+                            ? accentColor
+                            : AppTheme.textPrimary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final fraction = entry.value / maxVotes;
+                        return Stack(
+                          children: [
+                            Container(
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: AppTheme.textSecondary
+                                    .withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            Container(
+                              height: 22,
+                              width: constraints.maxWidth * fraction,
+                              decoration: BoxDecoration(
+                                color: isEliminated
+                                    ? accentColor.withValues(alpha: 0.7)
+                                    : AppTheme.primaryColor
+                                        .withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '${entry.value}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: isEliminated
+                          ? accentColor
+                          : AppTheme.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -354,10 +466,13 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
             buttonLabel: 'Continuar',
           );
         }
-        final actor = reveal.actorText ?? 'El civil que vot\u00F3';
+        final actor = reveal.actorText == null
+            ? 'La mayor\u00EDa del grupo'
+            : reveal.actorText!;
         final lives = reveal.livesRemaining ?? 0;
-        final subtitle =
-            '$actor fall\u00F3 y queda eliminado.\n$lives vida${lives == 1 ? '' : 's'} restante${lives == 1 ? '' : 's'}';
+        final subtitle = reveal.livesRemaining == null
+            ? '$actor vot\u00F3 a un civil y queda eliminado.'
+            : '$actor fall\u00F3 y queda eliminado.\n$lives vida${lives == 1 ? '' : 's'} restante${lives == 1 ? '' : 's'}';
         return _RevealVisualConfig(
           color: AppTheme.successColor,
           imagePath: 'assets/images/civil_lose_life.png',
@@ -382,6 +497,15 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           imagePath: 'assets/images/impostor_failed_guess.png',
           title: '\u00A1Respuesta incorrecta!',
           subtitle: '$actor fall\u00F3 y queda eliminado.',
+          buttonLabel: 'Continuar',
+        );
+      case ActionRevealType.guessSkipped:
+        final actor = reveal.actorText ?? 'El impostor';
+        return _RevealVisualConfig(
+          color: AppTheme.warningColor,
+          imagePath: 'assets/images/player_impostor.png',
+          title: 'No quiso arriesgar',
+          subtitle: '$actor prefiri\u00F3 no intentar adivinar la palabra.',
           buttonLabel: 'Continuar',
         );
     }

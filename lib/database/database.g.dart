@@ -527,6 +527,16 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
       'REFERENCES "groups" (id)',
     ),
   );
+  static const VerificationMeta _modeMeta = const VerificationMeta('mode');
+  @override
+  late final GeneratedColumn<String> mode = GeneratedColumn<String>(
+    'mode',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('express'),
+  );
   static const VerificationMeta _categoryMeta = const VerificationMeta(
     'category',
   );
@@ -628,6 +638,7 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
   List<GeneratedColumn> get $columns => [
     id,
     groupId,
+    mode,
     category,
     word,
     duration,
@@ -656,6 +667,12 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
       context.handle(
         _groupIdMeta,
         groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta),
+      );
+    }
+    if (data.containsKey('mode')) {
+      context.handle(
+        _modeMeta,
+        mode.isAcceptableOrUnknown(data['mode']!, _modeMeta),
       );
     }
     if (data.containsKey('category')) {
@@ -742,6 +759,10 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
         DriftSqlType.int,
         data['${effectivePrefix}group_id'],
       ),
+      mode: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mode'],
+      )!,
       category: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}category'],
@@ -786,6 +807,7 @@ class $GamesTable extends Games with TableInfo<$GamesTable, Game> {
 class Game extends DataClass implements Insertable<Game> {
   final int id;
   final int? groupId;
+  final String mode;
   final String category;
   final String word;
   final int duration;
@@ -797,6 +819,7 @@ class Game extends DataClass implements Insertable<Game> {
   const Game({
     required this.id,
     this.groupId,
+    required this.mode,
     required this.category,
     required this.word,
     required this.duration,
@@ -813,6 +836,7 @@ class Game extends DataClass implements Insertable<Game> {
     if (!nullToAbsent || groupId != null) {
       map['group_id'] = Variable<int>(groupId);
     }
+    map['mode'] = Variable<String>(mode);
     map['category'] = Variable<String>(category);
     map['word'] = Variable<String>(word);
     map['duration'] = Variable<int>(duration);
@@ -830,6 +854,7 @@ class Game extends DataClass implements Insertable<Game> {
       groupId: groupId == null && nullToAbsent
           ? const Value.absent()
           : Value(groupId),
+      mode: Value(mode),
       category: Value(category),
       word: Value(word),
       duration: Value(duration),
@@ -849,6 +874,7 @@ class Game extends DataClass implements Insertable<Game> {
     return Game(
       id: serializer.fromJson<int>(json['id']),
       groupId: serializer.fromJson<int?>(json['groupId']),
+      mode: serializer.fromJson<String>(json['mode']),
       category: serializer.fromJson<String>(json['category']),
       word: serializer.fromJson<String>(json['word']),
       duration: serializer.fromJson<int>(json['duration']),
@@ -867,6 +893,7 @@ class Game extends DataClass implements Insertable<Game> {
     return <String, dynamic>{
       'id': serializer.toJson<int>(id),
       'groupId': serializer.toJson<int?>(groupId),
+      'mode': serializer.toJson<String>(mode),
       'category': serializer.toJson<String>(category),
       'word': serializer.toJson<String>(word),
       'duration': serializer.toJson<int>(duration),
@@ -881,6 +908,7 @@ class Game extends DataClass implements Insertable<Game> {
   Game copyWith({
     int? id,
     Value<int?> groupId = const Value.absent(),
+    String? mode,
     String? category,
     String? word,
     int? duration,
@@ -892,6 +920,7 @@ class Game extends DataClass implements Insertable<Game> {
   }) => Game(
     id: id ?? this.id,
     groupId: groupId.present ? groupId.value : this.groupId,
+    mode: mode ?? this.mode,
     category: category ?? this.category,
     word: word ?? this.word,
     duration: duration ?? this.duration,
@@ -905,6 +934,7 @@ class Game extends DataClass implements Insertable<Game> {
     return Game(
       id: data.id.present ? data.id.value : this.id,
       groupId: data.groupId.present ? data.groupId.value : this.groupId,
+      mode: data.mode.present ? data.mode.value : this.mode,
       category: data.category.present ? data.category.value : this.category,
       word: data.word.present ? data.word.value : this.word,
       duration: data.duration.present ? data.duration.value : this.duration,
@@ -927,6 +957,7 @@ class Game extends DataClass implements Insertable<Game> {
     return (StringBuffer('Game(')
           ..write('id: $id, ')
           ..write('groupId: $groupId, ')
+          ..write('mode: $mode, ')
           ..write('category: $category, ')
           ..write('word: $word, ')
           ..write('duration: $duration, ')
@@ -943,6 +974,7 @@ class Game extends DataClass implements Insertable<Game> {
   int get hashCode => Object.hash(
     id,
     groupId,
+    mode,
     category,
     word,
     duration,
@@ -958,6 +990,7 @@ class Game extends DataClass implements Insertable<Game> {
       (other is Game &&
           other.id == this.id &&
           other.groupId == this.groupId &&
+          other.mode == this.mode &&
           other.category == this.category &&
           other.word == this.word &&
           other.duration == this.duration &&
@@ -971,6 +1004,7 @@ class Game extends DataClass implements Insertable<Game> {
 class GamesCompanion extends UpdateCompanion<Game> {
   final Value<int> id;
   final Value<int?> groupId;
+  final Value<String> mode;
   final Value<String> category;
   final Value<String> word;
   final Value<int> duration;
@@ -982,6 +1016,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
   const GamesCompanion({
     this.id = const Value.absent(),
     this.groupId = const Value.absent(),
+    this.mode = const Value.absent(),
     this.category = const Value.absent(),
     this.word = const Value.absent(),
     this.duration = const Value.absent(),
@@ -994,6 +1029,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
   GamesCompanion.insert({
     this.id = const Value.absent(),
     this.groupId = const Value.absent(),
+    this.mode = const Value.absent(),
     required String category,
     required String word,
     required int duration,
@@ -1010,6 +1046,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
   static Insertable<Game> custom({
     Expression<int>? id,
     Expression<int>? groupId,
+    Expression<String>? mode,
     Expression<String>? category,
     Expression<String>? word,
     Expression<int>? duration,
@@ -1022,6 +1059,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
     return RawValuesInsertable({
       if (id != null) 'id': id,
       if (groupId != null) 'group_id': groupId,
+      if (mode != null) 'mode': mode,
       if (category != null) 'category': category,
       if (word != null) 'word': word,
       if (duration != null) 'duration': duration,
@@ -1037,6 +1075,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
   GamesCompanion copyWith({
     Value<int>? id,
     Value<int?>? groupId,
+    Value<String>? mode,
     Value<String>? category,
     Value<String>? word,
     Value<int>? duration,
@@ -1049,6 +1088,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
     return GamesCompanion(
       id: id ?? this.id,
       groupId: groupId ?? this.groupId,
+      mode: mode ?? this.mode,
       category: category ?? this.category,
       word: word ?? this.word,
       duration: duration ?? this.duration,
@@ -1068,6 +1108,9 @@ class GamesCompanion extends UpdateCompanion<Game> {
     }
     if (groupId.present) {
       map['group_id'] = Variable<int>(groupId.value);
+    }
+    if (mode.present) {
+      map['mode'] = Variable<String>(mode.value);
     }
     if (category.present) {
       map['category'] = Variable<String>(category.value);
@@ -1101,6 +1144,7 @@ class GamesCompanion extends UpdateCompanion<Game> {
     return (StringBuffer('GamesCompanion(')
           ..write('id: $id, ')
           ..write('groupId: $groupId, ')
+          ..write('mode: $mode, ')
           ..write('category: $category, ')
           ..write('word: $word, ')
           ..write('duration: $duration, ')
@@ -2164,6 +2208,7 @@ typedef $$GamesTableCreateCompanionBuilder =
     GamesCompanion Function({
       Value<int> id,
       Value<int?> groupId,
+      Value<String> mode,
       required String category,
       required String word,
       required int duration,
@@ -2177,6 +2222,7 @@ typedef $$GamesTableUpdateCompanionBuilder =
     GamesCompanion Function({
       Value<int> id,
       Value<int?> groupId,
+      Value<String> mode,
       Value<String> category,
       Value<String> word,
       Value<int> duration,
@@ -2240,6 +2286,11 @@ class $$GamesTableFilterComposer extends Composer<_$AppDatabase, $GamesTable> {
   });
   ColumnFilters<int> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mode => $composableBuilder(
+    column: $table.mode,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2346,6 +2397,11 @@ class $$GamesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get mode => $composableBuilder(
+    column: $table.mode,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get category => $composableBuilder(
     column: $table.category,
     builder: (column) => ColumnOrderings(column),
@@ -2421,6 +2477,9 @@ class $$GamesTableAnnotationComposer
   });
   GeneratedColumn<int> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get mode =>
+      $composableBuilder(column: $table.mode, builder: (column) => column);
 
   GeneratedColumn<String> get category =>
       $composableBuilder(column: $table.category, builder: (column) => column);
@@ -2531,6 +2590,7 @@ class $$GamesTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<int?> groupId = const Value.absent(),
+                Value<String> mode = const Value.absent(),
                 Value<String> category = const Value.absent(),
                 Value<String> word = const Value.absent(),
                 Value<int> duration = const Value.absent(),
@@ -2542,6 +2602,7 @@ class $$GamesTableTableManager
               }) => GamesCompanion(
                 id: id,
                 groupId: groupId,
+                mode: mode,
                 category: category,
                 word: word,
                 duration: duration,
@@ -2555,6 +2616,7 @@ class $$GamesTableTableManager
               ({
                 Value<int> id = const Value.absent(),
                 Value<int?> groupId = const Value.absent(),
+                Value<String> mode = const Value.absent(),
                 required String category,
                 required String word,
                 required int duration,
@@ -2566,6 +2628,7 @@ class $$GamesTableTableManager
               }) => GamesCompanion.insert(
                 id: id,
                 groupId: groupId,
+                mode: mode,
                 category: category,
                 word: word,
                 duration: duration,

@@ -14,6 +14,7 @@ import 'widgets/category_section.dart';
 import 'widgets/hints_toggle.dart';
 import 'widgets/impostor_count_section.dart';
 import 'widgets/player_list.dart';
+import 'widgets/game_mode_section.dart';
 import 'widgets/section_header.dart';
 import 'widgets/start_button.dart';
 import 'widgets/timer_section.dart';
@@ -39,6 +40,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   int? _draggingIndex;
 
   Set<WordCategory> _selectedCategories = {...WordCategory.values};
+  GameMode _gameMode = GameMode.express;
   int _impostorCount = 1;
   bool _hintsEnabled = true;
   int _durationSeconds = 120;
@@ -86,6 +88,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
             : null;
       }
       _selectedCategories = {...preset.categories};
+      _gameMode = preset.mode;
       _impostorCount = preset.impostorCount;
       _hintsEnabled = preset.hintsEnabled;
       _durationSeconds = preset.durationSeconds;
@@ -119,7 +122,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
     if (name.isEmpty) return;
 
     if (_playerCount >= _maxPlayers) {
-      _showSnackBar('Maximo $_maxPlayers jugadores');
+      _showSnackBar('M\u00E1ximo $_maxPlayers jugadores');
       return;
     }
 
@@ -245,6 +248,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       hintsEnabled: _hintsEnabled,
       durationSeconds: _durationSeconds,
       categories: _selectedCategories.toList(),
+      mode: _gameMode,
       groupId: widget.groupId,
     );
 
@@ -255,6 +259,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       hintsEnabled: _hintsEnabled,
       durationSeconds: _durationSeconds,
       categories: _selectedCategories.toList(),
+      mode: _gameMode,
       excludedGroupPlayerIds: Set<int>.from(_excludedGroupPlayerIds),
       groupPlayerOrder: _groupPlayers.map((p) => p.id).toList(),
     );
@@ -315,6 +320,11 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildPlayersSection(),
+                      const SizedBox(height: 28),
+                      GameModeSection(
+                        selectedMode: _gameMode,
+                        onChanged: (mode) => setState(() => _gameMode = mode),
+                      ),
                       const SizedBox(height: 28),
                       CategorySection(
                         selectedCategories: _selectedCategories,

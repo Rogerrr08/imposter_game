@@ -187,11 +187,14 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                         onPressed: () {
                           final selectedCategory =
                               ref.read(rankingCategoryFilterProvider);
+                          final selectedMode =
+                              ref.read(rankingGameModeFilterProvider);
                           ref.invalidate(
                             rankingsProvider(
                               (
                                 groupId: widget.groupId,
                                 category: selectedCategory,
+                                mode: selectedMode,
                               ),
                             ),
                           );
@@ -215,11 +218,14 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                         onPressed: () {
                           final selectedCategory =
                               ref.read(historyCategoryFilterProvider);
+                          final selectedMode =
+                              ref.read(historyGameModeFilterProvider);
                           ref.invalidate(
                             gameHistoryProvider(
                               (
                                 groupId: widget.groupId,
                                 category: selectedCategory,
+                                mode: selectedMode,
                               ),
                             ),
                           );
@@ -407,7 +413,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
           key: formKey,
           child: TextFormField(
             controller: controller,
-            autofocus: true,
+            autofocus: false,
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del grupo',
@@ -634,7 +640,7 @@ class _PlayerTile extends ConsumerWidget {
           key: formKey,
           child: TextFormField(
             controller: controller,
-            autofocus: true,
+            autofocus: false,
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del jugador',

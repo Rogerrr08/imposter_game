@@ -135,7 +135,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                           const SizedBox(height: 16),
                           TextField(
                             controller: hintController,
-                            autofocus: true,
+                            autofocus: false,
                             style: GoogleFonts.poppins(color: AppTheme.textPrimary),
                             textCapitalization: TextCapitalization.words,
                             decoration: InputDecoration(
@@ -241,6 +241,15 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    if (gameState.phase == GamePhase.playing &&
+        (_timer == null || !(_timer?.isActive ?? false))) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && (_timer == null || !(_timer?.isActive ?? false))) {
+          _startTimer();
+        }
+      });
+    }
+
     // If state already moved to results (e.g. from elimination), navigate
     if (gameState.phase == GamePhase.results) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -255,6 +264,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
     final progress =
         gameState.timeRemainingSeconds / gameState.config.durationSeconds;
     final isLowTime = gameState.timeRemainingSeconds <= 30;
+    final isClassicMode = gameState.config.mode == GameMode.classic;
 
     return PopScope(
       canPop: false,
@@ -310,9 +320,10 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
               // Eliminated players (compact chips)
               _buildEliminatedChips(gameState),
               const Spacer(flex: 3),
-              // Action section: vote
               Text(
-                '\u00BFEres civil? \u{1F50D} Vota aqu\u00ED:',
+                isClassicMode
+                    ? 'Cuando termine la ronda de palabras, inicia la votaci\u00F3n an\u00F3nima.'
+                    : '\u00BFEres civil? \u{1F50D} Vota aqu\u00ED:',
                 style: GoogleFonts.poppins(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -326,6 +337,9 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                 child: ElevatedButton(
                   onPressed: () async {
                     _timer?.cancel();
+                    if (isClassicMode) {
+                      ref.read(gameProvider.notifier).startVotingRound();
+                    }
                     await context.push('/vote');
                     if (mounted) _startTimer();
                   },
@@ -337,36 +351,37 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  child: const Text('Votar'),
+                  child: Text(isClassicMode ? 'Empezar votaci\u00F3n' : 'Votar'),
                 ),
               ),
-              const SizedBox(height: 20),
-              // Action section: impostor guess
-              Text(
-                '\u00BFNo? Entonces eres impostor \u{1F480}\nIntenta adivinar la palabra...',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: AppTheme.textPrimary.withValues(alpha: 0.7),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: _verifyImpostorAndNavigate,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.secondaryColor,
-                    side: BorderSide(color: AppTheme.secondaryColor),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    textStyle: GoogleFonts.poppins(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                    ),
+              if (!isClassicMode) ...[
+                const SizedBox(height: 20),
+                Text(
+                  '\u00BFNo? Entonces eres impostor \u{1F480}\nIntenta adivinar la palabra...',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: AppTheme.textPrimary.withValues(alpha: 0.7),
                   ),
-                  child: const Text('Adivinar'),
+                  textAlign: TextAlign.center,
                 ),
-              ),
+                const SizedBox(height: 10),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    onPressed: _verifyImpostorAndNavigate,
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.secondaryColor,
+                      side: BorderSide(color: AppTheme.secondaryColor),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      textStyle: GoogleFonts.poppins(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    child: const Text('Adivinar'),
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
             ],
             ),

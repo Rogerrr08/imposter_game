@@ -8,6 +8,7 @@ import '../screens/game_play/round_start_screen.dart';
 import '../screens/game_play/game_play_screen.dart';
 import '../screens/game_play/vote_screen.dart';
 import '../screens/game_play/impostor_guess_screen.dart';
+import '../screens/game_play/classic_impostor_choice_screen.dart';
 import '../screens/game_play/action_reveal_screen.dart';
 import '../screens/game_results/game_results_screen.dart';
 import '../screens/groups/groups_screen.dart';
@@ -53,6 +54,11 @@ class AppRouter {
         path: '/impostor-guess',
         pageBuilder: (context, state) =>
             _buildPage(state, const ImpostorGuessScreen()),
+      ),
+      GoRoute(
+        path: '/classic-impostor-choice',
+        pageBuilder: (context, state) =>
+            _buildPage(state, const ClassicImpostorChoiceScreen()),
       ),
       GoRoute(
         path: '/action-reveal',

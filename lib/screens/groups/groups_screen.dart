@@ -154,7 +154,7 @@ class GroupsScreen extends ConsumerWidget {
           key: formKey,
           child: TextFormField(
             controller: controller,
-            autofocus: true,
+            autofocus: false,
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del grupo',

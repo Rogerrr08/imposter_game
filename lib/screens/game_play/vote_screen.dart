@@ -16,13 +16,25 @@ class VoteScreen extends ConsumerStatefulWidget {
 }
 
 class _VoteScreenState extends ConsumerState<VoteScreen> {
-  // 0 = who is voting, 1 = who to eliminate, 2 = confirm
   int _step = 0;
   String? _votedBy;
   String? _selectedPlayer;
+  String? _classicSelectedTarget;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final game = ref.read(gameProvider);
+      if (game?.config.mode == GameMode.classic && game?.phase != GamePhase.voting) {
+        ref.read(gameProvider.notifier).startVotingRound();
+      }
+    });
+  }
 
   void _onNameSelected(String name) {
     if (_step == 0) {
+      FocusManager.instance.primaryFocus?.unfocus();
       setState(() {
         _votedBy = name;
         _step = 1;
@@ -94,6 +106,62 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
     );
   }
 
+  void _submitClassicVote(String voterName) {
+    if (_classicSelectedTarget == null) return;
+
+    final submitted = ref.read(gameProvider.notifier).submitClassicVote(
+          voterName: voterName,
+          targetName: _classicSelectedTarget!,
+        );
+    if (!submitted) {
+      _showVoteError('No se pudo registrar ese voto.');
+      return;
+    }
+
+    final updatedGame = ref.read(gameProvider);
+    if (updatedGame == null) return;
+
+    if (updatedGame.lastEliminatedPlayerName != null) {
+      _goToClassicReveal(updatedGame);
+      return;
+    }
+
+    setState(() {
+      _classicSelectedTarget = null;
+    });
+  }
+
+  void _submitClassicTieBreak() {
+    final target = _classicSelectedTarget;
+    if (target == null) return;
+
+    final resolved = ref.read(gameProvider.notifier).resolveClassicTie(target);
+    if (!resolved) {
+      _showVoteError('No se pudo resolver el desempate.');
+      return;
+    }
+
+    final updatedGame = ref.read(gameProvider);
+    if (updatedGame == null) return;
+    _goToClassicReveal(updatedGame);
+  }
+
+  void _goToClassicReveal(ActiveGame updatedGame) {
+    final eliminatedName = updatedGame.lastEliminatedPlayerName;
+    final wasImpostor = updatedGame.lastEliminatedWasImpostor;
+    if (eliminatedName == null || wasImpostor == null) return;
+
+    context.go(
+      '/action-reveal',
+      extra: ActionRevealData(
+        type: ActionRevealType.vote,
+        success: wasImpostor,
+        subjectText: eliminatedName,
+        voteTallies: updatedGame.lastVoteTallies,
+      ),
+    );
+  }
+
   void _showVoteError(String message) {
     showDialog<void>(
       context: context,
@@ -129,6 +197,10 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
       );
     }
 
+    if (gameState.config.mode == GameMode.classic) {
+      return _buildClassicVoteScreen(gameState);
+    }
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: SafeArea(
@@ -142,25 +214,220 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
     );
   }
 
+  Widget _buildClassicVoteScreen(ActiveGame gameState) {
+    final tieCandidates = gameState.classicTieCandidates;
+    final currentVoter = gameState.currentClassicVoterName;
+    final totalVoters = gameState.classicVotingOrder.length;
+    final progress = totalVoters == 0
+        ? 0
+        : ((gameState.classicVotes.length + 1).clamp(1, totalVoters));
+
+    final optionNames = tieCandidates.isNotEmpty
+        ? tieCandidates
+        : gameState.activePlayers
+            .where((player) => player.name != currentVoter)
+            .map((player) => player.name)
+            .toList();
+
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => context.pop(),
+                    icon: Icon(
+                      Icons.arrow_back_rounded,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const Spacer(),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                tieCandidates.isNotEmpty
+                    ? 'Empate en la votaci\u00F3n'
+                    : 'Votaci\u00F3n an\u00F3nima',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                tieCandidates.isNotEmpty
+                    ? 'Entre todos decidan cual de los empatados sera eliminado.'
+                    : 'Participante $progress de $totalVoters',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 24),
+              if (tieCandidates.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppTheme.cardColor,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.2),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Ahora vota',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        currentVoter ?? '-',
+                        style: GoogleFonts.poppins(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w800,
+                          color: AppTheme.primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 24),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  tieCandidates.isNotEmpty
+                      ? 'Seleccionen al eliminado:'
+                      : 'Selecciona a quien eliminar:',
+                  style: GoogleFonts.poppins(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: optionNames.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final name = optionNames[index];
+                    final selected = _classicSelectedTarget == name;
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(18),
+                      onTap: () {
+                        setState(() {
+                          _classicSelectedTarget = name;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 18,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? AppTheme.primaryColor.withValues(alpha: 0.16)
+                              : AppTheme.cardColor,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: selected
+                                ? AppTheme.primaryColor
+                                : AppTheme.textSecondary.withValues(alpha: 0.15),
+                            width: selected ? 2 : 1,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                name,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.textPrimary,
+                                ),
+                              ),
+                            ),
+                            if (selected)
+                              Icon(
+                                Icons.check_circle_rounded,
+                                color: AppTheme.primaryColor,
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _classicSelectedTarget == null
+                      ? null
+                      : () {
+                          if (tieCandidates.isNotEmpty) {
+                            _submitClassicTieBreak();
+                          } else if (currentVoter != null) {
+                            _submitClassicVote(currentVoter);
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.secondaryColor,
+                    disabledBackgroundColor:
+                        AppTheme.secondaryColor.withValues(alpha: 0.3),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    textStyle: GoogleFonts.poppins(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  child: Text(
+                    tieCandidates.isNotEmpty ? 'Elegir eliminado' : 'Confirmar voto',
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStepView(ActiveGame gameState) {
     final playerNames = gameState.activePlayers.map((p) => p.name).toList();
     final isFirstStep = _step == 0;
     final stepTitle =
-        isFirstStep ? '\u00BFQui\u00E9n est\u00E1 votando?' : '\u00BFA qui\u00E9n eliminamos?';
+        isFirstStep ? 'Quien esta votando?' : 'A quien eliminamos?';
     final stepHint =
         isFirstStep ? 'Escribe tu nombre...' : 'Nombre del sospechoso...';
     final stepSubtitle = isFirstStep
         ? 'Solo los civiles pueden votar.'
         : 'Votando: $_votedBy';
 
-    // Filter out voter from options in step 2
-    final availableNames =
-        isFirstStep ? playerNames : playerNames.where((n) => n != _votedBy).toList();
+    final availableNames = isFirstStep
+        ? playerNames
+        : playerNames.where((name) => name != _votedBy).toList();
 
     return Column(
       children: [
         const SizedBox(height: 16),
-        // Top bar with back/cancel and lives
         Row(
           children: [
             IconButton(
@@ -171,7 +438,6 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
               ),
             ),
             const Spacer(),
-            // Lives indicator
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -194,7 +460,6 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
           ],
         ),
         const Spacer(flex: 1),
-        // Step indicator
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -210,7 +475,6 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
           ],
         ),
         const SizedBox(height: 24),
-        // Title
         Text(
           stepTitle,
           style: GoogleFonts.poppins(
@@ -230,7 +494,6 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
-        // Autocomplete field
         _buildAutocompleteField(
           playerNames: availableNames,
           hint: stepHint,
@@ -274,22 +537,18 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
           },
           onSelected: onSelected,
           fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
-            // Auto-focus on build
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!focusNode.hasFocus) {
-                focusNode.requestFocus();
-              }
-            });
-
             return TextField(
               controller: controller,
               focusNode: focusNode,
               onSubmitted: (text) {
                 final trimmed = text.trim();
-                final match = playerNames
-                    .where((name) =>
-                        name.toLowerCase() == trimmed.toLowerCase())
-                    .firstOrNull;
+                String? match;
+                for (final name in playerNames) {
+                  if (name.toLowerCase() == trimmed.toLowerCase()) {
+                    match = name;
+                    break;
+                  }
+                }
                 if (match != null) {
                   onSelected(match);
                 }
@@ -399,7 +658,6 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
           ],
         ),
         const Spacer(flex: 2),
-        // Confirmation card
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(28),
@@ -421,21 +679,18 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              // Voter
               _buildConfirmRow(
                 label: 'Vota:',
                 name: _votedBy!,
                 color: AppTheme.primaryColor,
               ),
               const SizedBox(height: 16),
-              // Arrow
               Icon(
                 Icons.arrow_downward_rounded,
                 color: AppTheme.secondaryColor,
                 size: 28,
               ),
               const SizedBox(height: 16),
-              // Target
               _buildConfirmRow(
                 label: 'Eliminar a:',
                 name: _selectedPlayer!,
@@ -445,7 +700,6 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
           ),
         ),
         const Spacer(flex: 1),
-        // Confirm button
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(

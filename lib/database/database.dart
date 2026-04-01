@@ -1,10 +1,19 @@
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
+import '../models/game_state.dart';
+
 part 'database.g.dart';
 
 const _overallStatsScope = '__all__';
 const _playerStatsInitializedKey = 'player_stats_initialized';
+const _categoryScopePrefix = 'cat:';
+const _modeScopePrefix = 'mode:';
+
+String _categoryScope(String category) => '$_categoryScopePrefix$category';
+String _modeScope(String mode) => '$_modeScopePrefix$mode';
+String _modeCategoryScope(String mode, String category) =>
+    '${_modeScope(mode)}|${_categoryScope(category)}';
 
 // ---------------------------------------------------------------------------
 // Table definitions
@@ -28,6 +37,8 @@ class GroupPlayers extends Table {
 class Games extends Table {
   IntColumn get id => integer().autoIncrement()();
   IntColumn get groupId => integer().references(Groups, #id).nullable()();
+  TextColumn get mode =>
+      text().withDefault(const Constant('express'))();
   TextColumn get category => text()();
   TextColumn get word => text()();
   IntColumn get duration => integer()();
@@ -65,7 +76,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -78,6 +89,13 @@ class AppDatabase extends _$AppDatabase {
           if (from < 3) {
             await _createAuxiliaryTables();
             await _createAuxiliaryIndexes();
+          }
+          if (from < 4) {
+            await customStatement(
+              "ALTER TABLE games ADD COLUMN mode TEXT NOT NULL DEFAULT 'express'",
+            );
+            await _rebuildPlayerStatsFromHistory();
+            await _setMetaValue(_playerStatsInitializedKey, '1');
           }
         },
         beforeOpen: (details) async {
@@ -127,6 +145,12 @@ class AppDatabase extends _$AppDatabase {
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_games_group_category_played_at ON games (group_id, category, played_at DESC, id DESC)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_games_group_mode_played_at ON games (group_id, mode, played_at DESC, id DESC)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_games_group_mode_category_played_at ON games (group_id, mode, category, played_at DESC, id DESC)',
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_player_stats_lookup ON player_stats (group_id, scope, total_points DESC, player_name COLLATE NOCASE)',
@@ -211,7 +235,7 @@ class AppDatabase extends _$AppDatabase {
       )
       SELECT
         g.group_id,
-        g.category,
+        '$_categoryScopePrefix' || g.category,
         gp.player_name,
         COUNT(DISTINCT gp.game_id),
         COALESCE(SUM(CASE WHEN gp.was_impostor = 0 AND g.civils_won = 1 THEN 1 ELSE 0 END), 0),
@@ -221,6 +245,54 @@ class AppDatabase extends _$AppDatabase {
       INNER JOIN games g ON gp.game_id = g.id
       WHERE g.group_id IS NOT NULL
       GROUP BY g.group_id, g.category, gp.player_name
+    ''');
+
+    await customStatement('''
+      INSERT INTO player_stats (
+        group_id,
+        scope,
+        player_name,
+        games_played,
+        civil_wins,
+        impostor_wins,
+        total_points
+      )
+      SELECT
+        g.group_id,
+        '$_modeScopePrefix' || g.mode,
+        gp.player_name,
+        COUNT(DISTINCT gp.game_id),
+        COALESCE(SUM(CASE WHEN gp.was_impostor = 0 AND g.civils_won = 1 THEN 1 ELSE 0 END), 0),
+        COALESCE(SUM(CASE WHEN gp.was_impostor = 1 AND g.civils_won = 0 THEN 1 ELSE 0 END), 0),
+        COALESCE(SUM(gp.points), 0)
+      FROM ${gamePlayersTable.actualTableName} gp
+      INNER JOIN games g ON gp.game_id = g.id
+      WHERE g.group_id IS NOT NULL
+      GROUP BY g.group_id, g.mode, gp.player_name
+    ''');
+
+    await customStatement('''
+      INSERT INTO player_stats (
+        group_id,
+        scope,
+        player_name,
+        games_played,
+        civil_wins,
+        impostor_wins,
+        total_points
+      )
+      SELECT
+        g.group_id,
+        '$_modeScopePrefix' || g.mode || '|$_categoryScopePrefix' || g.category,
+        gp.player_name,
+        COUNT(DISTINCT gp.game_id),
+        COALESCE(SUM(CASE WHEN gp.was_impostor = 0 AND g.civils_won = 1 THEN 1 ELSE 0 END), 0),
+        COALESCE(SUM(CASE WHEN gp.was_impostor = 1 AND g.civils_won = 0 THEN 1 ELSE 0 END), 0),
+        COALESCE(SUM(gp.points), 0)
+      FROM ${gamePlayersTable.actualTableName} gp
+      INNER JOIN games g ON gp.game_id = g.id
+      WHERE g.group_id IS NOT NULL
+      GROUP BY g.group_id, g.mode, g.category, gp.player_name
     ''');
   }
 
@@ -355,6 +427,7 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
   /// Returns the generated game id.
   Future<int> saveGame({
     required int? groupId,
+    required String mode,
     required String category,
     required String word,
     required int duration,
@@ -368,6 +441,7 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
       final gameId = await into(games).insert(
         GamesCompanion.insert(
           groupId: Value(groupId),
+          mode: Value(mode),
           category: category,
           word: word,
           duration: duration,
@@ -393,6 +467,7 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
       if (groupId != null) {
         await _updatePlayerStats(
           groupId: groupId,
+          mode: mode,
           category: category,
           civilsWon: civilsWon,
           playerResults: playerResults,
@@ -405,28 +480,36 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
   }
 
   /// Get all games for a given group ordered by most recent first.
-  Future<List<Game>> getGamesForGroup(int groupId) {
-    return (select(games)
-          ..where((g) => g.groupId.equals(groupId))
-          ..orderBy([(g) => OrderingTerm.desc(g.playedAt), (g) => OrderingTerm.desc(g.id)])
-          ..limit(20))
-        .get();
+  Future<List<Game>> getGamesForGroupFiltered(
+    int groupId, {
+    String? category,
+    GameMode? mode,
+  }) {
+    final query = select(games)..where((g) => g.groupId.equals(groupId));
+
+    if (category != null) {
+      query.where((g) => g.category.equals(category));
+    }
+    if (mode != null) {
+      query.where((g) => g.mode.equals(mode.name));
+    }
+
+    query
+      ..orderBy([
+        (g) => OrderingTerm.desc(g.playedAt),
+        (g) => OrderingTerm.desc(g.id),
+      ])
+      ..limit(20);
+
+    return query.get();
   }
 
-  /// Get games for a group filtered by [category].
-  Future<List<Game>> getGamesForGroupByCategory(
-      int groupId, String category) {
-    return (select(games)
-          ..where(
-              (g) => g.groupId.equals(groupId) & g.category.equals(category))
-          ..orderBy([(g) => OrderingTerm.desc(g.playedAt), (g) => OrderingTerm.desc(g.id)])
-          ..limit(20))
-        .get();
-  }
-
-  /// Aggregate ranking for a group: total points per player, sorted
-  /// descending.
-  Future<List<PlayerRanking>> getRankingForGroup(int groupId) async {
+  Future<List<PlayerRanking>> getRankingForGroupFiltered(
+    int groupId, {
+    String? category,
+    GameMode? mode,
+  }) async {
+    final scope = _rankingScopeForFilters(category: category, mode: mode);
     final query = customSelect(
       'SELECT '
       'player_name AS name, '
@@ -439,36 +522,8 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
       'ORDER BY total_points DESC, civil_wins DESC, impostor_wins DESC, player_name COLLATE NOCASE ASC',
       variables: [
         Variable.withInt(groupId),
-        Variable.withString(_overallStatsScope),
+        Variable.withString(scope),
       ],
-    );
-
-    final rows = await query.get();
-    return rows
-        .map((row) => PlayerRanking(
-              playerName: row.read<String>('name'),
-              gamesPlayed: _readInt(row, 'games_played'),
-              civilWins: _readInt(row, 'civil_wins'),
-              impostorWins: _readInt(row, 'impostor_wins'),
-              totalPoints: _readInt(row, 'total_points'),
-            ))
-        .toList();
-  }
-
-  /// Aggregate ranking for a group filtered by [category].
-  Future<List<PlayerRanking>> getRankingForGroupByCategory(
-      int groupId, String category) async {
-    final query = customSelect(
-      'SELECT '
-      'player_name AS name, '
-      'games_played, '
-      'civil_wins, '
-      'impostor_wins, '
-      'total_points '
-      'FROM player_stats '
-      'WHERE group_id = ? AND scope = ? '
-      'ORDER BY total_points DESC, civil_wins DESC, impostor_wins DESC, player_name COLLATE NOCASE ASC',
-      variables: [Variable.withInt(groupId), Variable.withString(category)],
     );
 
     final rows = await query.get();
@@ -485,6 +540,7 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
 
   Future<void> _updatePlayerStats({
     required int groupId,
+    required String mode,
     required String category,
     required bool civilsWon,
     required List<GamePlayerEntry> playerResults,
@@ -506,7 +562,25 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
 
       await _upsertPlayerStatsRow(
         groupId: groupId,
-        scope: category,
+        scope: _categoryScope(category),
+        playerName: player.playerName,
+        points: player.points,
+        civilWins: civilWins,
+        impostorWins: impostorWins,
+      );
+
+      await _upsertPlayerStatsRow(
+        groupId: groupId,
+        scope: _modeScope(mode),
+        playerName: player.playerName,
+        points: player.points,
+        civilWins: civilWins,
+        impostorWins: impostorWins,
+      );
+
+      await _upsertPlayerStatsRow(
+        groupId: groupId,
+        scope: _modeCategoryScope(mode, category),
         playerName: player.playerName,
         points: player.points,
         civilWins: civilWins,
@@ -556,6 +630,7 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
   Future<int> replaceGameResult({
     required int oldGameId,
     required int? groupId,
+    required String mode,
     required String category,
     required String word,
     required int duration,
@@ -576,7 +651,12 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
           final oldImpostorWin =
               player.wasImpostor && !oldCivilsWon ? 1 : 0;
 
-          for (final scope in [_overallStatsScope, category]) {
+          for (final scope in [
+            _overallStatsScope,
+            _categoryScope(category),
+            _modeScope(mode),
+            _modeCategoryScope(mode, category),
+          ]) {
             await _reversePlayerStats(
               groupId: groupId,
               scope: scope,
@@ -598,6 +678,7 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
       // Save new result (this also updates stats with new values)
       return saveGame(
         groupId: groupId,
+        mode: mode,
         category: category,
         word: word,
         duration: duration,
@@ -693,6 +774,22 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
       'DELETE FROM player_stats WHERE group_id = ?',
       [groupId],
     );
+  }
+
+  String _rankingScopeForFilters({
+    required String? category,
+    required GameMode? mode,
+  }) {
+    if (category != null && mode != null) {
+      return _modeCategoryScope(mode.name, category);
+    }
+    if (category != null) {
+      return _categoryScope(category);
+    }
+    if (mode != null) {
+      return _modeScope(mode.name);
+    }
+    return _overallStatsScope;
   }
 
   int _readInt(QueryRow row, String columnName) {

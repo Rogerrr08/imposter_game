@@ -4,11 +4,13 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
-import '../../theme/app_theme.dart';
 import '../../database/database.dart';
+import '../../models/game_state.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/game_provider.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/category_filter_bar.dart';
+import '../../widgets/game_mode_filter_bar.dart';
 
 class GameHistoryScreen extends ConsumerStatefulWidget {
   final int groupId;
@@ -26,11 +28,13 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final selectedCategory = ref.read(historyCategoryFilterProvider);
+      final selectedMode = ref.read(historyGameModeFilterProvider);
       ref.invalidate(
         gameHistoryProvider(
           (
             groupId: widget.groupId,
             category: selectedCategory,
+            mode: selectedMode,
           ),
         ),
       );
@@ -47,12 +51,14 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final groupId = widget.groupId;
     final selectedCategory = ref.watch(historyCategoryFilterProvider);
-    final request = (groupId: groupId, category: selectedCategory);
-    final historyAsync = ref.watch(
-      gameHistoryProvider(request),
+    final selectedMode = ref.watch(historyGameModeFilterProvider);
+    final request = (
+      groupId: widget.groupId,
+      category: selectedCategory,
+      mode: selectedMode,
     );
+    final historyAsync = ref.watch(gameHistoryProvider(request));
 
     return PopScope(
       canPop: false,
@@ -85,97 +91,106 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
           ],
         ),
         body: Column(
-        children: [
-          // Category filter chips
-          CategoryFilterBar(
-            selectedCategory: selectedCategory,
-            onCategorySelected: (category) => ref
-                .read(historyCategoryFilterProvider.notifier)
-                .setCategory(category),
-          ),
-          const SizedBox(height: 8),
-
-          // History list
-          Expanded(
-            child: historyAsync.when(
-              loading: () => Center(
-                child: CircularProgressIndicator(color: AppTheme.primaryColor),
-              ),
-              error: (error, _) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Error al cargar el historial',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textPrimary,
+          children: [
+            GameModeFilterBar(
+              selectedMode: selectedMode,
+              onModeSelected: (mode) => ref
+                  .read(historyGameModeFilterProvider.notifier)
+                  .setMode(mode),
+            ),
+            CategoryFilterBar(
+              selectedCategory: selectedCategory,
+              onCategorySelected: (category) => ref
+                  .read(historyCategoryFilterProvider.notifier)
+                  .setCategory(category),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: historyAsync.when(
+                loading: () => Center(
+                  child:
+                      CircularProgressIndicator(color: AppTheme.primaryColor),
+                ),
+                error: (error, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 48,
+                          color: AppTheme.secondaryColor,
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: () => ref.invalidate(gameHistoryProvider(request)),
-                        icon: const Icon(Icons.refresh_rounded),
-                        label: const Text('Reintentar'),
-                      ),
-                    ],
+                        const SizedBox(height: 16),
+                        Text(
+                          'Error al cargar el historial',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          onPressed: () =>
+                              ref.invalidate(gameHistoryProvider(request)),
+                          icon: const Icon(Icons.refresh_rounded),
+                          label: const Text('Reintentar'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              data: (games) {
-                if (games.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(32),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.history_rounded,
-                            size: 80,
-                            color: AppTheme.successColor.withValues(alpha: 0.3),
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'No hay partidas registradas',
-                            style: GoogleFonts.poppins(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.textPrimary,
+                data: (games) {
+                  if (games.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.history_rounded,
+                              size: 80,
+                              color:
+                                  AppTheme.successColor.withValues(alpha: 0.3),
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Las partidas jugadas con este grupo\naparecerán aqu\u00ed.',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: AppTheme.textSecondary,
+                            const SizedBox(height: 24),
+                            Text(
+                              'No hay partidas registradas',
+                              style: GoogleFonts.poppins(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.textPrimary,
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            Text(
+                              'Las partidas jugadas con este grupo\naparecer\u00E1n aqu\u00ED.',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: AppTheme.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  );
-                }
+                    );
+                  }
 
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                  itemCount: games.length,
-                  itemBuilder: (context, index) {
-                    final gameWithPlayers = games[index];
-                    return _GameHistoryCard(gameWithPlayers: gameWithPlayers);
-                  },
-                );
-              },
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    itemCount: games.length,
+                    itemBuilder: (context, index) {
+                      return _GameHistoryCard(gameWithPlayers: games[index]);
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
         ),
       ),
     );
@@ -190,7 +205,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
           style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'Esto borrará el historial guardado de este grupo. El ranking no se verá afectado.',
+          'Esto borrara el historial guardado de este grupo. El ranking no se vera afectado.',
           style: GoogleFonts.poppins(color: AppTheme.textSecondary),
         ),
         actions: [
@@ -236,6 +251,15 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
     with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
 
+  String _modeDisplay(String mode) {
+    switch (mode) {
+      case 'classic':
+        return 'Clasico';
+      case 'express':
+      default:
+        return 'Express';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -246,13 +270,13 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
     final dateFormat = DateFormat('dd MMM yyyy - HH:mm', 'es');
 
     final impostors = players.where((p) => p.wasImpostor == true).toList();
-
     final resultText = civilsWon ? 'Civiles ganaron' : 'Impostores ganaron';
-    final resultColor = civilsWon ? AppTheme.successColor : AppTheme.secondaryColor;
-    final resultIcon = civilsWon ? Icons.shield_rounded : Icons.psychology_alt;
-
-    final categoryDisplay =
-        categoryLabels[game.category] ?? game.category;
+    final resultColor =
+        civilsWon ? AppTheme.successColor : AppTheme.secondaryColor;
+    final resultIcon =
+        civilsWon ? Icons.shield_rounded : Icons.psychology_alt;
+    final categoryDisplay = categoryLabels[game.category] ?? game.category;
+    final modeDisplay = _modeDisplay(game.mode as String);
 
     final durationMinutes = (game.duration as int) ~/ 60;
     final durationSeconds = (game.duration as int) % 60;
@@ -283,7 +307,6 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header: date and expand icon
                 Row(
                   children: [
                     Icon(
@@ -324,12 +347,37 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                   ],
                 ),
                 const SizedBox(height: 12),
-
-                // Category and word
-                Row(
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.cardColor,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: AppTheme.textSecondary.withValues(alpha: 0.15),
+                        ),
+                      ),
+                      child: Text(
+                        modeDisplay,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
@@ -343,22 +391,17 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Palabra: ${game.word}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.textPrimary,
-                        ),
+                    Text(
+                      'Palabra: ${game.word}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
-
-                // Impostors
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -371,7 +414,10 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     Expanded(
                       child: RichText(
                         text: TextSpan(
-                          style: GoogleFonts.poppins(fontSize: 13, color: AppTheme.textSecondary),
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: AppTheme.textSecondary,
+                          ),
                           children: [
                             const TextSpan(text: 'Impostor: '),
                             TextSpan(
@@ -389,10 +435,11 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                   ],
                 ),
                 const SizedBox(height: 10),
-
-                // Result
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: resultColor.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(10),
@@ -413,13 +460,16 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                       if (impostorGuessedWord) ...[
                         const SizedBox(width: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppTheme.warningColor.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'Adivin\u00f3 la palabra',
+                            'Adivino la palabra',
                             style: GoogleFonts.poppins(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -431,8 +481,6 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     ],
                   ),
                 ),
-
-                // Expanded details
                 if (_isExpanded) ...[
                   const SizedBox(height: 16),
                   Divider(
@@ -440,10 +488,8 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     height: 1,
                   ),
                   const SizedBox(height: 16),
-
-                  // Points header
                   Text(
-                    'Puntuaci\u00f3n',
+                    'Puntuaci\u00F3n',
                     style: GoogleFonts.poppins(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -451,8 +497,6 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     ),
                   ),
                   const SizedBox(height: 8),
-
-                  // Player points list
                   ...players.map((player) {
                     final isImpostor = player.wasImpostor == true;
                     final wasEliminated = player.wasEliminated == true;
@@ -462,17 +506,16 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                       padding: const EdgeInsets.only(bottom: 6),
                       child: Row(
                         children: [
-                          // Impostor/civil icon
                           Icon(
-                            isImpostor ? Icons.psychology_alt : Icons.shield_rounded,
+                            isImpostor
+                                ? Icons.psychology_alt
+                                : Icons.shield_rounded,
                             size: 16,
                             color: isImpostor
                                 ? AppTheme.secondaryColor
                                 : AppTheme.successColor.withValues(alpha: 0.7),
                           ),
                           const SizedBox(width: 8),
-
-                          // Player name
                           Expanded(
                             child: Row(
                               children: [
@@ -483,7 +526,9 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                                     fontWeight: FontWeight.w500,
                                     color: isImpostor
                                         ? AppTheme.secondaryColor
-                                        : AppTheme.textPrimary.withValues(alpha: 0.85),
+                                        : AppTheme.textPrimary.withValues(
+                                            alpha: 0.85,
+                                          ),
                                   ),
                                 ),
                                 if (wasEliminated) ...[
@@ -494,14 +539,18 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                                       vertical: 1,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: AppTheme.textSecondary.withValues(alpha: 0.1),
+                                      color: AppTheme.textSecondary.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
                                       'eliminado',
                                       style: GoogleFonts.poppins(
                                         fontSize: 10,
-                                        color: AppTheme.textSecondary.withValues(alpha: 0.6),
+                                        color: AppTheme.textSecondary.withValues(
+                                          alpha: 0.6,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -509,8 +558,6 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                               ],
                             ),
                           ),
-
-                          // Points
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 10,
@@ -519,7 +566,9 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                             decoration: BoxDecoration(
                               color: points > 0
                                   ? AppTheme.successColor.withValues(alpha: 0.12)
-                                  : AppTheme.textSecondary.withValues(alpha: 0.07),
+                                  : AppTheme.textSecondary.withValues(
+                                      alpha: 0.07,
+                                    ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -529,7 +578,9 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                                 fontWeight: FontWeight.w700,
                                 color: points > 0
                                     ? AppTheme.successColor
-                                    : AppTheme.textSecondary.withValues(alpha: 0.6),
+                                    : AppTheme.textSecondary.withValues(
+                                        alpha: 0.6,
+                                      ),
                               ),
                             ),
                           ),
