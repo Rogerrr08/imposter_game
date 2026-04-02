@@ -19,12 +19,22 @@ class GamePlayScreen extends ConsumerStatefulWidget {
   ConsumerState<GamePlayScreen> createState() => _GamePlayScreenState();
 }
 
-class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
+class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
+    with SingleTickerProviderStateMixin {
   Timer? _timer;
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
     _startTimer();
   }
 
@@ -230,6 +240,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -265,6 +276,17 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
         gameState.timeRemainingSeconds / gameState.config.durationSeconds;
     final isLowTime = gameState.timeRemainingSeconds <= 30;
     final isClassicMode = gameState.config.mode == GameMode.classic;
+    final eliminatedCount =
+        gameState.players.where((p) => p.isEliminated).length;
+    final activeCount = gameState.activePlayers.length;
+
+    // Manage pulse animation
+    if (isLowTime && !_pulseController.isAnimating) {
+      _pulseController.repeat(reverse: true);
+    } else if (!isLowTime && _pulseController.isAnimating) {
+      _pulseController.stop();
+      _pulseController.reset();
+    }
 
     return PopScope(
       canPop: false,
@@ -281,16 +303,18 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
             child: Column(
             children: [
               const SizedBox(height: 16),
-              // Header with cancel button
+              // Header with mode name + cancel button
               Row(
                 children: [
                   const Spacer(),
                   Text(
-                    'Discusi\u00F3n en curso',
+                    isClassicMode
+                        ? '\u{1F3DB}\uFE0F Cl\u00E1sico'
+                        : '\u26A1 Express',
                     style: GoogleFonts.nunito(
                       fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textSecondary,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
                     ),
                   ),
                   Expanded(
@@ -308,33 +332,50 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                   ),
                 ],
               ),
+              // Round + active players indicator (classic mode)
+              if (isClassicMode) ...[
+                const SizedBox(height: 4),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Ronda ${eliminatedCount + 1}  \u00B7  $activeCount jugadores activos',
+                    style: GoogleFonts.nunito(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
               if (gameState.shouldShowStartingPlayer) ...[
                 const SizedBox(height: 8),
                 _buildStartingPlayerBanner(gameState.startingPlayerName!),
               ],
               // Center everything vertically
               const Spacer(flex: 2),
-              // Circular timer
-              _buildCircularTimer(timeString, progress, isLowTime),
+              // Circular timer (with pulse when low time)
+              AnimatedBuilder(
+                animation: _pulseAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _pulseAnimation.value,
+                    child: _buildCircularTimer(timeString, progress, isLowTime),
+                  );
+                },
+              ),
               const SizedBox(height: 12),
               // Eliminated players (compact chips)
               _buildEliminatedChips(gameState),
               const Spacer(flex: 3),
-              Text(
-                isClassicMode
-                    ? 'Cuando termine la ronda de palabras, inicia la votaci\u00F3n an\u00F3nima.'
-                    : '\u00BFEres civil? \u{1F50D} Vota aqu\u00ED:',
-                style: GoogleFonts.nunito(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
+              // Action buttons — clean, no repetitive text
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
                   onPressed: () async {
                     _timer?.cancel();
                     if (isClassicMode) {
@@ -343,6 +384,10 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                     await context.push('/vote');
                     if (mounted) _startTimer();
                   },
+                  icon: const Icon(Icons.how_to_vote_rounded, size: 20),
+                  label: Text(isClassicMode
+                      ? 'Iniciar votaci\u00F3n'
+                      : 'Votar'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -351,24 +396,16 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  child: Text(isClassicMode ? 'Empezar votaci\u00F3n' : 'Votar'),
                 ),
               ),
               if (!isClassicMode) ...[
-                const SizedBox(height: 20),
-                Text(
-                  '\u00BFNo? Entonces eres impostor \u{1F480}\nIntenta adivinar la palabra...',
-                  style: GoogleFonts.nunito(
-                    fontSize: 14,
-                    color: AppTheme.textPrimary.withValues(alpha: 0.7),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton(
+                  child: OutlinedButton.icon(
                     onPressed: _verifyImpostorAndNavigate,
+                    icon: const Icon(Icons.psychology_alt_rounded, size: 20),
+                    label: const Text('Adivinar palabra'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppTheme.secondaryColor,
                       side: BorderSide(color: AppTheme.secondaryColor),
@@ -378,7 +415,6 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    child: const Text('Adivinar'),
                   ),
                 ),
               ],

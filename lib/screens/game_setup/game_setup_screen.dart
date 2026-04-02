@@ -34,7 +34,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   final _scrollController = ScrollController();
 
   final List<String> _manualPlayers = [];
-  List<GroupPlayer> _groupPlayers = [];
+  final List<GroupPlayer> _groupPlayers = [];
   final Set<int> _excludedGroupPlayerIds = <int>{};
   List<int>? _pendingGroupPlayerOrder;
   int? _draggingIndex;
@@ -58,14 +58,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       ? _activeGroupPlayers.map((player) => player.name).toList()
       : List<String>.from(_manualPlayers);
 
-  /// All group players with active/excluded status, for the unified list.
-  List<({String name, bool isActive})> get _allGroupPlayersWithStatus =>
-      _groupPlayers
-          .map((p) => (
-                name: p.name,
-                isActive: !_excludedGroupPlayerIds.contains(p.id),
-              ))
-          .toList();
+
 
   int get _playerCount => _currentPlayers.length;
 
@@ -428,7 +421,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           const SizedBox(height: 12),
           Center(
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: CircularProgressIndicator(color: AppTheme.primaryColor),
             ),
           ),
@@ -481,7 +474,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                       color: AppTheme.textSecondary.withValues(alpha: 0.1)),
                 ),
                 child: Text(
-                  'Este grupo no tiene jugadores todavia.',
+                  'Este grupo no tiene jugadores todav\u00EDa.',
                   style: GoogleFonts.nunito(
                     fontSize: 13,
                     color: AppTheme.textSecondary,
@@ -492,33 +485,292 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           );
         }
 
-        final allItems = _allGroupPlayersWithStatus
-            .map((p) => PlayerListItem(name: p.name, isActive: p.isActive))
-            .toList();
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SectionHeader(
-              icon: Icons.people_alt_rounded,
-              title: 'Jugadores: $_playerCount/${_groupPlayers.length}',
+            Row(
+              children: [
+                Icon(Icons.people_alt_rounded,
+                    size: 20, color: AppTheme.primaryColor),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Jugadores: $_playerCount/${_groupPlayers.length}',
+                    style: GoogleFonts.nunito(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: _showReorderSheet,
+                  icon: Icon(Icons.swap_vert_rounded,
+                      size: 18, color: AppTheme.primaryColor),
+                  label: Text(
+                    'Orden',
+                    style: GoogleFonts.nunito(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
-            PlayerList(
-              players: allItems,
-              minPlayers: _minPlayers,
-              isGroupMode: true,
-              draggingIndex: _draggingIndex,
-              onDragStart: (index) => setState(() => _draggingIndex = index),
-              onDragEnd: () => setState(() => _draggingIndex = null),
-              onReorder: _onReorderPlayers,
-              onTogglePlayer: (index) {
-                final player = _groupPlayers[index];
-                _toggleGroupPlayer(
-                    player, _excludedGroupPlayerIds.contains(player.id));
-              },
+            Text(
+              'Toca para excluir o incluir',
+              style: GoogleFonts.nunito(
+                fontSize: 12,
+                color: AppTheme.textSecondary.withValues(alpha: 0.6),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _groupPlayers.map((player) {
+                final isExcluded =
+                    _excludedGroupPlayerIds.contains(player.id);
+                return GestureDetector(
+                  onTap: () => _toggleGroupPlayer(player, isExcluded),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: isExcluded
+                          ? AppTheme.surfaceColor
+                          : AppTheme.primaryColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isExcluded
+                            ? AppTheme.textSecondary.withValues(alpha: 0.12)
+                            : AppTheme.primaryColor.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircleAvatar(
+                          radius: 12,
+                          backgroundColor: isExcluded
+                              ? AppTheme.textSecondary.withValues(alpha: 0.15)
+                              : AppTheme.primaryColor.withValues(alpha: 0.2),
+                          child: Text(
+                            player.name[0].toUpperCase(),
+                            style: GoogleFonts.nunito(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: isExcluded
+                                  ? AppTheme.textSecondary
+                                      .withValues(alpha: 0.4)
+                                  : AppTheme.primaryColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          player.name,
+                          style: GoogleFonts.nunito(
+                            fontSize: 13,
+                            fontWeight: isExcluded
+                                ? FontWeight.w400
+                                : FontWeight.w600,
+                            color: isExcluded
+                                ? AppTheme.textSecondary
+                                    .withValues(alpha: 0.4)
+                                : AppTheme.textPrimary,
+                            decoration: isExcluded
+                                ? TextDecoration.lineThrough
+                                : null,
+                            decorationColor:
+                                AppTheme.textSecondary.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(
+                          isExcluded
+                              ? Icons.add_circle_outline_rounded
+                              : Icons.check_circle_rounded,
+                          size: 16,
+                          color: isExcluded
+                              ? AppTheme.textSecondary.withValues(alpha: 0.3)
+                              : AppTheme.primaryColor,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  void _showReorderSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppTheme.cardColor,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.textSecondary.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        children: [
+                          Icon(Icons.swap_vert_rounded,
+                              color: AppTheme.primaryColor, size: 22),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Reordenar jugadores',
+                            style: GoogleFonts.nunito(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          const Spacer(),
+                          TextButton(
+                            onPressed: () => Navigator.pop(sheetContext),
+                            child: Text(
+                              'Listo',
+                              style: GoogleFonts.nunito(
+                                fontWeight: FontWeight.w700,
+                                color: AppTheme.primaryColor,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.5,
+                      ),
+                      child: ReorderableListView.builder(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        itemCount: _groupPlayers.length,
+                        onReorder: (oldIndex, newIndex) {
+                          setState(() {
+                            _onReorderPlayers(oldIndex, newIndex);
+                          });
+                          setSheetState(() {});
+                        },
+                        itemBuilder: (context, index) {
+                          final player = _groupPlayers[index];
+                          final isExcluded =
+                              _excludedGroupPlayerIds.contains(player.id);
+                          return Container(
+                            key: ValueKey(player.id),
+                            margin: const EdgeInsets.symmetric(
+                                vertical: 3, horizontal: 8),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: isExcluded
+                                  ? AppTheme.surfaceColor
+                                  : AppTheme.cardColor,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppTheme.textSecondary
+                                    .withValues(alpha: 0.1),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.drag_handle_rounded,
+                                  color: AppTheme.textSecondary
+                                      .withValues(alpha: 0.4),
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 12),
+                                CircleAvatar(
+                                  radius: 14,
+                                  backgroundColor: isExcluded
+                                      ? AppTheme.textSecondary
+                                          .withValues(alpha: 0.15)
+                                      : AppTheme.primaryColor
+                                          .withValues(alpha: 0.15),
+                                  child: Text(
+                                    player.name[0].toUpperCase(),
+                                    style: GoogleFonts.nunito(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w700,
+                                      color: isExcluded
+                                          ? AppTheme.textSecondary
+                                          : AppTheme.primaryColor,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    player.name,
+                                    style: GoogleFonts.nunito(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: isExcluded
+                                          ? AppTheme.textSecondary
+                                              .withValues(alpha: 0.5)
+                                          : AppTheme.textPrimary,
+                                      decoration: isExcluded
+                                          ? TextDecoration.lineThrough
+                                          : null,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '${index + 1}',
+                                  style: GoogleFonts.nunito(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.textSecondary
+                                        .withValues(alpha: 0.4),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );

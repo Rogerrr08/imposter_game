@@ -38,7 +38,7 @@ class GameResultsScreen extends ConsumerWidget {
                 _buildImpostorOverrideButton(context, ref, game),
               ],
               const SizedBox(height: 32),
-              _buildPlayerResults(game),
+              _buildPlayerRanking(game),
               const SizedBox(height: 32),
               _buildPointsSummary(game),
               const SizedBox(height: 40),
@@ -49,34 +49,30 @@ class GameResultsScreen extends ConsumerWidget {
                     ref.read(gameProvider.notifier).clearGame();
                     context.go('/setup', extra: groupId);
                   },
-                  icon: const Icon(Icons.replay),
-                  label: const Text('Jugar de Nuevo'),
+                  icon: const Icon(Icons.replay_rounded),
+                  label: const Text('Jugar de nuevo'),
                 ),
               ),
-              if (groupId != null) ...[
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      ref.read(gameProvider.notifier).clearGame();
-                      context.go('/groups/$groupId');
-                    },
-                    icon: const Icon(Icons.group_rounded),
-                    label: const Text('Volver al Grupo'),
-                  ),
-                ),
-              ],
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton.icon(
+                child: TextButton(
                   onPressed: () {
                     ref.read(gameProvider.notifier).clearGame();
-                    context.go('/');
+                    if (groupId != null) {
+                      context.go('/groups/$groupId');
+                    } else {
+                      context.go('/');
+                    }
                   },
-                  icon: const Icon(Icons.home),
-                  label: const Text('Inicio'),
+                  child: Text(
+                    groupId != null ? 'Volver al grupo' : 'Ir al inicio',
+                    style: GoogleFonts.nunito(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -311,12 +307,15 @@ class GameResultsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildPlayerResults(ActiveGame game) {
+  Widget _buildPlayerRanking(ActiveGame game) {
+    final sorted = List<GamePlayer>.from(game.players)
+      ..sort((a, b) => b.points.compareTo(a.points));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Jugadores',
+          'Ranking',
           style: GoogleFonts.nunito(
             fontSize: 18,
             fontWeight: FontWeight.w700,
@@ -324,21 +323,141 @@ class GameResultsScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 12),
-        ...game.players.map(_buildPlayerCard),
+        // MVP card (first place)
+        if (sorted.isNotEmpty) _buildMvpCard(sorted.first),
+        // Rest of players
+        ...List.generate(
+          sorted.length > 1 ? sorted.length - 1 : 0,
+          (i) => _buildRankedPlayerCard(sorted[i + 1], i + 2),
+        ),
       ],
     );
   }
 
-  Widget _buildPlayerCard(GamePlayer player) {
+  Widget _buildMvpCard(GamePlayer player) {
     final isImpostor = player.role == PlayerRole.impostor;
     final roleColor =
         isImpostor ? AppTheme.secondaryColor : AppTheme.successColor;
     final roleText = isImpostor ? 'IMPOSTOR' : 'CIVIL';
-    final roleIcon = isImpostor ? Icons.psychology_alt : Icons.shield;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.warningColor.withValues(alpha: 0.15),
+            AppTheme.warningColor.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.warningColor.withValues(alpha: 0.4),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          // Crown + position
+          Column(
+            children: [
+              const Text('\u{1F451}', style: TextStyle(fontSize: 22)),
+              const SizedBox(height: 2),
+              Text(
+                '1\u00BA',
+                style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.warningColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  player.name,
+                  style: GoogleFonts.nunito(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: roleColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        roleText,
+                        style: GoogleFonts.nunito(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: roleColor,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ),
+                    if (player.isEliminated) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        'Eliminado',
+                        style: GoogleFonts.nunito(
+                          fontSize: 10,
+                          color:
+                              AppTheme.textSecondary.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: (player.points >= 0
+                      ? AppTheme.successColor
+                      : AppTheme.errorColor)
+                  .withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              '${player.points >= 0 ? '+' : ''}${player.points}',
+              style: GoogleFonts.nunito(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: player.points >= 0
+                    ? AppTheme.successColor
+                    : AppTheme.errorColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRankedPlayerCard(GamePlayer player, int position) {
+    final isImpostor = player.role == PlayerRole.impostor;
+    final roleColor =
+        isImpostor ? AppTheme.secondaryColor : AppTheme.successColor;
+    final roleText = isImpostor ? 'IMPOSTOR' : 'CIVIL';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: AppTheme.surfaceColor,
         borderRadius: BorderRadius.circular(12),
@@ -350,8 +469,19 @@ class GameResultsScreen extends ConsumerWidget {
       ),
       child: Row(
         children: [
-          Icon(roleIcon, color: roleColor, size: 24),
-          const SizedBox(width: 12),
+          // Position number
+          SizedBox(
+            width: 32,
+            child: Text(
+              '$position\u00BA',
+              style: GoogleFonts.nunito(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,34 +496,33 @@ class GameResultsScreen extends ConsumerWidget {
                         player.isEliminated ? TextDecoration.lineThrough : null,
                   ),
                 ),
-                Text(
-                  roleText,
-                  style: GoogleFonts.nunito(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: roleColor,
-                    letterSpacing: 1,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      roleText,
+                      style: GoogleFonts.nunito(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: roleColor,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    if (player.isEliminated) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        'Eliminado',
+                        style: GoogleFonts.nunito(
+                          fontSize: 10,
+                          color:
+                              AppTheme.textSecondary.withValues(alpha: 0.6),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
           ),
-          if (player.isEliminated)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: AppTheme.textSecondary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                'Eliminado',
-                style: GoogleFonts.nunito(
-                  fontSize: 10,
-                  color: AppTheme.textSecondary.withValues(alpha: 0.6),
-                ),
-              ),
-            ),
-          const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
@@ -468,7 +597,7 @@ class GameResultsScreen extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(vertical: 14),
         ),
         label: Text(
-          'Darle victoria al impostor',
+          'Darle la victoria al impostor',
           style: GoogleFonts.nunito(
             fontSize: 14,
             fontWeight: FontWeight.w600,
