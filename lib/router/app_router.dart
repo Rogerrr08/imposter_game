@@ -17,6 +17,11 @@ import '../screens/groups/group_detail_screen.dart';
 import '../screens/rankings/rankings_screen.dart';
 import '../screens/rankings/game_history_screen.dart';
 import '../models/action_reveal.dart';
+import '../features/online/presentation/create_room_screen.dart';
+import '../features/online/presentation/display_name_screen.dart';
+import '../features/online/presentation/join_room_screen.dart';
+import '../features/online/presentation/online_home_screen.dart';
+import '../features/online/presentation/room_lobby_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -77,6 +82,33 @@ class AppRouter {
         path: '/results',
         pageBuilder: (context, state) =>
             _buildPage(state, const GameResultsScreen()),
+      ),
+      GoRoute(
+        path: '/online',
+        pageBuilder: (context, state) =>
+            _buildPage(state, const OnlineHomeScreen()),
+      ),
+      GoRoute(
+        path: '/online/create-room',
+        pageBuilder: (context, state) =>
+            _buildPage(state, const CreateRoomScreen()),
+      ),
+      GoRoute(
+        path: '/online/join-room',
+        pageBuilder: (context, state) =>
+            _buildPage(state, const JoinRoomScreen()),
+      ),
+      GoRoute(
+        path: '/online/room/:roomId',
+        pageBuilder: (context, state) {
+          final roomId = state.pathParameters['roomId']!;
+          return _buildPage(state, RoomLobbyScreen(roomId: roomId));
+        },
+      ),
+      GoRoute(
+        path: '/online/display-name',
+        pageBuilder: (context, state) =>
+            _buildPage(state, const DisplayNameScreen()),
       ),
       GoRoute(
         path: '/groups',

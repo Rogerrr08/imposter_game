@@ -88,13 +88,13 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                   const Spacer(flex: 2),
-                  // Quick Play button
+                  // ── Local play ──
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () => _navigateWithLoading(context, '/setup'),
                       icon: const Icon(Icons.play_arrow_rounded, size: 28),
-                      label: const Text('Juego Rápido'),
+                      label: const Text('Juego r\u00e1pido'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryColor,
                         padding: const EdgeInsets.symmetric(vertical: 18),
@@ -105,18 +105,67 @@ class HomeScreen extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  // Groups button
+                  const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: () => _navigateWithLoading(context, '/groups'),
                       icon: const Icon(Icons.group, size: 24),
-                      label: const Text('Mis Grupos'),
+                      label: const Text('Mis grupos'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 18),
                         textStyle: GoogleFonts.nunito(
                           fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // ── Divider ──
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 1,
+                          color: AppTheme.textSecondary.withValues(alpha: 0.15),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        child: Text(
+                          'o',
+                          style: GoogleFonts.nunito(
+                            fontSize: 13,
+                            color: AppTheme.textSecondary.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: 1,
+                          color: AppTheme.textSecondary.withValues(alpha: 0.15),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // ── Online play ──
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () =>
+                          _navigateWithLoading(context, '/online'),
+                      icon: const Icon(Icons.wifi_rounded, size: 22),
+                      label: const Text('Jugar en l\u00ednea'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryColor,
+                        side: BorderSide(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.35),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: GoogleFonts.nunito(
+                          fontSize: 17,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
