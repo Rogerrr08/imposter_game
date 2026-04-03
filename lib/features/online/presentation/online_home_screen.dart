@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_theme.dart';
 import '../application/online_auth_provider.dart';
+import '../application/online_rooms_provider.dart';
 
 class OnlineHomeScreen extends ConsumerStatefulWidget {
   const OnlineHomeScreen({super.key});
@@ -16,6 +17,7 @@ class OnlineHomeScreen extends ConsumerStatefulWidget {
 class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
   bool _signingIn = false;
   bool _redirectingToDisplayName = false;
+  bool _redirectingToActiveRoom = false;
   String? _authError;
 
   Future<void> _ensureAnonymousAuth() async {
@@ -121,7 +123,32 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
               }
 
               _redirectingToDisplayName = false;
-              return _buildContent(profile);
+
+              // Check for active room to rejoin
+              final activeRoomAsync = ref.watch(myActiveRoomProvider);
+              return activeRoomAsync.when(
+                loading: () => _buildLoadingState(
+                  title: 'Verificando sesion activa',
+                  subtitle: 'Estamos revisando si tienes una sala en curso.',
+                ),
+                error: (_, __) => _buildContent(profile),
+                data: (activeRoomId) {
+                  if (activeRoomId != null && !_redirectingToActiveRoom) {
+                    _redirectingToActiveRoom = true;
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        context.go('/online/room/$activeRoomId');
+                      }
+                    });
+                    return _buildLoadingState(
+                      title: 'Tienes una sala activa',
+                      subtitle: 'Te llevaremos de vuelta al lobby.',
+                    );
+                  }
+                  _redirectingToActiveRoom = false;
+                  return _buildContent(profile);
+                },
+              );
             },
           );
         },

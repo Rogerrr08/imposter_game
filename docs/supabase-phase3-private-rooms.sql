@@ -227,7 +227,8 @@ begin
   select *
   into target_room
   from public.rooms
-  where code = upper(trim(input_code));
+  where code = upper(trim(input_code))
+  for update;
 
   if target_room.id is null then
     raise exception 'No existe una sala con ese codigo';
@@ -315,7 +316,11 @@ begin
     is_connected = true,
     last_seen_at = timezone('utc', now())
   where room_id = input_room_id
-    and user_id = current_user_id;
+    and user_id = current_user_id
+    and exists (
+      select 1 from public.rooms
+      where id = input_room_id and status = 'waiting'
+    );
 end;
 $$;
 
@@ -418,6 +423,64 @@ begin
 end;
 $$;
 
+-- Actualiza is_connected y last_seen_at para el jugador actual en una sala.
+-- Usado por Presence (join -> true, leave -> false) y heartbeat.
+create or replace function public.set_player_connected(
+  input_room_id uuid,
+  input_connected boolean
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_user_id uuid;
+begin
+  current_user_id := auth.uid();
+  if current_user_id is null then
+    raise exception 'No hay sesion autenticada';
+  end if;
+
+  update public.room_players
+  set
+    is_connected = input_connected,
+    last_seen_at = timezone('utc', now())
+  where room_id = input_room_id
+    and user_id = current_user_id;
+end;
+$$;
+
+-- Devuelve el room_id de la sala activa (status = 'waiting' o 'playing')
+-- del usuario actual, si existe. Usado para rejoin automatico.
+create or replace function public.get_my_active_room()
+returns uuid
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_user_id uuid;
+  active_room_id uuid;
+begin
+  current_user_id := auth.uid();
+  if current_user_id is null then
+    return null;
+  end if;
+
+  select rp.room_id
+  into active_room_id
+  from public.room_players rp
+  inner join public.rooms r on r.id = rp.room_id
+  where rp.user_id = current_user_id
+    and r.status in ('waiting', 'playing')
+  order by rp.joined_at desc
+  limit 1;
+
+  return active_room_id;
+end;
+$$;
+
 create or replace function public.cleanup_expired_private_rooms()
 returns integer
 language plpgsql
@@ -457,6 +520,8 @@ grant execute on function public.is_room_member(uuid) to authenticated;
 grant execute on function public.set_room_ready(uuid, boolean) to authenticated;
 grant execute on function public.update_room_config(uuid, text[], boolean, integer, integer) to authenticated;
 grant execute on function public.leave_room(uuid) to authenticated;
+grant execute on function public.set_player_connected(uuid, boolean) to authenticated;
+grant execute on function public.get_my_active_room() to authenticated;
 
 select cron.schedule(
   'cleanup-expired-private-rooms',

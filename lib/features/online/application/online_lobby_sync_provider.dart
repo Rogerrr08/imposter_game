@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../data/word_bank.dart';
+import '../data/online_rooms_repository.dart';
 import '../data/supabase_config.dart';
 import 'online_auth_provider.dart';
 import 'online_rooms_provider.dart';
@@ -18,9 +19,12 @@ final onlineLobbySyncProvider =
     return null;
   }
 
+  final repository = ref.read(onlineRoomsRepositoryProvider);
+
   final controller = OnlineLobbySyncController(
     ref: ref,
     client: SupabaseConfig.client,
+    repository: repository,
     roomId: roomId,
     userId: profile.id,
     displayName: profile.displayName!,
@@ -37,6 +41,7 @@ class OnlineLobbySyncController {
   OnlineLobbySyncController({
     required this.ref,
     required this.client,
+    required this.repository,
     required this.roomId,
     required this.userId,
     required this.displayName,
@@ -44,6 +49,7 @@ class OnlineLobbySyncController {
 
   final Ref ref;
   final SupabaseClient client;
+  final OnlineRoomsRepository repository;
   final String roomId;
   final String userId;
   final String displayName;
@@ -86,6 +92,7 @@ class OnlineLobbySyncController {
           'display_name': displayName,
           'online_at': DateTime.now().toIso8601String(),
         });
+        unawaited(_setConnected(true));
         _invalidateRoom();
         _invalidatePlayers();
         return;
@@ -147,6 +154,8 @@ class OnlineLobbySyncController {
     if (_disposed) return;
     _disposed = true;
 
+    await _setConnected(false);
+
     final channel = _channel;
     if (channel == null) return;
 
@@ -157,6 +166,17 @@ class OnlineLobbySyncController {
     try {
       await client.removeChannel(channel);
     } catch (_) {}
+  }
+
+  Future<void> _setConnected(bool connected) async {
+    try {
+      await repository.setPlayerConnected(
+        roomId: roomId,
+        connected: connected,
+      );
+    } catch (_) {
+      // Best-effort — don't block on connection status updates
+    }
   }
 
   void _invalidateRoom() {

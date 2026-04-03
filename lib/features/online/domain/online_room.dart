@@ -84,8 +84,9 @@ class OnlineRoom {
       case 'classic':
         return GameMode.classic;
       case 'express':
-      default:
         return GameMode.express;
+      default:
+        return GameMode.classic;
     }
   }
 
@@ -97,6 +98,36 @@ class OnlineRoom {
     }
     return null;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is OnlineRoom &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          code == other.code &&
+          hostUserId == other.hostUserId &&
+          status == other.status &&
+          gameMode == other.gameMode &&
+          hintsEnabled == other.hintsEnabled &&
+          impostorCount == other.impostorCount &&
+          durationSeconds == other.durationSeconds &&
+          minPlayers == other.minPlayers &&
+          maxPlayers == other.maxPlayers;
+
+  @override
+  int get hashCode => Object.hash(
+        id,
+        code,
+        hostUserId,
+        status,
+        gameMode,
+        hintsEnabled,
+        impostorCount,
+        durationSeconds,
+        minPlayers,
+        maxPlayers,
+      );
 }
 
 class OnlineRoomPlayer {
@@ -140,4 +171,28 @@ class OnlineRoomPlayer {
       joinedAt: DateTime.parse(map['joined_at'] as String),
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is OnlineRoomPlayer &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          userId == other.userId &&
+          displayName == other.displayName &&
+          seatOrder == other.seatOrder &&
+          isHost == other.isHost &&
+          isReady == other.isReady &&
+          isConnected == other.isConnected;
+
+  @override
+  int get hashCode => Object.hash(
+        id,
+        userId,
+        displayName,
+        seatOrder,
+        isHost,
+        isReady,
+        isConnected,
+      );
 }

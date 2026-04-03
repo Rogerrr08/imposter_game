@@ -8,6 +8,12 @@ final onlineRoomsRepositoryProvider = Provider<OnlineRoomsRepository>((ref) {
   return OnlineRoomsRepository(SupabaseConfig.client);
 });
 
+/// Returns the room ID of the user's active room (waiting/playing), or null.
+final myActiveRoomProvider = FutureProvider.autoDispose<String?>((ref) {
+  final repository = ref.watch(onlineRoomsRepositoryProvider);
+  return repository.getMyActiveRoom();
+});
+
 final onlineRoomProvider =
     StreamProvider.family<OnlineRoom?, String>((ref, roomId) {
   final repository = ref.watch(onlineRoomsRepositoryProvider);
