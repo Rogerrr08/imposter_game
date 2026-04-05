@@ -119,6 +119,23 @@ class OnlineRoomsRepository {
     }
   }
 
+  Future<void> kickPlayer({
+    required String roomId,
+    required String targetUserId,
+  }) async {
+    try {
+      await _client.rpc(
+        'kick_player',
+        params: {
+          'input_room_id': roomId,
+          'input_target_user_id': targetUserId,
+        },
+      );
+    } on PostgrestException catch (error) {
+      throw Exception(_friendlyPostgrestMessage(error));
+    }
+  }
+
   Future<void> setPlayerConnected({
     required String roomId,
     required bool connected,

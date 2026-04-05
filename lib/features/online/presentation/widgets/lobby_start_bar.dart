@@ -7,27 +7,81 @@ import '../../application/room_lobby_notifier.dart';
 class LobbyStartBar extends StatelessWidget {
   final RoomLobbyState lobbyState;
   final VoidCallback onToggleReady;
+  final VoidCallback onStartMatch;
 
   const LobbyStartBar({
     super.key,
     required this.lobbyState,
     required this.onToggleReady,
+    required this.onStartMatch,
   });
 
   @override
   Widget build(BuildContext context) {
     final isHost = lobbyState.isHost;
     final isReady = lobbyState.isReady;
-    final canStartVisual = lobbyState.canStartVisual;
+    final canStart = lobbyState.canStartVisual;
+    final isStarting = lobbyState.isStarting;
     final missingReady = lobbyState.missingReady;
 
-    final buttonText = isHost
-        ? canStartVisual
-            ? 'Inicio online proximamente'
-            : 'Faltan $missingReady listos'
-        : isReady
-            ? 'Quitar listo'
-            : 'Estoy listo';
+    final String buttonText;
+    final VoidCallback? onPressed;
+    final Color bgColor;
+    final Color fgColor;
+    final IconData icon;
+    final double elevation;
+
+    if (isHost) {
+      if (isStarting) {
+        buttonText = 'Iniciando partida...';
+        onPressed = null;
+        bgColor = AppTheme.primaryColor;
+        fgColor = Colors.white;
+        icon = Icons.hourglass_top_rounded;
+        elevation = 0;
+      } else if (canStart) {
+        buttonText = 'Iniciar partida';
+        onPressed = onStartMatch;
+        bgColor = AppTheme.primaryColor;
+        fgColor = Colors.white;
+        icon = Icons.play_arrow_rounded;
+        elevation = 6;
+      } else {
+        buttonText = 'Faltan $missingReady listos';
+        onPressed = null;
+        bgColor = AppTheme.surfaceColor;
+        fgColor = AppTheme.textSecondary.withValues(alpha: 0.45);
+        icon = Icons.lock_rounded;
+        elevation = 0;
+      }
+    } else {
+      if (isReady) {
+        buttonText = 'Quitar listo';
+        onPressed = lobbyState.isBusyReady ? null : onToggleReady;
+        bgColor = AppTheme.successColor;
+        fgColor = Colors.white;
+        icon = Icons.check_circle_rounded;
+        elevation = 0;
+      } else {
+        buttonText = 'Estoy listo';
+        onPressed = lobbyState.isBusyReady ? null : onToggleReady;
+        bgColor = AppTheme.primaryColor;
+        fgColor = Colors.white;
+        icon = Icons.play_arrow_rounded;
+        elevation = 6;
+      }
+    }
+
+    final String subtitle;
+    if (isHost) {
+      subtitle = canStart
+          ? 'Todos los jugadores necesarios estan listos. Puedes iniciar la partida.'
+          : 'Necesitas que al menos ${lobbyState.room!.minPlayers} jugadores esten listos.';
+    } else {
+      subtitle = isReady
+          ? 'Ya notificaste que estas listo. Espera a que el host lance la partida.'
+          : 'Confirma abajo que estas listo para que el host pueda avanzar.';
+    }
 
     return Container(
       width: double.infinity,
@@ -47,11 +101,7 @@ class LobbyStartBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            isHost
-                ? 'El inicio real del match llega en el siguiente bloque del online.'
-                : isReady
-                    ? 'Ya notificaste que estas listo. Espera a que el host lance la partida.'
-                    : 'Confirma abajo que estas listo para que el host pueda avanzar.',
+            subtitle,
             style: GoogleFonts.nunito(
               fontSize: 12,
               height: 1.35,
@@ -62,38 +112,34 @@ class LobbyStartBar extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: isHost || lobbyState.isBusyReady
-                  ? null
-                  : onToggleReady,
+              onPressed: onPressed,
               style: ElevatedButton.styleFrom(
-                backgroundColor: isHost
-                    ? AppTheme.surfaceColor
-                    : isReady
-                        ? AppTheme.successColor
-                        : AppTheme.primaryColor,
-                foregroundColor: isHost
-                    ? AppTheme.textSecondary.withValues(alpha: 0.45)
-                    : Colors.white,
-                disabledBackgroundColor: AppTheme.surfaceColor,
-                disabledForegroundColor:
-                    AppTheme.textSecondary.withValues(alpha: 0.45),
+                backgroundColor: bgColor,
+                foregroundColor: fgColor,
+                disabledBackgroundColor: isStarting
+                    ? AppTheme.primaryColor.withValues(alpha: 0.7)
+                    : AppTheme.surfaceColor,
+                disabledForegroundColor: isStarting
+                    ? Colors.white.withValues(alpha: 0.7)
+                    : AppTheme.textSecondary.withValues(alpha: 0.45),
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                elevation: !isHost && !isReady ? 6 : 0,
+                elevation: elevation,
                 shadowColor: AppTheme.primaryColor.withValues(alpha: 0.35),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    isHost
-                        ? (canStartVisual
-                            ? Icons.play_arrow_rounded
-                            : Icons.lock_rounded)
-                        : isReady
-                            ? Icons.check_circle_rounded
-                            : Icons.play_arrow_rounded,
-                    size: 24,
-                  ),
+                  if (isStarting)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: Colors.white,
+                      ),
+                    )
+                  else
+                    Icon(icon, size: 24),
                   const SizedBox(width: 10),
                   Text(
                     buttonText,

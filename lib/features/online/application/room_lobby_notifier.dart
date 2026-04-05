@@ -7,6 +7,7 @@ import '../../../data/word_bank.dart';
 import '../domain/online_room.dart';
 import 'online_auth_provider.dart';
 import 'online_lobby_sync_provider.dart';
+import 'online_match_provider.dart';
 import 'online_rooms_provider.dart';
 
 // ---------------------------------------------------------------------------
@@ -29,6 +30,7 @@ class RoomLobbyState {
   // Action flags
   final bool isBusyReady;
   final bool isLeaving;
+  final bool isStarting;
   final bool isConfigSyncing;
   final String? error;
 
@@ -44,6 +46,7 @@ class RoomLobbyState {
     this.hasOptimisticConfig = false,
     this.isBusyReady = false,
     this.isLeaving = false,
+    this.isStarting = false,
     this.isConfigSyncing = false,
     this.error,
   });
@@ -80,6 +83,7 @@ class RoomLobbyState {
     bool? hasOptimisticConfig,
     bool? isBusyReady,
     bool? isLeaving,
+    bool? isStarting,
     bool? isConfigSyncing,
     String? error,
     bool clearError = false,
@@ -99,6 +103,7 @@ class RoomLobbyState {
       hasOptimisticConfig: hasOptimisticConfig ?? this.hasOptimisticConfig,
       isBusyReady: isBusyReady ?? this.isBusyReady,
       isLeaving: isLeaving ?? this.isLeaving,
+      isStarting: isStarting ?? this.isStarting,
       isConfigSyncing: isConfigSyncing ?? this.isConfigSyncing,
       error: clearError ? null : (error ?? this.error),
     );
@@ -196,6 +201,7 @@ class RoomLobbyNotifier extends AsyncNotifier<RoomLobbyState> {
       hasOptimisticConfig: hasOptimistic,
       isBusyReady: prev?.isBusyReady ?? false,
       isLeaving: prev?.isLeaving ?? false,
+      isStarting: prev?.isStarting ?? false,
       isConfigSyncing: _configRequestInFlight,
     );
   }
@@ -287,6 +293,47 @@ class RoomLobbyNotifier extends AsyncNotifier<RoomLobbyState> {
         state = AsyncData(current.copyWith(isLeaving: false));
       }
       return false;
+    }
+  }
+
+  Future<void> kickPlayer(String targetUserId) async {
+    final s = state.value;
+    if (s == null || s.room == null || !s.isHost) return;
+
+    try {
+      await ref.read(onlineRoomsRepositoryProvider).kickPlayer(
+            roomId: _roomId,
+            targetUserId: targetUserId,
+          );
+    } catch (e) {
+      _setError(e.toString().replaceFirst('Exception: ', ''));
+    }
+  }
+
+  /// Start the match. Returns the match ID if successful, null otherwise.
+  Future<String?> startMatch() async {
+    final s = state.value;
+    if (s == null || s.isStarting || s.room == null || !s.isHost) return null;
+    if (!s.canStartVisual) {
+      _setError('No hay suficientes jugadores listos para iniciar.');
+      return null;
+    }
+
+    state = AsyncData(s.copyWith(isStarting: true, clearError: true));
+
+    try {
+      final matchId = await ref.read(onlineMatchRepositoryProvider).startMatch(
+            room: s.room!,
+            players: s.players,
+          );
+      return matchId;
+    } catch (e) {
+      _setError(e.toString().replaceFirst('Exception: ', ''));
+      final current = state.value;
+      if (current != null) {
+        state = AsyncData(current.copyWith(isStarting: false));
+      }
+      return null;
     }
   }
 

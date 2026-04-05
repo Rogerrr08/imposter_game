@@ -5,7 +5,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_theme.dart';
 import '../application/online_auth_provider.dart';
+import '../application/online_match_provider.dart';
 import '../application/online_rooms_provider.dart';
+import 'widgets/active_room_dialog.dart';
 
 class OnlineHomeScreen extends ConsumerStatefulWidget {
   const OnlineHomeScreen({super.key});
@@ -18,6 +20,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
   bool _signingIn = false;
   bool _redirectingToDisplayName = false;
   bool _redirectingToActiveRoom = false;
+  bool _activeRoomHandled = false;
   String? _authError;
 
   Future<void> _ensureAnonymousAuth() async {
@@ -39,6 +42,45 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
       if (mounted) {
         setState(() => _signingIn = false);
       }
+    }
+  }
+
+  Future<void> _resolveActiveRoomRedirect(String roomId) async {
+    final action = await showActiveRoomDialog(
+      context: context,
+      ref: ref,
+      roomId: roomId,
+    );
+
+    if (!mounted) return;
+
+    switch (action) {
+      case ActiveRoomAction.continueRoom:
+        // Check if room has active match to decide destination
+        final matchId = await ref
+            .read(onlineMatchRepositoryProvider)
+            .getActiveMatchForRoom(roomId);
+        if (!mounted) return;
+        if (matchId != null) {
+          context.go('/online/match/$matchId');
+        } else {
+          context.go('/online/room/$roomId');
+        }
+      case ActiveRoomAction.leaveRoom:
+        await ref.read(onlineRoomsRepositoryProvider).leaveRoom(roomId);
+        if (mounted) {
+          ref.invalidate(myActiveRoomProvider);
+          setState(() {
+            _redirectingToActiveRoom = false;
+            _activeRoomHandled = true;
+          });
+        }
+      case null:
+        // Dismissed — stay on home, don't show dialog again
+        setState(() {
+          _redirectingToActiveRoom = false;
+          _activeRoomHandled = true;
+        });
     }
   }
 
@@ -133,20 +175,29 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
                 ),
                 error: (_, __) => _buildContent(profile),
                 data: (activeRoomId) {
-                  if (activeRoomId != null && !_redirectingToActiveRoom) {
+                  if (activeRoomId == null) {
+                    _activeRoomHandled = false;
+                    _redirectingToActiveRoom = false;
+                    return _buildContent(profile);
+                  }
+
+                  if (!_redirectingToActiveRoom && !_activeRoomHandled) {
                     _redirectingToActiveRoom = true;
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) {
-                        context.go('/online/room/$activeRoomId');
-                      }
-                    });
+                    _resolveActiveRoomRedirect(activeRoomId);
                     return _buildLoadingState(
-                      title: 'Tienes una sala activa',
-                      subtitle: 'Te llevaremos de vuelta al lobby.',
+                      title: 'Tienes una sesion activa',
+                      subtitle: 'Verificando si hay partida en curso...',
                     );
                   }
-                  _redirectingToActiveRoom = false;
-                  return _buildContent(profile);
+
+                  if (_activeRoomHandled) {
+                    return _buildContent(profile);
+                  }
+
+                  return _buildLoadingState(
+                    title: 'Tienes una sesion activa',
+                    subtitle: 'Verificando si hay partida en curso...',
+                  );
                 },
               );
             },

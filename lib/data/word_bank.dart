@@ -64,19 +64,20 @@ class WordBank {
   }
 
   static List<String> getHardHints(WordEntry word, {required int count}) {
-    final harderHints = word.hints.length > 1
+    if (word.hints.isEmpty) return const [];
+
+    // When count fits within the total hints, use all hints so each
+    // impostor gets a unique one. Only skip the easiest hint when there
+    // are more hints than impostors (keeping difficulty preference).
+    final pool = word.hints.length > count
         ? word.hints.skip(1).toList()
         : List<String>.from(word.hints);
 
-    harderHints.shuffle(_random);
-
-    if (harderHints.isEmpty) {
-      return const [];
-    }
+    pool.shuffle(_random);
 
     return List<String>.generate(
       count,
-      (index) => harderHints[index % harderHints.length],
+      (index) => pool[index % pool.length],
     );
   }
 

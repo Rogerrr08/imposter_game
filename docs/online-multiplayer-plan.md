@@ -1,4 +1,4 @@
-# Yeison Impostor â€” Plan de modo online (MVP reducido)
+# Yeison Impostor — Plan de modo online (MVP reducido)
 
 ## Prop\u00f3sito
 
@@ -383,10 +383,11 @@ Jugar en l\u00ednea
 - Heartbeat + manejo de desconexiones durante partida (saltar turno, marcar desconectado)
 - UI de estados de espera (esperando a que X escriba, esperando votos, reconectando...)
 - Manejo de abandono del host (reasignar o cancelar)
-- Filtro b\u00e1sico de palabras ofensivas en pistas y display names
-- Cleanup de salas y matches hu\u00e9rfanos (cron job o Edge Function programada)
-- Pruebas con m\u00faltiples dispositivos reales
-- Pruebas de reconexi\u00f3n (modo avi\u00f3n, cambio de red, app en background)
+- Filtro básico de palabras ofensivas en pistas y display names
+- Cleanup de salas y matches huérfanos (cron job o Edge Function programada)
+- Pulido visual del role reveal: animaciones de suspense (scale-up + shimmer + glow), skip en reconexión, estado "esperando a los demás"
+- Pruebas con múltiples dispositivos reales
+- Pruebas de reconexión (modo avión, cambio de red, app en background)
 
 **Criterio de salida**: la experiencia es estable y jugable con usuarios reales.
 

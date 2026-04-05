@@ -503,6 +503,60 @@ begin
 end;
 $$;
 
+-- --------------------------------------------------------------------------
+-- RPC: kick_player (host-only)
+-- --------------------------------------------------------------------------
+create or replace function public.kick_player(
+  input_room_id uuid,
+  input_target_user_id uuid
+)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  current_user_id uuid;
+  target_room public.rooms%rowtype;
+begin
+  current_user_id := auth.uid();
+  if current_user_id is null then
+    raise exception 'No hay sesion autenticada';
+  end if;
+
+  -- Validate room and host
+  select * into target_room
+  from public.rooms
+  where id = input_room_id
+  for update;
+
+  if target_room.id is null then
+    raise exception 'La sala no existe';
+  end if;
+
+  if target_room.host_user_id <> current_user_id then
+    raise exception 'Solo el host puede expulsar jugadores';
+  end if;
+
+  if target_room.status <> 'waiting' then
+    raise exception 'No se puede expulsar durante una partida en curso';
+  end if;
+
+  if input_target_user_id = current_user_id then
+    raise exception 'No puedes expulsarte a ti mismo';
+  end if;
+
+  -- Delete the player
+  delete from public.room_players
+  where room_id = input_room_id
+    and user_id = input_target_user_id;
+
+  if not found then
+    raise exception 'El jugador no esta en la sala';
+  end if;
+end;
+$$;
+
 grant execute on function public.create_private_room(
   text,
   text,
@@ -520,6 +574,7 @@ grant execute on function public.is_room_member(uuid) to authenticated;
 grant execute on function public.set_room_ready(uuid, boolean) to authenticated;
 grant execute on function public.update_room_config(uuid, text[], boolean, integer, integer) to authenticated;
 grant execute on function public.leave_room(uuid) to authenticated;
+grant execute on function public.kick_player(uuid, uuid) to authenticated;
 grant execute on function public.set_player_connected(uuid, boolean) to authenticated;
 grant execute on function public.get_my_active_room() to authenticated;
 

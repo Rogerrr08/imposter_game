@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_theme.dart';
+import '../application/online_match_provider.dart';
 import '../application/room_lobby_notifier.dart';
+import '../domain/online_room.dart';
 import 'widgets/lobby_code_card.dart';
 import 'widgets/lobby_config_card.dart';
 import 'widgets/lobby_players_section.dart';
@@ -28,6 +30,14 @@ class RoomLobbyScreen extends ConsumerWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(error, style: GoogleFonts.nunito())),
           );
+        }
+
+        // Non-host: navigate to match when room transitions to playing
+        final prevRoom = prev?.value?.room;
+        final nextRoom = next.value?.room;
+        if (prevRoom?.status == OnlineRoomStatus.waiting &&
+            nextRoom?.status == OnlineRoomStatus.playing) {
+          _navigateToActiveMatch(context, ref);
         }
       },
     );
@@ -137,6 +147,8 @@ class RoomLobbyScreen extends ConsumerWidget {
                   LobbyPlayersSection(
                     players: lobbyState.players,
                     currentUserId: lobbyState.profile!.id,
+                    isHost: lobbyState.isHost,
+                    onKickPlayer: (userId) => notifier.kickPlayer(userId),
                   ),
                 ],
               ),
@@ -145,6 +157,7 @@ class RoomLobbyScreen extends ConsumerWidget {
           LobbyStartBar(
             lobbyState: lobbyState,
             onToggleReady: () => notifier.toggleReady(),
+            onStartMatch: () => _handleStartMatch(context, ref),
           ),
         ],
       ),
@@ -252,6 +265,27 @@ class RoomLobbyScreen extends ConsumerWidget {
   // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
+
+  Future<void> _navigateToActiveMatch(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    final matchId = await ref
+        .read(onlineMatchRepositoryProvider)
+        .getActiveMatchForRoom(roomId);
+    if (matchId != null && context.mounted) {
+      context.go('/online/match/$matchId');
+    }
+  }
+
+  Future<void> _handleStartMatch(BuildContext context, WidgetRef ref) async {
+    final matchId = await ref
+        .read(roomLobbyNotifierProvider(roomId).notifier)
+        .startMatch();
+    if (matchId != null && context.mounted) {
+      context.go('/online/match/$matchId');
+    }
+  }
 
   Future<void> _handleLeave(BuildContext context, WidgetRef ref) async {
     final s = ref.read(roomLobbyNotifierProvider(roomId)).value;

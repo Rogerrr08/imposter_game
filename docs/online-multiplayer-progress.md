@@ -463,4 +463,410 @@ Todos los items de la Fase 3 estan implementados:
 - [x] Refactor arquitectonico (RoomLobbyNotifier + widgets extraidos)
 - [x] Race condition fixes en SQL
 
-**Proximo paso**: Fase 4 (Motor de juego autoritativo — Edge Functions + start-match)
+**Proximo paso**: Fase 4 slice 2 (pantalla de reveal de rol + Realtime sync del match + reconexion)
+
+### 2026-04-03 - Fase 4 slice 1: esquema de match + start-match + boton de inicio
+
+**Estado**: completado
+
+**Objetivo**:
+- Crear la infraestructura de base de datos y codigo Flutter necesaria para iniciar partidas online desde el lobby
+
+**Cambios aplicados**:
+
+*SQL — nuevo archivo `docs/supabase-phase4-match-engine.sql`*:
+- [x] Tabla `matches`: estado de la partida, fase actual, ronda, turno, state_version (optimistic locking)
+- [x] Tabla `match_players`: rol, hint, eliminacion, puntos por jugador
+- [x] Tabla `match_clues`: pistas por ronda y turno
+- [x] Tabla `match_votes`: votos por ronda, soporte para desempate
+- [x] Indices en las 4 tablas
+- [x] RLS habilitado en las 4 tablas con helper `is_match_player()`
+- [x] Realtime habilitado para `matches` y `match_players` con `replica identity full`
+- [x] RPC `start_match`: recibe word/category/hints/impostor_indices desde Flutter, valida permisos del host, cuenta de jugadores listos, crea match + match_players, asigna roles/hints, elige starting player (civil), transiciona room a `playing`
+- [x] RPC `get_my_match_state`: devuelve el estado del match desde la perspectiva del jugador actual (rol propio, hint propia, palabra solo para civiles)
+- [x] Grants para authenticated
+
+*Modelos Dart — nuevo `lib/features/online/domain/online_match.dart`*:
+- [x] `OnlineMatch` con `fromMap`, `==`/`hashCode`
+- [x] `OnlineMatchPlayer` con `fromMap`, `==`/`hashCode`, getters `isImpostor`/`isCivil`
+- [x] `MyMatchState` — vista personalizada del match por jugador (palabra null para impostores)
+- [x] Enums `OnlineMatchStatus` y `OnlineMatchPhase` con parsing bidireccional
+
+*Repository — nuevo `lib/features/online/data/online_match_repository.dart`*:
+- [x] `startMatch()`: elige palabra aleatoria (WordBank), genera impostor indices, calcula hints, llama RPC
+- [x] `getMyMatchState()`: llama RPC y parsea `MyMatchState`
+- [x] `watchMatch()` / `watchMatchPlayers()`: streams Realtime
+- [x] `getActiveMatchForRoom()`: busca match activo por room ID
+
+*Providers — nuevo `lib/features/online/application/online_match_provider.dart`*:
+- [x] `onlineMatchRepositoryProvider`
+- [x] `onlineMatchProvider` (StreamProvider.family)
+- [x] `onlineMatchPlayersProvider` (StreamProvider.family)
+- [x] `myMatchStateProvider` (FutureProvider.autoDispose.family)
+
+*Lobby — boton de inicio*:
+- [x] `RoomLobbyNotifier` — nuevo metodo `startMatch()` con flag `isStarting`
+- [x] `LobbyStartBar` — boton del host ahora dice "Iniciar partida" cuando hay suficientes jugadores listos, con loading state y spinner
+- [x] Navegacion al match pendiente (TODO) hasta que exista la pantalla de juego
+
+*Correccion local — bug de pistas repetidas*:
+- [x] `WordBank.getHardHints()` ya no repite pistas cuando hay 3 o menos impostores (usa las 3 hints completas en vez de skip(1))
+
+- [x] `flutter analyze` sin errores nuevos
+
+**Accion requerida**:
+- Ejecutar `docs/supabase-phase4-match-engine.sql` completo en Supabase
+
+**Pendiente para slice 2** (proxima sesion):
+- [x] Pantalla de reveal de rol (cada jugador ve su rol/palabra en su telefono)
+- [x] Realtime sync del match via `postgres_changes`
+- [x] Reconexion: snapshot de estado al reconectar
+- [x] Navegacion real desde lobby a match screen
+
+### 2026-04-03 - Fase 4 slice 2: pantalla de match + navegacion + reconexion
+
+**Estado**: completado
+
+**Objetivo**:
+- Completar el flujo end-to-end: lobby -> start match -> role reveal en cada dispositivo
+- Reconexion automatica a match activo
+
+**Cambios aplicados**:
+
+*Pantalla de match — nuevo `lib/features/online/presentation/online_match_screen.dart`*:
+- [x] Pantalla `OnlineMatchScreen` con routing por matchId
+- [x] Role reveal: diferencia visual entre Civil (primaryColor) e Impostor (secondaryColor)
+  - Civiles ven la palabra secreta + categoria
+  - Impostores ven su pista (o "Sin pista" si hints deshabilitadas) + categoria
+  - Badges con info del match (cantidad de impostores, duracion)
+  - Textos contextuales de estrategia para cada rol
+  - Boton "Entendido" (pendiente conexion a avance de fase en Fase 5)
+- [x] Placeholder para fases futuras (clue_writing, voting, etc.)
+- [x] Manejo de error de carga
+
+*Ruta — actualizado `lib/router/app_router.dart`*:
+- [x] Nueva ruta `/online/match/:matchId` -> `OnlineMatchScreen`
+
+*Navegacion lobby -> match*:
+- [x] Host: al iniciar partida exitosamente, navega a `/online/match/$matchId`
+- [x] Participantes: listener en el lobby detecta transicion de room `waiting` -> `playing`, busca match activo, y navega automaticamente
+- [x] `room_lobby_screen.dart` — nuevo metodo `_navigateToActiveMatch` que consulta `getActiveMatchForRoom`
+
+*Reconexion a match activo*:
+- [x] `online_home_screen.dart` — `_resolveActiveRoomRedirect` ahora:
+  - Si la sala activa tiene un match en curso -> navega directo a `/online/match/$matchId`
+  - Si no tiene match (solo lobby) -> navega al lobby como antes
+- [x] Flujo: abrir app -> /online -> detecta sala activa -> detecta match activo -> role reveal
+
+*Realtime sync*:
+- [x] `onlineMatchProvider` (StreamProvider) escucha cambios en tabla `matches` via Realtime
+- [x] `onlineMatchPlayersProvider` (StreamProvider) escucha cambios en `match_players`
+- [x] Tablas ya estan en `supabase_realtime` publication con `replica identity full` (del slice 1)
+
+- [x] `flutter analyze` sin errores nuevos
+
+**Pendiente de pulido visual** (pase posterior a Fase 5):
+- [ ] Role reveal: animacion de suspense (scale-up 0.8->1.0 + fade-in 300ms)
+- [ ] Role reveal: delay de 1s con "Revelando tu rol..." antes de mostrar contenido (shimmer/pulse en borde del card)
+- [ ] Role reveal: glow animado en borde del card con color del rol (green civil, coral impostor)
+- [ ] Role reveal: boton "Entendido" aparece con fade-in despues de la animacion
+- [ ] Role reveal: skip animaciones si es reconexion (mostrar rol inmediato + toast "Reconectado")
+- [ ] Role reveal: estado "Esperando a los demas..." si el jugador ya confirmo
+- [ ] Revision de ortografia general (tildes, mayusculas, textos consistentes)
+- [ ] Categorias mostradas en mayusculas donde corresponda
+- [ ] Uso de imagenes/assets existentes en pantallas online (assets/)
+- [ ] Clue writing: lista de orden de turnos con estados (done/current/pending) en el estado de espera
+- [ ] Clue writing: pulsing dots en "Esperando a [nombre]..." para feedback de liveness
+- [ ] Clue writing: auto-focus del TextField al entrar en tu turno
+- [ ] Clue writing: ancho maximo 480px centrado para web (responsive)
+- [ ] Voting: grid de 2 columnas para los jugadores votables en vez de lista vertical
+- [ ] Voting: vote map visual con flechas (avatar -> arrow -> target) en resultado
+- [ ] Voting: badge "Tu voto" sobre el jugador elegido en estado de espera
+- [ ] Voting: pulsing dots en el contador de votos mientras se espera
+- [ ] Limpieza de matches: agregar ON DELETE CASCADE en `matches.room_id` para que al borrar una sala se eliminen matches, match_players, match_clues y match_votes asociados
+
+**Proximo paso**: Fase 5 (Gameplay Clasico completo — pistas, votacion, resultados)
+
+### 2026-04-03 - Modal de sala activa (UX improvement)
+
+**Estado**: completado ✅
+
+**Problema detectado**:
+- Cuando un usuario ya tenia una sala activa (waiting/playing), se le redirigía automaticamente sin opción de salir
+- El usuario queria poder elegir entre continuar en la sala o salir y empezar de nuevo
+
+**Implementacion**:
+- [x] `lib/features/online/presentation/widgets/active_room_dialog.dart` — nuevo dialog con:
+  - Deteccion automatica de estado (lobby abierto vs partida en curso)
+  - Icono y textos contextuales segun estado
+  - Boton "Continuar" (primario) para volver a la sala/partida
+  - Boton "Salir" con patron "tap again to confirm" para evitar salidas accidentales
+- [x] `lib/features/online/presentation/online_home_screen.dart` — `_resolveActiveRoomRedirect` ahora muestra el dialog en vez de redirigir automaticamente
+  - "Continuar" navega al lobby o match segun corresponda
+  - "Salir" llama `leaveRoom` y refresca el estado
+  - Dismiss (back) permite quedarse en home sin redireccion
+
+### 2026-04-03 - Kick player (host-only)
+
+**Estado**: completado ✅
+
+**Implementacion**:
+- [x] `docs/supabase-phase3-private-rooms.sql` — nueva funcion `kick_player(room_id, target_user_id)`:
+  - Solo el host puede expulsar, solo en status `waiting`
+  - Valida que el target no sea el host mismo
+  - Elimina la fila de `room_players`
+- [x] `lib/features/online/data/online_rooms_repository.dart` — metodo `kickPlayer()`
+- [x] `lib/features/online/application/room_lobby_notifier.dart` — metodo `kickPlayer()` expuesto al UI
+- [x] `lib/features/online/presentation/widgets/lobby_players_section.dart` — boton "Expulsar" visible solo para el host en jugadores no-host, con modal de confirmacion
+
+### 2026-04-03 - Back nativo protegido en pantallas online
+
+**Estado**: completado ✅
+
+**Problema**: el back nativo del dispositivo sacaba por completo de la partida online sin confirmacion.
+
+**Correccion**:
+- [x] `lib/features/online/presentation/online_match_screen.dart` — `PopScope(canPop: false)` + modal de confirmacion "Salir de la partida" antes de volver a `/online`
+- [x] Se agrego boton de back en el AppBar del match screen (antes no tenia)
+- [x] El lobby ya tenia `PopScope` con confirmacion (sin cambios)
+
+### 2026-04-03 - Logica de abandono en partida (sin timeout de gracia)
+
+**Estado**: completado ✅
+
+**Escenarios cubiertos**:
+1. Salida intencional (confirma modal "Salir") -> llama `abandon_match` RPC -> navega a home
+2. Cierre de app / background -> `WidgetsBindingObserver.didChangeAppLifecycleState` llama `abandon_match` automaticamente
+3. Los jugadores restantes detectan via Realtime:
+   - Si la partida fue cancelada -> pantalla "Partida cancelada" + boton "Volver al inicio"
+   - Si un jugador fue eliminado -> `state_version` sube, UI refleja el cambio
+4. Reconexion post-eliminacion -> match screen muestra pantalla "Fuiste eliminado" + boton "Volver al inicio"
+
+**SQL**:
+- [x] `docs/supabase-phase4-match-engine.sql` — nueva funcion `abandon_match(match_id)`:
+  - Marca al jugador como `is_eliminated = true`
+  - Verifica viabilidad: < 3 activos, o 0 impostores, o 0 civiles -> cancela la partida
+  - Si cancela: `matches.status = 'cancelled'`, `rooms.status = 'waiting'`
+  - Si no cancela: solo incrementa `state_version` para notificar via Realtime
+  - Retorna `{ cancelled: bool }`
+
+**Dart**:
+- [x] `lib/features/online/data/online_match_repository.dart` — metodo `abandonMatch(matchId)`
+- [x] `lib/features/online/presentation/online_match_screen.dart`:
+  - Convertido de `ConsumerWidget` a `ConsumerStatefulWidget`
+  - `WidgetsBindingObserver` para detectar `paused`/`detached` -> abandon automatico
+  - `ref.listen` en `onlineMatchProvider` para detectar `cancelled` via Realtime
+  - `ref.listen` en `myMatchStateProvider` para detectar auto-eliminacion
+  - Pantallas dedicadas: `_buildCancelled()` y `_buildEliminated()` con boton de salida
+  - Modal de confirmacion actualizado con texto informativo sobre consecuencias
+
+### 2026-04-03 - Fase 5 Slice 1: Confirmacion de rol + escritura de pistas
+
+**Estado**: completado ✅
+
+**SQL** (`docs/supabase-phase5-slice1-clues.sql` — nuevo archivo):
+- [x] `alter table match_players add column role_confirmed boolean`
+- [x] Realtime habilitado para `match_clues`
+- [x] RLS insert policy para `match_clues`
+- [x] RPC `confirm_role_reveal(match_id)`:
+  - Marca al jugador como `role_confirmed = true`
+  - Cuando todos los activos confirman -> avanza a fase `clue_writing`
+  - `current_turn_index` se setea al `seat_order` del `starting_player`
+- [x] RPC `submit_clue(match_id, clue)`:
+  - Valida turno, max 50 chars, no duplicados
+  - Inserta en `match_clues`, avanza `current_turn_index` al siguiente activo
+  - Si era el ultimo -> avanza a fase `voting`
+- [x] RPC `skip_clue_turn(match_id)`:
+  - Salta turno actual (timeout o skip manual)
+  - Misma logica de avance que `submit_clue`
+
+**Domain**:
+- [x] `OnlineMatchClue` — nuevo modelo con `fromMap`, `==`, `hashCode`
+- [x] `OnlineMatchPlayer.roleConfirmed` — campo agregado
+
+**Repository**:
+- [x] `confirmRoleReveal()`, `submitClue()`, `skipClueTurn()`, `watchMatchClues()`
+
+**Providers**:
+- [x] `onlineMatchCluesProvider` — StreamProvider.family para clues via Realtime
+
+**UI**:
+- [x] Boton "Entendido" en role reveal ahora llama `confirm_role_reveal` RPC
+- [x] Estado "Esperando a los demas..." despues de confirmar
+- [x] `lib/features/online/presentation/widgets/clue_writing_phase.dart` — nuevo widget:
+  - Header con indicador de turno + timer de 30s (colores dinamicos: normal/warning/error)
+  - Recordatorio de rol (palabra para civiles, pista para impostores)
+  - Lista de pistas ya escritas (avatar + nombre + pista)
+  - Input de pista (TextField + boton enviar) cuando es tu turno
+  - Estado de espera "Esperando a [nombre]..." cuando no es tu turno
+  - Timeout auto-skip cuando el timer llega a 0
+- [x] Match screen: `_buildClueWriting()` redirige al widget
+
+### 2026-04-03 - Fase 5 Slice 2: Votacion + resolucion + eliminacion
+
+**Estado**: completado ✅
+
+**SQL** (`docs/supabase-phase5-slice2-voting.sql` — nuevo archivo):
+- [x] Realtime habilitado para `match_votes`
+- [x] RLS insert policy para `match_votes`
+- [x] RPC `submit_vote(match_id, target_player_id)`:
+  - Votacion simultanea (no secuencial)
+  - Valida: no self-vote, no eliminados, no duplicado en ronda
+  - Cuando todos votan -> avanza a fase `vote_result`
+  - Soporta tiebreaker (segunda ronda de votos)
+- [x] RPC `resolve_votes(match_id)`:
+  - Cuenta votos, detecta empate vs eliminacion
+  - Si empate (primera ronda): vuelve a `voting` para tiebreaker
+  - Si empate en tiebreaker: elimina al primero (no loops infinitos)
+  - Elimina jugador, revela rol, marca voted_incorrectly si votaron civil
+  - Chequea condiciones de fin: 0 impostores = civiles ganan, impostores >= civiles = impostores ganan
+  - Si impostor eliminado y quedan mas: avanza a `impostor_guess`
+  - Si civil eliminado: avanza a siguiente ronda de `clue_writing`
+  - Si game over: `status = finished`, room vuelve a `waiting`
+
+**Domain**:
+- [x] `OnlineMatchVote` — modelo con `fromMap`, `==`, `hashCode`
+- [x] `VoteResolutionResult` — resultado del RPC con getters: `isTie`, `isGameOver`, etc.
+
+**Repository**:
+- [x] `submitVote()`, `resolveVotes()`, `watchMatchVotes()`
+
+**Providers**:
+- [x] `onlineMatchVotesProvider` — StreamProvider.family via Realtime
+
+**UI**:
+- [x] `lib/features/online/presentation/widgets/voting_phase.dart`:
+  - Header con titulo + contador de votos (X/N)
+  - Referencia de pistas de la ronda (ExpansionTile con chips)
+  - Grid de jugadores votables con seleccion + boton confirmar
+  - Estado post-voto: tu eleccion + lista de quien ya voto (sin revelar a quien)
+- [x] `lib/features/online/presentation/widgets/vote_result_phase.dart`:
+  - Resolucion automatica via RPC al entrar en la fase
+  - Desglose de votos (quien voto por quien)
+  - Card de resultado: empate (warning), eliminacion (con reveal de rol), game over (con ganador)
+  - Texto informativo sobre la siguiente fase
+- [x] Match screen: refresh de `myMatchState` automatico cuando Realtime detecta cambio de fase/version
+- [x] `flutter analyze` sin errores nuevos
+
+**Proximo paso**: Fase 5 Slice 3 (Adivinanza del impostor + pantalla de resultados finales + revancha)
+
+### 2026-04-04 - Hotfix: ambiguedad SQL is_tiebreak + transicion lenta clue_writing→voting
+
+**Estado**: completado ✅
+
+**SQL** (`docs/supabase-phase5-slice2-voting.sql`):
+- [x] Variable local `is_tiebreak` renombrada a `v_is_tiebreak` en `submit_vote` y `resolve_votes` para evitar ambiguedad con la columna `match_votes.is_tiebreak`
+- [x] Todas las referencias a columna calificadas con alias `mv.`
+
+**UI** (`lib/features/online/presentation/widgets/clue_writing_phase.dart`):
+- [x] Flag `_myClueWritten` previene que el jugador vea el input de nuevo despues de enviar su pista
+- [x] Cuando `submitClue` retorna `next_phase: 'voting'`, se hace `ref.invalidate` inmediato de `myMatchStateProvider` y `onlineMatchProvider` para transicion instantanea sin esperar Realtime
+
+**Accion requerida**: Re-ejecutar las funciones `submit_vote` y `resolve_votes` de `docs/supabase-phase5-slice2-voting.sql` en Supabase SQL Editor
+
+### 2026-04-05 - Fase 5 Slice 3: Adivinanza del impostor + resultados + revancha
+
+**Estado**: completado ✅
+
+**SQL** (`docs/supabase-phase5-slice3-guess.sql` — nuevo archivo):
+- [x] RPC `submit_impostor_guess(match_id, guess)`:
+  - Solo el impostor eliminado puede adivinar
+  - Comparacion normalizada (lowercase + trim)
+  - Si acierta: impostores ganan, match finaliza
+  - Si falla: marca `eliminated_by_failed_guess`, chequea condiciones de fin
+  - Si quedan impostores activos: continua a siguiente ronda de clue_writing
+- [x] RPC `skip_impostor_guess(match_id)`:
+  - El impostor eliminado decide no adivinar
+  - Misma logica de continuacion/fin que el fallo
+- [x] RPC `calculate_match_scores(match_id)`:
+  - Calcula puntuacion final al terminar la partida
+  - Civil win: +2 a civiles sin voto incorrecto, +1 a impostores eliminados (sin fallo de guess)
+  - Impostor win: +5 si no eliminado, +1 si eliminado (sin fallo de guess)
+  - Retorna ranking ordenado por puntos
+- [x] Nota: la revancha no necesita RPC nuevo — el host vuelve al lobby y usa `start_match` existente
+
+**Domain** (`lib/features/online/domain/online_match.dart`):
+- [x] `ImpostorGuessResult` — resultado del RPC de adivinanza
+- [x] `MatchScoresResult` — resultado del calculo de puntuacion
+- [x] `PlayerScore` — modelo de puntuacion individual por jugador
+
+**Repository** (`lib/features/online/data/online_match_repository.dart`):
+- [x] `submitImpostorGuess()`, `skipImpostorGuess()`, `calculateMatchScores()`
+
+**UI**:
+- [x] `lib/features/online/presentation/widgets/impostor_guess_phase.dart`:
+  - Vista dual: el impostor eliminado ve input de guess, los demas ven pantalla de espera
+  - Timer de 30 segundos con colores degradados
+  - Recordatorio de categoria y pista del impostor
+  - Boton "Confirmar" + boton "Pasar" (outline)
+  - Warning informativo sobre consecuencias
+  - Auto-skip al terminar el timer
+- [x] `lib/features/online/presentation/widgets/match_results_phase.dart`:
+  - Anuncio del ganador con icono y color (civiles = verde, impostores = rojo)
+  - Palabra secreta revelada con categoria
+  - Ranking de jugadores con posicion, avatar, nombre, rol, puntos
+  - Medallas para top 3, fila del usuario actual resaltada
+  - Eliminados con strikethrough
+  - Boton "Revancha" (solo host) → vuelve al lobby
+  - Boton "Volver al inicio" / "Volver al lobby" segun si es host o no
+- [x] `online_match_screen.dart`: phases `impostorGuess` y `finished` conectadas
+- [x] Eliminado `_buildPhasePlaceholder` (ya no hay fases sin implementar)
+
+**Fix adicional** (`docs/supabase-phase4-match-engine.sql`):
+- [x] `get_my_match_state` ahora revela la palabra a impostores cuando `status = 'finished'` (antes solo civiles la recibían)
+
+**Accion requerida**: Ejecutar en Supabase SQL Editor:
+1. Las funciones `submit_vote` y `resolve_votes` de `docs/supabase-phase5-slice2-voting.sql`
+2. Todo `docs/supabase-phase5-slice3-guess.sql`
+3. La funcion `get_my_match_state` de `docs/supabase-phase4-match-engine.sql` (fix para revelar palabra al terminar)
+
+### 2026-04-05 - Hotfix batch: correcciones post-pruebas de Fase 5
+
+**Estado**: completado ✅
+
+**Voting** (`voting_phase.dart`):
+- [x] Reset de `_hasVoted` via `didUpdateWidget` cuando la fase vuelve a voting (fix desempate)
+- [x] En desempate, solo se muestran como opciones los jugadores que empataron
+
+**Vote result** (`vote_result_phase.dart`):
+- [x] Barra de depletacion de 3 segundos (`LinearProgressIndicator` animada) antes de auto-transicion
+- [x] Error "No es la fase de resultado" ignorado si otro cliente ya resolvio (fix error del host)
+
+**Eliminated screen** (`online_match_screen.dart`):
+- [x] Texto cambiado de "inactividad o desconexion" a "Los demas jugadores votaron para eliminarte"
+- [x] Jugadores eliminados que siguen en la app ven la pantalla de resultados cuando la partida termina
+- [x] Icono cambiado a `how_to_vote_rounded`
+- [x] Spinner de espera mientras la partida continua
+
+**Clue list** (`clue_writing_phase.dart`):
+- [x] Orden invertido: la pista mas reciente aparece primero (cronologico, no por jugador)
+
+**Scoring** (`supabase-phase5-slice3-guess.sql`):
+- [x] `calculate_match_scores` ahora es idempotente (chequea si ya hay puntos > 0 antes de aplicar)
+
+**Results screen** (`match_results_phase.dart`):
+- [x] Emoji de medalla reemplazado por circulos con numeros y colores (oro/plata/bronce)
+- [x] Boton unificado: "Volver a la sala" lleva directamente al lobby de la sala (sin modal de confirmacion)
+- [x] Removido boton de "Revancha" separado — el host simplemente inicia otra partida desde el lobby
+
+**Accion requerida**: Re-ejecutar `calculate_match_scores` de `docs/supabase-phase5-slice3-guess.sql` en Supabase
+
+**Proximo paso**: Continuar pruebas end-to-end
+
+### 2026-04-05 - Hotfix: resolve_votes idempotente + impostor guess visible
+
+**Estado**: completado ✅
+
+**SQL** (`docs/supabase-phase5-slice2-voting.sql`):
+- [x] `resolve_votes` ahora es idempotente: si otro cliente ya resolvio y la fase avanzo, computa el resultado en modo read-only desde los votos y jugadores existentes en vez de lanzar excepcion
+  - Detecta el round de votos mas reciente y si hubo tiebreak
+  - Reconstruye el resultado (tie, game_over, impostor_eliminated, civil_eliminated) segun el estado actual del match
+  - Esto garantiza que TODOS los clientes reciban el JSON de resultado para mostrar la pantalla de vote_result por 3 segundos locales
+
+**UI** (`vote_result_phase.dart`):
+- [x] Removido el catch especial para "No es la fase de resultado" (ya no ocurre, el RPC siempre retorna resultado)
+
+**UI** (`online_match_screen.dart` — ya aplicado en hotfix anterior):
+- [x] Impostores eliminados ahora ven la fase `impostor_guess` en vez de la pantalla de "Fuiste eliminado"
+
+**Accion requerida**: Re-ejecutar la funcion `resolve_votes` de `docs/supabase-phase5-slice2-voting.sql` en Supabase SQL Editor

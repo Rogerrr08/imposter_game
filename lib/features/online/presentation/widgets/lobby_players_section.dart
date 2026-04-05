@@ -8,11 +8,15 @@ import '../../domain/online_room.dart';
 class LobbyPlayersSection extends StatelessWidget {
   final List<OnlineRoomPlayer> players;
   final String currentUserId;
+  final bool isHost;
+  final void Function(String userId)? onKickPlayer;
 
   const LobbyPlayersSection({
     super.key,
     required this.players,
     required this.currentUserId,
+    this.isHost = false,
+    this.onKickPlayer,
   });
 
   @override
@@ -38,6 +42,10 @@ class LobbyPlayersSection extends StatelessWidget {
           (player) => _PlayerTile(
             player: player,
             isCurrentUser: player.userId == currentUserId,
+            canKick: isHost && !player.isHost,
+            onKick: onKickPlayer != null
+                ? () => onKickPlayer!(player.userId)
+                : null,
           ),
         ),
       ],
@@ -48,8 +56,15 @@ class LobbyPlayersSection extends StatelessWidget {
 class _PlayerTile extends StatelessWidget {
   final OnlineRoomPlayer player;
   final bool isCurrentUser;
+  final bool canKick;
+  final VoidCallback? onKick;
 
-  const _PlayerTile({required this.player, required this.isCurrentUser});
+  const _PlayerTile({
+    required this.player,
+    required this.isCurrentUser,
+    this.canKick = false,
+    this.onKick,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -162,6 +177,13 @@ class _PlayerTile extends StatelessWidget {
                 player.isReady ? 'Listo' : 'Esperando',
                 player.isReady ? AppTheme.successColor : AppTheme.warningColor,
               ),
+              if (canKick) ...[
+                const SizedBox(height: 8),
+                _KickButton(
+                  playerName: player.displayName,
+                  onKick: onKick,
+                ),
+              ],
             ],
           ),
         ],
@@ -185,5 +207,81 @@ class _PlayerTile extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _KickButton extends StatelessWidget {
+  final String playerName;
+  final VoidCallback? onKick;
+
+  const _KickButton({required this.playerName, this.onKick});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showKickDialog(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppTheme.secondaryColor.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(
+            color: AppTheme.secondaryColor.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.person_remove_rounded,
+              size: 14,
+              color: AppTheme.secondaryColor,
+            ),
+            const SizedBox(width: 4),
+            Text(
+              'Expulsar',
+              style: GoogleFonts.nunito(
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.secondaryColor,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showKickDialog(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Expulsar jugador',
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Quieres expulsar a $playerName de la sala?',
+          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondaryColor,
+            ),
+            child: const Text('Expulsar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      onKick?.call();
+    }
   }
 }

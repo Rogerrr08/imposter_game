@@ -21,6 +21,7 @@ import '../features/online/presentation/create_room_screen.dart';
 import '../features/online/presentation/display_name_screen.dart';
 import '../features/online/presentation/join_room_screen.dart';
 import '../features/online/presentation/online_home_screen.dart';
+import '../features/online/presentation/online_match_screen.dart';
 import '../features/online/presentation/room_lobby_screen.dart';
 
 class AppRouter {
@@ -103,6 +104,13 @@ class AppRouter {
         pageBuilder: (context, state) {
           final roomId = state.pathParameters['roomId']!;
           return _buildPage(state, RoomLobbyScreen(roomId: roomId));
+        },
+      ),
+      GoRoute(
+        path: '/online/match/:matchId',
+        pageBuilder: (context, state) {
+          final matchId = state.pathParameters['matchId']!;
+          return _buildPage(state, OnlineMatchScreen(matchId: matchId));
         },
       ),
       GoRoute(
