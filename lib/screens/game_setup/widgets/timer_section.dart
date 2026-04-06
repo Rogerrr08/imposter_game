@@ -73,7 +73,7 @@ class TimerSection extends StatelessWidget {
                   child: Center(
                     child: Text(
                       _presetLabels[index],
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: 14,
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w500,

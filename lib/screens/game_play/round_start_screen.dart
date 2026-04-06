@@ -72,7 +72,7 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
               const SizedBox(height: 28),
               Text(
                 'Empieza la ronda',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 18,
                   color: AppTheme.textSecondary,
                   fontWeight: FontWeight.w500,
@@ -81,7 +81,7 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
               const SizedBox(height: 10),
               Text(
                 startingPlayerName,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 34,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -91,7 +91,7 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
               const SizedBox(height: 16),
               Text(
                 'La ronda comienza en un momento.',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 14,
                   color: AppTheme.textSecondary.withValues(alpha: 0.7),
                 ),

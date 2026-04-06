@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/word_bank.dart';
 import '../database/database.dart';
-import '../models/quick_game_preset.dart';
 import '../models/game_state.dart';
+import '../models/quick_game_preset.dart';
 import '../utils/text_normalize.dart';
 import 'database_provider.dart';
 
@@ -24,67 +24,17 @@ final lastGroupGamePresetsProvider =
 );
 
 class GameNotifier extends Notifier<ActiveGame?> {
-  final _random = Random();
-
-  // Shuffle bag for impostor selection: keyed by sorted player names,
-  // each bag contains player names that haven't been impostor yet.
-  static final Map<String, List<String>> _impostorBags = {};
-  static final Map<String, List<String>> _startingPlayerBags = {};
-  static final _staticRandom = Random();
+  final _random = Random.secure();
 
   @override
   ActiveGame? build() => null;
 
-  /// Pick impostors using a shuffle bag so every player gets a turn
-  /// before anyone repeats.
-  static List<String> _pickImpostorsFromBag(
-    List<String> playerNames,
-    int count,
-  ) {
-    final sorted = List<String>.from(playerNames)..sort();
-    final bagKey = sorted.join('|');
-
-    final bag = _impostorBags.putIfAbsent(bagKey, () => <String>[]);
-
-    final picked = <String>[];
-    for (int i = 0; i < count; i++) {
-      if (bag.isEmpty) {
-        // Refill with all players, minus anyone already picked this round
-        bag.addAll(sorted.where((n) => !picked.contains(n)));
-        bag.shuffle(_staticRandom);
-      }
-      if (bag.isNotEmpty) {
-        picked.add(bag.removeLast());
-      }
-    }
-    return picked;
-  }
-
-  static String? _pickStartingPlayerFromBag(
-    List<String> playerNames, {
-    required bool hintsEnabled,
-  }) {
-    if (playerNames.isEmpty) return null;
-
-    final sorted = List<String>.from(playerNames)..sort();
-    final bagKey = '${hintsEnabled ? 'hints' : 'no_hints'}|${sorted.join('|')}';
-    final bag = _startingPlayerBags.putIfAbsent(bagKey, () => <String>[]);
-
-    if (bag.isEmpty) {
-      bag.addAll(sorted);
-      bag.shuffle(_staticRandom);
-    }
-
-    return bag.removeLast();
-  }
-
   void startNewGame(GameConfig config) {
     final wordEntry = WordBank.getRandomWordFromCategories(config.categories);
 
-    final impostorNames = _pickImpostorsFromBag(
-      config.playerNames,
-      config.impostorCount,
-    );
+    final shuffledNames = List<String>.from(config.playerNames)
+      ..shuffle(_random);
+    final impostorNames = shuffledNames.take(config.impostorCount).toSet();
 
     final availableHints = WordBank.getHardHints(
       wordEntry,
@@ -143,7 +93,17 @@ class GameNotifier extends Notifier<ActiveGame?> {
 
   void startPlaying() {
     if (state == null) return;
-    state = _copyGame(state!, phase: GamePhase.playing);
+    final game = state!;
+    state = _copyGame(
+      game,
+      phase: GamePhase.playing,
+      classicVotes: const {},
+      classicVotingOrder: const [],
+      classicVotingIndex: 0,
+      classicTieCandidates: const [],
+      clearPendingClassicGuesserName: true,
+      clearLastEliminatedState: true,
+    );
   }
 
   void tick() {
@@ -163,8 +123,21 @@ class GameNotifier extends Notifier<ActiveGame?> {
   void timeUp() {
     if (state == null) return;
     final game = state!;
-    final scoredPlayers = _applyImpostorSurvivalScoring(game.players);
+
+    if (game.isClassicMode) {
+      final updatedGame = _copyGame(
+        game,
+        phase: GamePhase.playing,
+        clearPendingClassicGuesserName: true,
+      );
+      _finishClassicImpostorWin(updatedGame.players, updatedGame);
+      return;
+    }
+
+    final scoredPlayers = _applyExpressImpostorSurvivalScoring(game.players);
+    final updatedGame = _copyGame(game, players: scoredPlayers);
     _finishGame(
+      baseGame: updatedGame,
       civilsWon: false,
       impostorGuessedWord: false,
       players: scoredPlayers,
@@ -175,6 +148,10 @@ class GameNotifier extends Notifier<ActiveGame?> {
     if (state == null) return false;
     final game = state!;
 
+    if (game.isClassicMode) {
+      return false;
+    }
+
     final player = game.players.firstWhere((entry) => entry.name == playerName);
     if (player.isEliminated) {
       return player.role == PlayerRole.impostor;
@@ -183,7 +160,6 @@ class GameNotifier extends Notifier<ActiveGame?> {
     final wasImpostor = player.role == PlayerRole.impostor;
     var newLives = game.livesRemaining;
 
-    // Build updated player list
     final updatedPlayers = game.players.map((p) {
       if (wasImpostor) {
         if (p.name == playerName) {
@@ -193,9 +169,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
           return p.copyWith(votedImpostorCorrectly: true);
         }
       } else {
-        if (p.name == votedBy &&
-            p.role == PlayerRole.civil &&
-            !p.isEliminated) {
+        if (p.name == votedBy && p.role == PlayerRole.civil && !p.isEliminated) {
           return p.copyWith(isEliminated: true, votedIncorrectly: true);
         }
       }
@@ -206,7 +180,6 @@ class GameNotifier extends Notifier<ActiveGame?> {
       newLives = max(0, newLives - 1);
     }
 
-    // Build a temporary game to check win conditions
     final updatedGame = _copyGame(
       game,
       phase: GamePhase.playing,
@@ -215,16 +188,28 @@ class GameNotifier extends Notifier<ActiveGame?> {
     );
 
     if (updatedGame.allImpostorsFound) {
-      final scoredPlayers = _applyCivilWinScoring(updatedPlayers);
+      final scoredPlayers = _applyExpressCivilWinScoring(updatedPlayers);
+      final scoredGame = _copyGame(
+        updatedGame,
+        players: scoredPlayers,
+        livesRemaining: newLives,
+      );
       _finishGame(
+        baseGame: scoredGame,
         civilsWon: true,
         impostorGuessedWord: false,
         players: scoredPlayers,
         livesRemaining: newLives,
       );
     } else if (updatedGame.impostorsWinByNumbers || updatedGame.noLivesLeft) {
-      final scoredPlayers = _applyImpostorSurvivalScoring(updatedPlayers);
+      final scoredPlayers = _applyExpressImpostorSurvivalScoring(updatedPlayers);
+      final scoredGame = _copyGame(
+        updatedGame,
+        players: scoredPlayers,
+        livesRemaining: newLives,
+      );
       _finishGame(
+        baseGame: scoredGame,
         civilsWon: false,
         impostorGuessedWord: false,
         players: scoredPlayers,
@@ -237,22 +222,152 @@ class GameNotifier extends Notifier<ActiveGame?> {
     return wasImpostor;
   }
 
-  bool impostorGuess(String guess, {String? guessedBy}) {
-    if (state == null || guessedBy == null) return false;
+  void startVotingRound() {
+    if (state == null) return;
     final game = state!;
 
+    if (game.isClassicMode) {
+      final votingOrder = game.activePlayers.map((player) => player.name).toList();
+      state = _copyGame(
+        game,
+        phase: GamePhase.voting,
+        classicVotes: const {},
+        classicVotingOrder: votingOrder,
+        classicVotingIndex: 0,
+        classicTieCandidates: const [],
+        clearPendingClassicGuesserName: true,
+        clearLastEliminatedState: true,
+      );
+      return;
+    }
+
+    state = _copyGame(game, phase: GamePhase.voting);
+  }
+
+  bool submitClassicVote({
+    required String voterName,
+    required String targetName,
+  }) {
+    if (state == null) return false;
+    final game = state!;
+    if (!game.isClassicMode || game.phase != GamePhase.voting) {
+      return false;
+    }
+
+    final currentVoter = game.currentClassicVoterName;
+    if (currentVoter == null || currentVoter != voterName) {
+      return false;
+    }
+
+    if (voterName == targetName) return false;
+
+    final voter = _findPlayerByName(game.activePlayers, voterName);
+    final target = _findPlayerByName(game.activePlayers, targetName);
+    if (voter == null || target == null) return false;
+
+    final nextVotes = Map<String, String>.from(game.classicVotes);
+    nextVotes[voterName] = targetName;
+
+    if (nextVotes.length < game.classicVotingOrder.length) {
+      state = _copyGame(
+        game,
+        classicVotes: nextVotes,
+        classicVotingIndex: game.classicVotingIndex + 1,
+        clearLastEliminatedState: true,
+      );
+      return true;
+    }
+
+    _resolveClassicVotes(game, nextVotes);
+    return true;
+  }
+
+  bool resolveClassicTie(String targetName) {
+    if (state == null) return false;
+    final game = state!;
+    if (!game.isClassicMode || game.classicTieCandidates.isEmpty) {
+      return false;
+    }
+    if (!game.classicTieCandidates.contains(targetName)) {
+      return false;
+    }
+
+    _resolveClassicElimination(game, targetName, game.classicVotes);
+    return true;
+  }
+
+  bool impostorGuess(String guess, {String? guessedBy}) {
+    if (state == null) return false;
+    final game = state!;
+
+    if (game.isClassicMode) {
+      final classicGuesser = game.pendingClassicGuesserName;
+      if (classicGuesser == null) return false;
+
+      if (_matchesSecretWord(guess, game.secretWord)) {
+        final scoredPlayers = game.players.map((player) {
+          if (player.role != PlayerRole.impostor) return player;
+          if (player.name == classicGuesser) {
+            return player.copyWith(points: player.points + 3);
+          }
+          return player.copyWith(points: player.points + 1);
+        }).toList();
+
+        final updatedGame = _copyGame(
+          game,
+          players: scoredPlayers,
+          clearPendingClassicGuesserName: true,
+        );
+
+        _finishGame(
+          baseGame: updatedGame,
+          civilsWon: false,
+          impostorGuessedWord: true,
+          guesser: classicGuesser,
+          players: scoredPlayers,
+        );
+        return true;
+      }
+
+      final updatedPlayers = game.players.map((player) {
+        if (player.name == classicGuesser) {
+          return player.copyWith(eliminatedByFailedGuess: true);
+        }
+        return player;
+      }).toList();
+
+      final updatedGame = _copyGame(
+        game,
+        players: updatedPlayers,
+        clearPendingClassicGuesserName: true,
+      );
+
+      if (updatedGame.allImpostorsFound) {
+        _finishClassicCivilWin(updatedPlayers, updatedGame);
+      } else if (updatedGame.impostorsWinByNumbers) {
+        _finishClassicImpostorWin(updatedPlayers, updatedGame);
+      } else {
+        state = updatedGame;
+      }
+
+      return false;
+    }
+
+    if (guessedBy == null) return false;
     final guessingImpostor = _findPlayerByName(game.activeImpostors, guessedBy);
     if (guessingImpostor == null) return false;
 
     if (_matchesSecretWord(guess, game.secretWord)) {
-      final scoredPlayers = game.players.map((p) {
-        if (p.role == PlayerRole.impostor) {
-          return p.copyWith(points: p.points + (p.name == guessedBy ? 3 : 1));
+      final scoredPlayers = game.players.map((player) {
+        if (player.role == PlayerRole.impostor) {
+          return player.copyWith(points: player.points + (player.name == guessedBy ? 3 : 1));
         }
-        return p;
+        return player;
       }).toList();
 
+      final updatedGame = _copyGame(game, players: scoredPlayers);
       _finishGame(
+        baseGame: updatedGame,
         civilsWon: false,
         impostorGuessedWord: true,
         guesser: guessedBy,
@@ -261,12 +376,14 @@ class GameNotifier extends Notifier<ActiveGame?> {
       return true;
     }
 
-    // Failed guess — eliminate the guesser
-    final updatedPlayers = game.players.map((p) {
-      if (p.name == guessedBy) {
-        return p.copyWith(isEliminated: true, eliminatedByFailedGuess: true);
+    final updatedPlayers = game.players.map((player) {
+      if (player.name == guessedBy) {
+        return player.copyWith(
+          isEliminated: true,
+          eliminatedByFailedGuess: true,
+        );
       }
-      return p;
+      return player;
     }).toList();
 
     final updatedGame = _copyGame(
@@ -276,15 +393,19 @@ class GameNotifier extends Notifier<ActiveGame?> {
     );
 
     if (updatedGame.allImpostorsFound) {
-      final scoredPlayers = _applyCivilWinScoring(updatedPlayers);
+      final scoredPlayers = _applyExpressCivilWinScoring(updatedPlayers);
+      final scoredGame = _copyGame(updatedGame, players: scoredPlayers);
       _finishGame(
+        baseGame: scoredGame,
         civilsWon: true,
         impostorGuessedWord: false,
         players: scoredPlayers,
       );
     } else if (updatedGame.impostorsWinByNumbers || updatedGame.noLivesLeft) {
-      final scoredPlayers = _applyImpostorSurvivalScoring(updatedPlayers);
+      final scoredPlayers = _applyExpressImpostorSurvivalScoring(updatedPlayers);
+      final scoredGame = _copyGame(updatedGame, players: scoredPlayers);
       _finishGame(
+        baseGame: scoredGame,
         civilsWon: false,
         impostorGuessedWord: false,
         players: scoredPlayers,
@@ -296,7 +417,25 @@ class GameNotifier extends Notifier<ActiveGame?> {
     return false;
   }
 
-  List<GamePlayer> _applyCivilWinScoring(List<GamePlayer> players) {
+  void skipClassicImpostorGuess() {
+    if (state == null) return;
+    final game = state!;
+    if (!game.isClassicMode || game.pendingClassicGuesserName == null) {
+      return;
+    }
+
+    final updatedGame = _copyGame(game, clearPendingClassicGuesserName: true);
+
+    if (updatedGame.allImpostorsFound) {
+      _finishClassicCivilWin(updatedGame.players, updatedGame);
+    } else if (updatedGame.impostorsWinByNumbers) {
+      _finishClassicImpostorWin(updatedGame.players, updatedGame);
+    } else {
+      state = updatedGame;
+    }
+  }
+
+  List<GamePlayer> _applyExpressCivilWinScoring(List<GamePlayer> players) {
     return players.map((player) {
       if (player.role != PlayerRole.civil) return player;
       if (player.votedIncorrectly) return player;
@@ -307,7 +446,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
     }).toList();
   }
 
-  List<GamePlayer> _applyImpostorSurvivalScoring(List<GamePlayer> players) {
+  List<GamePlayer> _applyExpressImpostorSurvivalScoring(List<GamePlayer> players) {
     return players.map((player) {
       if (player.role != PlayerRole.impostor) return player;
       if (player.eliminatedByFailedGuess) return player;
@@ -318,24 +457,218 @@ class GameNotifier extends Notifier<ActiveGame?> {
     }).toList();
   }
 
+  List<GamePlayer> _applyClassicCivilEliminationScoring(
+    List<GamePlayer> players,
+    Map<String, String> votes,
+    String eliminatedCivilName,
+  ) {
+    final penalizedVoters = votes.entries
+        .where((entry) => entry.value == eliminatedCivilName)
+        .map((entry) => entry.key)
+        .toSet();
+
+    return players.map((player) {
+      if (player.role == PlayerRole.civil && penalizedVoters.contains(player.name)) {
+        return player.copyWith(
+          points: player.points - 1,
+          votedIncorrectly: true,
+        );
+      }
+      return player;
+    }).toList();
+  }
+
+  List<GamePlayer> _applyClassicImpostorEliminationScoring(
+    List<GamePlayer> players,
+    Map<String, String> votes,
+    String eliminatedImpostorName,
+  ) {
+    final rewardedVoters = votes.entries
+        .where((entry) => entry.value == eliminatedImpostorName)
+        .map((entry) => entry.key)
+        .toSet();
+
+    return players.map((player) {
+      if (player.role == PlayerRole.civil && rewardedVoters.contains(player.name)) {
+        return player.copyWith(points: player.points + 2);
+      }
+      return player;
+    }).toList();
+  }
+
+  List<GamePlayer> _applyClassicCivilWinScoring(List<GamePlayer> players) {
+    return players.map((player) {
+      if (player.role != PlayerRole.civil) return player;
+      if (player.votedIncorrectly) return player;
+      return player.copyWith(points: player.points + 2);
+    }).toList();
+  }
+
+  List<GamePlayer> _applyClassicImpostorWinScoring(List<GamePlayer> players) {
+    return players.map((player) {
+      if (player.role != PlayerRole.impostor) return player;
+      if (player.isEliminated) {
+        if (player.eliminatedByFailedGuess) {
+          return player;
+        }
+        return player.copyWith(points: player.points + 1);
+      }
+      return player.copyWith(points: player.points + 5);
+    }).toList();
+  }
+
+  void _resolveClassicVotes(ActiveGame game, Map<String, String> votes) {
+    final counts = <String, int>{};
+    for (final target in votes.values) {
+      counts[target] = (counts[target] ?? 0) + 1;
+    }
+
+    if (counts.isEmpty) return;
+
+    final maxVotes = counts.values.reduce(max);
+    final tiedCandidates = counts.entries
+        .where((entry) => entry.value == maxVotes)
+        .map((entry) => entry.key)
+        .toList();
+
+    if (tiedCandidates.length > 1) {
+      state = _copyGame(
+        game,
+        classicVotes: votes,
+        classicTieCandidates: tiedCandidates,
+        phase: GamePhase.voting,
+      );
+      return;
+    }
+
+    _resolveClassicElimination(game, tiedCandidates.first, votes);
+  }
+
+  void _resolveClassicElimination(
+    ActiveGame game,
+    String eliminatedName,
+    Map<String, String> votes,
+  ) {
+    final eliminatedPlayer = _findPlayerByName(game.players, eliminatedName);
+    if (eliminatedPlayer == null) return;
+
+    final tallies = <String, int>{};
+    for (final target in votes.values) {
+      tallies[target] = (tallies[target] ?? 0) + 1;
+    }
+
+    var updatedPlayers = game.players.map((player) {
+      if (player.name == eliminatedName) {
+        return player.copyWith(isEliminated: true);
+      }
+      return player;
+    }).toList();
+
+    if (eliminatedPlayer.role == PlayerRole.impostor) {
+      updatedPlayers = _applyClassicImpostorEliminationScoring(
+        updatedPlayers,
+        votes,
+        eliminatedName,
+      );
+
+      state = _copyGame(
+        game,
+        players: updatedPlayers,
+        phase: GamePhase.playing,
+        classicVotes: const {},
+        classicVotingOrder: const [],
+        classicVotingIndex: 0,
+        classicTieCandidates: const [],
+        pendingClassicGuesserName: eliminatedName,
+        lastEliminatedPlayerName: eliminatedName,
+        lastEliminatedWasImpostor: true,
+        lastVoteTallies: tallies,
+      );
+      return;
+    }
+
+    updatedPlayers = _applyClassicCivilEliminationScoring(
+      updatedPlayers,
+      votes,
+      eliminatedName,
+    );
+
+    final updatedGame = _copyGame(
+      game,
+      players: updatedPlayers,
+      phase: GamePhase.playing,
+      classicVotes: const {},
+      classicVotingOrder: const [],
+      classicVotingIndex: 0,
+      classicTieCandidates: const [],
+      clearPendingClassicGuesserName: true,
+      lastEliminatedPlayerName: eliminatedName,
+      lastEliminatedWasImpostor: false,
+      lastVoteTallies: tallies,
+    );
+
+    if (updatedGame.impostorsWinByNumbers) {
+      _finishClassicImpostorWin(updatedPlayers, updatedGame);
+      return;
+    }
+
+    state = updatedGame;
+  }
+
+  void _finishClassicCivilWin(
+    List<GamePlayer> players,
+    ActiveGame baseGame,
+  ) {
+    final scoredPlayers = _applyClassicCivilWinScoring(players);
+    final scoredGame = _copyGame(baseGame, players: scoredPlayers);
+    _finishGame(
+      baseGame: scoredGame,
+      civilsWon: true,
+      impostorGuessedWord: false,
+      players: scoredPlayers,
+      clearPendingClassicGuesserName: true,
+    );
+  }
+
+  void _finishClassicImpostorWin(
+    List<GamePlayer> players,
+    ActiveGame baseGame,
+  ) {
+    final scoredPlayers = _applyClassicImpostorWinScoring(players);
+    final scoredGame = _copyGame(baseGame, players: scoredPlayers);
+    _finishGame(
+      baseGame: scoredGame,
+      civilsWon: false,
+      impostorGuessedWord: false,
+      players: scoredPlayers,
+      clearPendingClassicGuesserName: true,
+    );
+  }
+
   Future<void> _finishGame({
+    required ActiveGame baseGame,
     required bool civilsWon,
     required bool impostorGuessedWord,
     String? guesser,
     List<GamePlayer>? players,
     int? livesRemaining,
+    bool clearPendingClassicGuesserName = false,
   }) async {
     if (state == null) return;
-    final game = state!;
 
     state = _copyGame(
-      game,
+      baseGame,
       phase: GamePhase.results,
       players: players,
       civilsWon: civilsWon,
       impostorGuessedWord: impostorGuessedWord,
       impostorWhoGuessed: guesser,
       livesRemaining: livesRemaining,
+      classicVotes: const {},
+      classicVotingOrder: const [],
+      classicVotingIndex: 0,
+      classicTieCandidates: const [],
+      clearPendingClassicGuesserName: clearPendingClassicGuesserName,
     );
 
     await _saveGameToDatabase(civilsWon, impostorGuessedWord);
@@ -354,6 +687,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
 
       final gameId = await gameDao.saveGame(
         groupId: game.config.groupId,
+        mode: game.config.mode.name,
         category: game.wordCategory.name,
         word: game.secretWord,
         duration: game.config.durationSeconds,
@@ -375,28 +709,27 @@ class GameNotifier extends Notifier<ActiveGame?> {
 
       state = _copyGame(game, savedGameId: gameId);
     } catch (_) {
-      // Persistence should not block the game flow.
+      // Ignore persistence failures during gameplay.
     }
   }
 
-  /// Override result: impostor guessed correctly (synonym/manual consensus).
-  /// Resets all points and applies impostor-guess scoring, then re-saves.
   Future<void> overrideImpostorGuessedCorrectly(String impostorName) async {
     if (state == null) return;
     final game = state!;
 
     final oldPlayerResults = game.players
-        .map((p) => GamePlayerEntry(
-              playerName: p.name,
-              wasImpostor: p.role == PlayerRole.impostor,
-              points: p.points,
-              wasEliminated: p.isEliminated,
-            ))
+        .map(
+          (player) => GamePlayerEntry(
+            playerName: player.name,
+            wasImpostor: player.role == PlayerRole.impostor,
+            points: player.points,
+            wasEliminated: player.isEliminated,
+          ),
+        )
         .toList();
 
-    // Reset all points to 0, then apply impostor guess scoring
-    final scoredPlayers = game.players.map((p) {
-      final base = p.copyWith(points: 0);
+    final scoredPlayers = game.players.map((player) {
+      final base = player.copyWith(points: 0);
       if (base.role == PlayerRole.impostor) {
         return base.copyWith(points: base.name == impostorName ? 3 : 1);
       }
@@ -409,6 +742,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
       civilsWon: false,
       impostorGuessedWord: true,
       impostorWhoGuessed: impostorName,
+      clearPendingClassicGuesserName: true,
     );
 
     try {
@@ -416,18 +750,21 @@ class GameNotifier extends Notifier<ActiveGame?> {
       final gameDao = GameDao(db);
 
       final newPlayerResults = scoredPlayers
-          .map((p) => GamePlayerEntry(
-                playerName: p.name,
-                wasImpostor: p.role == PlayerRole.impostor,
-                points: p.points,
-                wasEliminated: p.isEliminated,
-              ))
+          .map(
+            (player) => GamePlayerEntry(
+              playerName: player.name,
+              wasImpostor: player.role == PlayerRole.impostor,
+              points: player.points,
+              wasEliminated: player.isEliminated,
+            ),
+          )
           .toList();
 
       if (game.savedGameId != null && game.config.groupId != null) {
         final newId = await gameDao.replaceGameResult(
           oldGameId: game.savedGameId!,
           groupId: game.config.groupId,
+          mode: game.config.mode.name,
           category: game.wordCategory.name,
           word: game.secretWord,
           duration: game.config.durationSeconds,
@@ -444,7 +781,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
         await _saveGameToDatabase(false, true);
       }
     } catch (_) {
-      // Persistence should not block UI
+      // Ignore persistence failures.
     }
   }
 
@@ -454,13 +791,9 @@ class GameNotifier extends Notifier<ActiveGame?> {
 
   GamePlayer? _findPlayerByName(List<GamePlayer> players, String? name) {
     if (name == null) return null;
-
     for (final player in players) {
-      if (player.name == name) {
-        return player;
-      }
+      if (player.name == name) return player;
     }
-
     return null;
   }
 
@@ -475,6 +808,16 @@ class GameNotifier extends Notifier<ActiveGame?> {
     int? livesRemaining,
     String? impostorWhoGuessed,
     int? savedGameId,
+    Map<String, String>? classicVotes,
+    List<String>? classicVotingOrder,
+    int? classicVotingIndex,
+    List<String>? classicTieCandidates,
+    String? pendingClassicGuesserName,
+    bool clearPendingClassicGuesserName = false,
+    String? lastEliminatedPlayerName,
+    bool? lastEliminatedWasImpostor,
+    bool clearLastEliminatedState = false,
+    Map<String, int>? lastVoteTallies,
   }) {
     return ActiveGame(
       config: game.config,
@@ -485,14 +828,26 @@ class GameNotifier extends Notifier<ActiveGame?> {
       startingPlayerName: game.startingPlayerName,
       phase: phase ?? game.phase,
       currentRevealIndex: currentRevealIndex ?? game.currentRevealIndex,
-      timeRemainingSeconds:
-          timeRemainingSeconds ?? game.timeRemainingSeconds,
+      timeRemainingSeconds: timeRemainingSeconds ?? game.timeRemainingSeconds,
       civilsWon: civilsWon ?? game.civilsWon,
-      impostorGuessedWord:
-          impostorGuessedWord ?? game.impostorGuessedWord,
+      impostorGuessedWord: impostorGuessedWord ?? game.impostorGuessedWord,
       livesRemaining: livesRemaining ?? game.livesRemaining,
       impostorWhoGuessed: impostorWhoGuessed ?? game.impostorWhoGuessed,
       savedGameId: savedGameId ?? game.savedGameId,
+      classicVotes: classicVotes ?? game.classicVotes,
+      classicVotingOrder: classicVotingOrder ?? game.classicVotingOrder,
+      classicVotingIndex: classicVotingIndex ?? game.classicVotingIndex,
+      classicTieCandidates: classicTieCandidates ?? game.classicTieCandidates,
+      pendingClassicGuesserName: clearPendingClassicGuesserName
+          ? null
+          : (pendingClassicGuesserName ?? game.pendingClassicGuesserName),
+      lastEliminatedPlayerName: clearLastEliminatedState
+          ? null
+          : (lastEliminatedPlayerName ?? game.lastEliminatedPlayerName),
+      lastEliminatedWasImpostor: clearLastEliminatedState
+          ? null
+          : (lastEliminatedWasImpostor ?? game.lastEliminatedWasImpostor),
+      lastVoteTallies: lastVoteTallies ?? game.lastVoteTallies,
     );
   }
 
@@ -538,42 +893,15 @@ class GameNotifier extends Notifier<ActiveGame?> {
   }) {
     if (players.isEmpty) return null;
 
-    final startingCandidateName = _pickStartingPlayerFromBag(
-      players.map((player) => player.name).toList(),
-      hintsEnabled: hintsEnabled,
-    );
-
-    if (startingCandidateName == null) return null;
-
-    final randomStartingIndex = players.indexWhere(
-      (player) => player.name == startingCandidateName,
-    );
-
-    if (randomStartingIndex == -1) {
-      return players[_random.nextInt(players.length)].name;
-    }
-
-    final randomStartingPlayer = players[randomStartingIndex];
+    final shuffled = List<GamePlayer>.from(players)..shuffle(_random);
 
     if (hintsEnabled) {
-      return randomStartingPlayer.name;
+      return shuffled.first.name;
     }
 
-    if (randomStartingPlayer.role == PlayerRole.civil) {
-      return randomStartingPlayer.name;
-    }
-
-    for (int offset = 1; offset < players.length; offset++) {
-      final candidateIndex =
-          (randomStartingIndex - offset + players.length) % players.length;
-      final candidate = players[candidateIndex];
-
-      if (candidate.role == PlayerRole.civil) {
-        return candidate.name;
-      }
-    }
-
-    return randomStartingPlayer.name;
+    // Prefer a civil to start when hints are off
+    final civil = shuffled.where((p) => p.role == PlayerRole.civil).firstOrNull;
+    return (civil ?? shuffled.first).name;
   }
 }
 
@@ -593,7 +921,7 @@ const Set<String> _surnameMatchAllowedWords = {
   'Rafael Nadal',
   'Tiger Woods',
   'Simone Biles',
-  'Kylian Mbappé',
+  'Kylian Mbappe',
   'Mike Tyson',
   'Lewis Hamilton',
   'Stephen Curry',
@@ -603,50 +931,49 @@ const Set<String> _surnameMatchAllowedWords = {
   'Erling Haaland',
 };
 
-final rankingsProvider =
-    FutureProvider.family<List<PlayerRanking>, ({int groupId, String? category})>(
-  (ref, params) async {
-    final db = ref.read(databaseProvider);
-    final gameDao = GameDao(db);
-
-    if (params.category != null) {
-      return gameDao.getRankingForGroupByCategory(
-        params.groupId,
-        params.category!,
-      );
-    }
-
-    return gameDao.getRankingForGroup(params.groupId);
-  },
-);
-
-final gameHistoryProvider = FutureProvider.family<
-    List<GameWithPlayers>,
-    ({int groupId, String? category})>((ref, params) async {
+final rankingsProvider = FutureProvider.family<
+    List<PlayerRanking>,
+    ({int groupId, String? category, GameMode? mode})>((ref, params) async {
   final db = ref.read(databaseProvider);
   final gameDao = GameDao(db);
 
-  final games = params.category != null
-      ? await gameDao.getGamesForGroupByCategory(
-          params.groupId,
-          params.category!,
-        )
-      : await gameDao.getGamesForGroup(params.groupId);
+  return gameDao.getRankingForGroupFiltered(
+    params.groupId,
+    category: params.category,
+    mode: params.mode,
+  );
+});
+
+final gameHistoryProvider = FutureProvider.family<
+    List<GameWithPlayers>,
+    ({int groupId, String? category, GameMode? mode})>((ref, params) async {
+  final db = ref.read(databaseProvider);
+  final gameDao = GameDao(db);
+
+  final games = await gameDao.getGamesForGroupFiltered(
+    params.groupId,
+    category: params.category,
+    mode: params.mode,
+  );
 
   final detailsList = await gameDao.getGamesWithPlayers(games);
 
   return detailsList
-      .map((details) => GameWithPlayers(
-            game: details.game,
-            players: details.players
-                .map((player) => GamePlayer2(
-                      playerName: player.playerName,
-                      wasImpostor: player.wasImpostor,
-                      points: player.points,
-                      wasEliminated: player.wasEliminated,
-                    ))
-                .toList(),
-          ))
+      .map(
+        (details) => GameWithPlayers(
+          game: details.game,
+          players: details.players
+              .map(
+                (player) => GamePlayer2(
+                  playerName: player.playerName,
+                  wasImpostor: player.wasImpostor,
+                  points: player.points,
+                  wasEliminated: player.wasEliminated,
+                ),
+              )
+              .toList(),
+        ),
+      )
       .toList();
 });
 
@@ -660,12 +987,31 @@ final historyCategoryFilterProvider =
   CategoryFilterNotifier.new,
 );
 
+final rankingGameModeFilterProvider =
+    NotifierProvider<GameModeFilterNotifier, GameMode?>(
+  GameModeFilterNotifier.new,
+);
+
+final historyGameModeFilterProvider =
+    NotifierProvider<GameModeFilterNotifier, GameMode?>(
+  GameModeFilterNotifier.new,
+);
+
 class CategoryFilterNotifier extends Notifier<String?> {
   @override
   String? build() => null;
 
   void setCategory(String? category) {
     state = category;
+  }
+}
+
+class GameModeFilterNotifier extends Notifier<GameMode?> {
+  @override
+  GameMode? build() => null;
+
+  void setMode(GameMode? mode) {
+    state = mode;
   }
 }
 

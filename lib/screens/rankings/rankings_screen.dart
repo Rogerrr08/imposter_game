@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../database/database.dart';
+import '../../models/game_state.dart';
 import '../../providers/database_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../providers/game_provider.dart';
 import '../../widgets/category_filter_bar.dart';
+import '../../widgets/game_mode_filter_bar.dart';
 
 class RankingsScreen extends ConsumerStatefulWidget {
   final int groupId;
@@ -19,7 +21,6 @@ class RankingsScreen extends ConsumerStatefulWidget {
 }
 
 class _RankingsScreenState extends ConsumerState<RankingsScreen> {
-
   static const _goldColor = Color(0xFFFFD700);
   static const _silverColor = Color(0xFFC0C0C0);
   static const _bronzeColor = Color(0xFFCD7F32);
@@ -30,11 +31,13 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       final selectedCategory = ref.read(rankingCategoryFilterProvider);
+      final selectedMode = ref.read(rankingGameModeFilterProvider);
       ref.invalidate(
         rankingsProvider(
           (
             groupId: widget.groupId,
             category: selectedCategory,
+            mode: selectedMode,
           ),
         ),
       );
@@ -53,7 +56,12 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
   Widget build(BuildContext context) {
     final groupId = widget.groupId;
     final selectedCategory = ref.watch(rankingCategoryFilterProvider);
-    final request = (groupId: groupId, category: selectedCategory);
+    final selectedMode = ref.watch(rankingGameModeFilterProvider);
+    final request = (
+      groupId: groupId,
+      category: selectedCategory,
+      mode: selectedMode,
+    );
     final rankingsAsync = ref.watch(
       rankingsProvider(request),
     );
@@ -73,7 +81,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
           ),
           title: Text(
             'Rankings',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
           ),
           actions: [
             IconButton(
@@ -90,6 +98,12 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
         ),
         body: Column(
           children: [
+            GameModeFilterBar(
+              selectedMode: selectedMode,
+              onModeSelected: (mode) => ref
+                  .read(rankingGameModeFilterProvider.notifier)
+                  .setMode(mode),
+            ),
             CategoryFilterBar(
               selectedCategory: selectedCategory,
               onCategorySelected: (category) => ref
@@ -117,7 +131,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                         const SizedBox(height: 16),
                         Text(
                           'Error al cargar rankings',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.nunito(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textPrimary,
@@ -149,7 +163,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                             const SizedBox(height: 24),
                             Text(
                               'No hay rankings aún',
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.nunito(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.textPrimary,
@@ -159,7 +173,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                             Text(
                               'Juega partidas con este grupo\npara ver las clasificaciones.',
                               textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
+                              style: GoogleFonts.nunito(
                                 fontSize: 14,
                                 color: AppTheme.textSecondary,
                               ),
@@ -251,7 +265,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                       )
                     : Text(
                         positionDisplay,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.nunito(
                           fontSize: fontSize,
                           fontWeight: FontWeight.w700,
                           color: positionColor,
@@ -268,7 +282,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                   children: [
                     Text(
                       ranking.playerName,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: isTop3 ? 17 : 15,
                         fontWeight: isTop3 ? FontWeight.w700 : FontWeight.w500,
                         color: isTop3
@@ -279,7 +293,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                     if (ranking.gamesPlayed > 0)
                       Text(
                         'Partidas jugadas: ${ranking.gamesPlayed}  |  Victorias como civil: ${ranking.civilWins}  |  Victorias como impostor: ${ranking.impostorWins}',
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.nunito(
                           fontSize: 12,
                           color: AppTheme.textSecondary,
                         ),
@@ -304,7 +318,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                   children: [
                     Text(
                       '${ranking.totalPoints}',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: isTop3 ? 20 : 16,
                         fontWeight: FontWeight.w800,
                         color: isTop3 ? positionColor : AppTheme.textPrimary,
@@ -312,7 +326,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                     ),
                     Text(
                       'pts',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
                         color: isTop3
@@ -336,18 +350,18 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Borrar ranking',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Esto borrará el ranking acumulado de este grupo. Esta acción no se puede deshacer.',
-          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -357,7 +371,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
             ),
             child: Text(
               'Borrar',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
           ),
         ],

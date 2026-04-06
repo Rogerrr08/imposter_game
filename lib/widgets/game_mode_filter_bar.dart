@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../models/game_state.dart';
 import '../theme/app_theme.dart';
 
-const categoryLabels = <String?, String>{
+const gameModeLabels = <GameMode?, String>{
   null: 'Todas',
-  'cosas': 'Cosas',
-  'comidas': 'Comidas',
-  'animales': 'Animales',
-  'entretenimiento': 'Entretenimiento',
-  'geografia': 'Geograf\u00eda',
-  'deportes': 'Deportes',
+  GameMode.express: '\u26A1 Express',
+  GameMode.classic: '\u{1F3DB}\uFE0F Cl\u00E1sico',
 };
 
-class CategoryFilterBar extends StatelessWidget {
-  final String? selectedCategory;
-  final ValueChanged<String?> onCategorySelected;
+class GameModeFilterBar extends StatelessWidget {
+  final GameMode? selectedMode;
+  final ValueChanged<GameMode?> onModeSelected;
 
-  const CategoryFilterBar({
+  const GameModeFilterBar({
     super.key,
-    required this.selectedCategory,
-    required this.onCategorySelected,
+    required this.selectedMode,
+    required this.onModeSelected,
   });
 
   @override
@@ -29,8 +26,8 @@ class CategoryFilterBar extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
-        children: categoryLabels.entries.map((entry) {
-          final isSelected = selectedCategory == entry.key;
+        children: gameModeLabels.entries.map((entry) {
+          final isSelected = selectedMode == entry.key;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
@@ -44,17 +41,17 @@ class CategoryFilterBar extends StatelessWidget {
                 ),
               ),
               backgroundColor: AppTheme.cardColor,
-              selectedColor: AppTheme.primaryColor,
+              selectedColor: AppTheme.secondaryColor,
               checkmarkColor: Colors.white,
               side: BorderSide(
                 color: isSelected
-                    ? AppTheme.primaryColor
+                    ? AppTheme.secondaryColor
                     : AppTheme.textSecondary.withValues(alpha: 0.2),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              onSelected: (_) => onCategorySelected(entry.key),
+              onSelected: (_) => onModeSelected(entry.key),
             ),
           );
         }).toList(),

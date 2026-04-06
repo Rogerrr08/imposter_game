@@ -19,9 +19,6 @@ class GroupDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
-  final _addPlayerController = TextEditingController();
-  final _addPlayerFocusNode = FocusNode();
-
   void _handleBackNavigation() {
     if (context.canPop()) {
       context.pop();
@@ -46,13 +43,6 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
   }
 
   @override
-  void dispose() {
-    _addPlayerController.dispose();
-    _addPlayerFocusNode.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final groupAsync = ref.watch(groupDetailProvider(widget.groupId));
     final playersAsync = ref.watch(groupPlayersProvider(widget.groupId));
@@ -60,339 +50,334 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {
-        if (!didPop) {
-          _handleBackNavigation();
-        }
+        if (!didPop) _handleBackNavigation();
       },
       child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: _handleBackNavigation,
-          ),
-          title: groupAsync.when(
-            loading: () => Text(
-              'Cargando...',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-            ),
-            error: (_, __) => Text(
-              'Error',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-            ),
-            data: (group) => Text(
-              group?.name ?? 'Grupo',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-            ),
-          ),
-          actions: [
-            groupAsync.whenOrNull(
-                  data: (group) => group == null
-                      ? null
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit_rounded, size: 22),
-                              tooltip: 'Editar nombre',
-                              onPressed: () =>
-                                  _showEditGroupNameDialog(context, group.name),
-                            ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.delete_outline_rounded,
-                                size: 22,
-                              ),
-                              tooltip: 'Eliminar grupo',
-                              onPressed: () =>
-                                  _confirmDeleteGroup(context, group.name),
-                            ),
-                          ],
-                        ),
-                ) ??
-                const SizedBox.shrink(),
-          ],
-        ),
         body: groupAsync.when(
           loading: () => Center(
             child: CircularProgressIndicator(color: AppTheme.primaryColor),
           ),
           error: (error, _) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Error al cargar el grupo',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          data: (group) => SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                _buildSectionHeader(
-                  icon: Icons.people_rounded,
-                  title: 'Jugadores',
-                ),
-                const SizedBox(height: 12),
-
-                _buildAddPlayerRow(),
-                const SizedBox(height: 12),
-
-                _buildPlayersList(playersAsync),
-
-                const SizedBox(height: 32),
-
-                _buildSectionHeader(
-                  icon: Icons.sports_esports_rounded,
-                  title: 'Acciones',
-                ),
+                Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
                 const SizedBox(height: 16),
-
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _openGroupGameSetup,
-                    icon: const Icon(Icons.play_arrow_rounded, size: 24),
-                    label: Text(
-                      'Jugar con este grupo',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
+                Text(
+                  'Error al cargar el grupo',
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 12),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          final selectedCategory =
-                              ref.read(rankingCategoryFilterProvider);
-                          ref.invalidate(
-                            rankingsProvider(
-                              (
-                                groupId: widget.groupId,
-                                category: selectedCategory,
-                              ),
-                            ),
-                          );
-                          context.push('/rankings/${widget.groupId}');
-                        },
-                        icon: const Icon(Icons.leaderboard_rounded, size: 20),
-                        label: Text(
-                          'Rankings',
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.warningColor,
-                          side: BorderSide(color: AppTheme.warningColor),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          final selectedCategory =
-                              ref.read(historyCategoryFilterProvider);
-                          ref.invalidate(
-                            gameHistoryProvider(
-                              (
-                                groupId: widget.groupId,
-                                category: selectedCategory,
-                              ),
-                            ),
-                          );
-                          context.push('/history/${widget.groupId}');
-                        },
-                        icon: const Icon(Icons.history_rounded, size: 20),
-                        label: Text(
-                          'Historial',
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppTheme.successColor,
-                          side: BorderSide(color: AppTheme.successColor),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionHeader({required IconData icon, required String title}) {
-    return Row(
-      children: [
-        Icon(icon, size: 22, color: AppTheme.primaryColor),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: GoogleFonts.poppins(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.textPrimary,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAddPlayerRow() {
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _addPlayerController,
-                focusNode: _addPlayerFocusNode,
-                textCapitalization: TextCapitalization.words,
-                decoration: InputDecoration(
-                  hintText: 'Nombre del jugador',
-                  hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary.withValues(alpha: 0.5), fontSize: 14),
-                  border: InputBorder.none,
-                  filled: false,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                ),
-                style: GoogleFonts.poppins(color: AppTheme.textPrimary, fontSize: 14),
-                onSubmitted: (_) => _addPlayer(),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Material(
-              color: AppTheme.primaryColor,
-              borderRadius: BorderRadius.circular(10),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(10),
-                onTap: _addPlayer,
-                child: const Padding(
-                  padding: EdgeInsets.all(10),
-                  child: Icon(Icons.person_add_rounded, size: 22, color: Colors.white),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _addPlayer() async {
-    final name = _addPlayerController.text.trim();
-    if (name.isEmpty) return;
-
-    final db = ref.read(databaseProvider);
-    await GroupPlayersService(db).addPlayer(widget.groupId, name);
-    ref.invalidate(groupPlayersProvider(widget.groupId));
-    _addPlayerController.clear();
-    _addPlayerFocusNode.requestFocus();
-  }
-
-  Widget _buildPlayersList(AsyncValue<List<GroupPlayer>> playersAsync) {
-    return playersAsync.when(
-      loading: () => Padding(
-        padding: EdgeInsets.all(24),
-        child: Center(
-          child: CircularProgressIndicator(color: AppTheme.primaryColor),
-        ),
-      ),
-      error: (error, _) => Padding(
-        padding: const EdgeInsets.all(16),
-        child: Text(
-          'Error al cargar jugadores',
-          style: GoogleFonts.poppins(color: AppTheme.secondaryColor),
-        ),
-      ),
-      data: (players) {
-        if (players.isEmpty) {
-          return Card(
-            margin: EdgeInsets.zero,
-            child: Padding(
-              padding: const EdgeInsets.all(32),
+          data: (group) => SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.person_add_alt_1_rounded,
-                    size: 48,
-                    color: AppTheme.textSecondary.withValues(alpha: 0.3),
+                  // ─── Top bar ───────────────────────────
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: _handleBackNavigation,
+                        icon: Icon(
+                          Icons.arrow_back_rounded,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () =>
+                            _showEditGroupNameDialog(group?.name ?? ''),
+                        icon: Icon(
+                          Icons.edit_rounded,
+                          size: 20,
+                          color: AppTheme.textSecondary,
+                        ),
+                        tooltip: 'Editar nombre',
+                      ),
+                      IconButton(
+                        onPressed: () =>
+                            _confirmDeleteGroup(group?.name ?? ''),
+                        icon: Icon(
+                          Icons.delete_outline_rounded,
+                          size: 20,
+                          color: AppTheme.textSecondary,
+                        ),
+                        tooltip: 'Eliminar grupo',
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'No hay jugadores a\u00fan',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      color: AppTheme.textSecondary,
+
+                  // ─── Group header ─────────────────────
+                  const SizedBox(height: 8),
+                  Center(
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.group_rounded,
+                            size: 36,
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          group?.name ?? 'Grupo',
+                          style: GoogleFonts.nunito(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            color: AppTheme.textPrimary,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 4),
+                        playersAsync.when(
+                          data: (players) => Text(
+                            '${players.length} jugador${players.length == 1 ? '' : 'es'}',
+                            style: GoogleFonts.nunito(
+                              fontSize: 14,
+                              color: AppTheme.textSecondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          loading: () => const SizedBox.shrink(),
+                          error: (_, __) => const SizedBox.shrink(),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Agrega jugadores usando el campo de arriba',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: AppTheme.textSecondary.withValues(alpha: 0.5),
+
+                  // ─── Play CTA ─────────────────────────
+                  const SizedBox(height: 28),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _openGroupGameSetup,
+                      icon: const Icon(Icons.play_arrow_rounded, size: 26),
+                      label: Text(
+                        'Jugar con este grupo',
+                        style: GoogleFonts.nunito(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
                     ),
                   ),
+
+                  // ─── Quick actions row ────────────────
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _ActionTile(
+                          icon: Icons.leaderboard_rounded,
+                          label: 'Rankings',
+                          color: AppTheme.warningColor,
+                          onTap: () {
+                            final cat = ref.read(rankingCategoryFilterProvider);
+                            final mode = ref.read(rankingGameModeFilterProvider);
+                            ref.invalidate(rankingsProvider((
+                              groupId: widget.groupId,
+                              category: cat,
+                              mode: mode,
+                            )));
+                            context.push('/rankings/${widget.groupId}');
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _ActionTile(
+                          icon: Icons.history_rounded,
+                          label: 'Historial',
+                          color: AppTheme.successColor,
+                          onTap: () {
+                            final cat = ref.read(historyCategoryFilterProvider);
+                            final mode = ref.read(historyGameModeFilterProvider);
+                            ref.invalidate(gameHistoryProvider((
+                              groupId: widget.groupId,
+                              category: cat,
+                              mode: mode,
+                            )));
+                            context.push('/history/${widget.groupId}');
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // ─── Players section ──────────────────
+                  const SizedBox(height: 32),
+                  Row(
+                    children: [
+                      Icon(Icons.people_rounded,
+                          size: 20, color: AppTheme.primaryColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Jugadores',
+                        style: GoogleFonts.nunito(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  _buildPlayersChips(playersAsync),
                 ],
               ),
             ),
-          );
-        }
-
-        return Card(
-          margin: EdgeInsets.zero,
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: players.length,
-            separatorBuilder: (_, __) => Divider(
-              height: 1,
-              color: AppTheme.textSecondary.withValues(alpha: 0.1),
-            ),
-            itemBuilder: (context, index) {
-              final player = players[index];
-              return _PlayerTile(
-                player: player,
-                groupId: widget.groupId,
-                index: index + 1,
-              );
-            },
           ),
+        ),
+      ),
+    );
+  }
+
+  // ─── Players as chips ──────────────────────────────────────
+
+  Widget _buildPlayersChips(AsyncValue<List<GroupPlayer>> playersAsync) {
+    return playersAsync.when(
+      loading: () => Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: CircularProgressIndicator(color: AppTheme.primaryColor),
+        ),
+      ),
+      error: (_, __) => Text(
+        'Error al cargar jugadores',
+        style: GoogleFonts.nunito(color: AppTheme.secondaryColor),
+      ),
+      data: (players) {
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ...players.map((player) => _PlayerChip(
+                  player: player,
+                  groupId: widget.groupId,
+                )),
+            // Add player chip
+            ActionChip(
+              avatar: Icon(Icons.add_rounded,
+                  size: 18, color: AppTheme.primaryColor),
+              label: Text(
+                'Agregar',
+                style: GoogleFonts.nunito(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.08),
+              side: BorderSide(
+                color: AppTheme.primaryColor.withValues(alpha: 0.25),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              onPressed: () => _showAddPlayerDialog(),
+            ),
+          ],
         );
       },
     );
   }
 
-  void _showEditGroupNameDialog(BuildContext context, String currentName) {
+  // ─── Add player dialog ─────────────────────────────────────
+
+  void _showAddPlayerDialog() {
+    final controller = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Agregar Jugador',
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+        ),
+        content: Form(
+          key: formKey,
+          child: TextFormField(
+            controller: controller,
+            autofocus: false,
+            textCapitalization: TextCapitalization.words,
+            decoration: InputDecoration(
+              hintText: 'Nombre del jugador',
+              hintStyle: GoogleFonts.nunito(
+                  color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+              prefixIcon:
+                  Icon(Icons.person_rounded, color: AppTheme.primaryColor),
+            ),
+            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'El nombre no puede estar vac\u00edo';
+              }
+              return null;
+            },
+            onFieldSubmitted: (_) async {
+              if (formKey.currentState!.validate()) {
+                final db = ref.read(databaseProvider);
+                await GroupPlayersService(db)
+                    .addPlayer(widget.groupId, controller.text.trim());
+                ref.invalidate(groupPlayersProvider(widget.groupId));
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+              }
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
+                final db = ref.read(databaseProvider);
+                await GroupPlayersService(db)
+                    .addPlayer(widget.groupId, controller.text.trim());
+                ref.invalidate(groupPlayersProvider(widget.groupId));
+                if (dialogContext.mounted) Navigator.pop(dialogContext);
+              }
+            },
+            child: Text(
+              'Agregar',
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─── Edit group name dialog ────────────────────────────────
+
+  void _showEditGroupNameDialog(String currentName) {
     final controller = TextEditingController(text: currentName);
     final formKey = GlobalKey<FormState>();
 
@@ -401,20 +386,22 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Editar Nombre',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         content: Form(
           key: formKey,
           child: TextFormField(
             controller: controller,
-            autofocus: true,
+            autofocus: false,
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del grupo',
-              hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
-              prefixIcon: Icon(Icons.group_rounded, color: AppTheme.primaryColor),
+              hintStyle: GoogleFonts.nunito(
+                  color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+              prefixIcon:
+                  Icon(Icons.group_rounded, color: AppTheme.primaryColor),
             ),
-            style: GoogleFonts.poppins(color: AppTheme.textPrimary),
+            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'El nombre no puede estar vac\u00edo';
@@ -437,7 +424,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -452,7 +439,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             child: Text(
               'Guardar',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -460,24 +447,26 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     );
   }
 
-  Future<void> _confirmDeleteGroup(BuildContext context, String groupName) async {
+  // ─── Delete group confirmation ─────────────────────────────
+
+  Future<void> _confirmDeleteGroup(String groupName) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Eliminar grupo',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'Se eliminarán el grupo "$groupName", sus jugadores, su historial y su ranking. Esta acción no se puede deshacer.',
-          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+          'Se eliminar\u00E1n el grupo "$groupName", sus jugadores, su historial y su ranking. Esta acci\u00F3n no se puede deshacer.',
+          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -487,7 +476,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             ),
             child: Text(
               'Eliminar',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -495,127 +484,179 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     );
 
     if (confirmed != true || !mounted) return;
-
     await ref.read(groupsProvider.notifier).deleteGroup(widget.groupId);
     if (!mounted) return;
     context.go('/groups');
   }
 }
 
-class _PlayerTile extends ConsumerWidget {
+// ─── Action Tile Widget ──────────────────────────────────────
+
+class _ActionTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _ActionTile({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: color.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withValues(alpha: 0.2)),
+          ),
+          child: Column(
+            children: [
+              Icon(icon, size: 28, color: color),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: GoogleFonts.nunito(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Player Chip Widget ──────────────────────────────────────
+
+class _PlayerChip extends ConsumerWidget {
   final GroupPlayer player;
   final int groupId;
-  final int index;
 
-  const _PlayerTile({
+  const _PlayerChip({
     required this.player,
     required this.groupId,
-    required this.index,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Dismissible(
-      key: ValueKey(player.id),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        color: AppTheme.secondaryColor.withValues(alpha: 0.15),
-        child: Icon(
-          Icons.delete_rounded,
-          color: AppTheme.secondaryColor,
-          size: 22,
-        ),
-      ),
-      confirmDismiss: (_) => _showDeletePlayerConfirmation(context),
-      onDismissed: (_) async {
-        final db = ref.read(databaseProvider);
-        await GroupPlayersService(db).removePlayer(player.id);
-        ref.invalidate(groupPlayersProvider(groupId));
-      },
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: CircleAvatar(
-          radius: 18,
-          backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+    return GestureDetector(
+      onLongPress: () => _showPlayerOptions(context, ref),
+      child: Chip(
+        avatar: CircleAvatar(
+          radius: 13,
+          backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.15),
           child: Text(
-            '$index',
-            style: GoogleFonts.poppins(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
+            player.name[0].toUpperCase(),
+            style: GoogleFonts.nunito(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
               color: AppTheme.primaryColor,
             ),
           ),
         ),
-        title: Text(
+        label: Text(
           player.name,
-          style: GoogleFonts.poppins(
-            fontSize: 15,
-            fontWeight: FontWeight.w500,
+          style: GoogleFonts.nunito(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
             color: AppTheme.textPrimary,
           ),
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit_rounded, size: 18),
-              color: AppTheme.textSecondary.withValues(alpha: 0.5),
-              tooltip: 'Editar nombre',
-              onPressed: () => _showEditPlayerDialog(context, ref),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close_rounded, size: 18),
-              color: AppTheme.secondaryColor.withValues(alpha: 0.7),
-              tooltip: 'Eliminar jugador',
-              onPressed: () async {
-                final confirmed = await _showDeletePlayerConfirmation(context);
-                if (confirmed == true) {
-                  final db = ref.read(databaseProvider);
-                  await GroupPlayersService(db).removePlayer(player.id);
-                  ref.invalidate(groupPlayersProvider(groupId));
-                }
-              },
-            ),
-          ],
+        backgroundColor: AppTheme.cardColor,
+        side: BorderSide(
+          color: AppTheme.textSecondary.withValues(alpha: 0.12),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
       ),
     );
   }
 
-  Future<bool?> _showDeletePlayerConfirmation(BuildContext context) {
-    return showDialog<bool>(
+  void _showPlayerOptions(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          'Eliminar jugador',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
-        ),
-        content: Text(
-          '\u00bfEliminar a "${player.name}" del grupo?',
-          style: GoogleFonts.poppins(color: AppTheme.textSecondary),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(
-              'Cancelar',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.secondaryColor,
-            ),
-            child: Text(
-              'Eliminar',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
+      backgroundColor: AppTheme.cardColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 36,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.textSecondary.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  child: Text(
+                    player.name,
+                    style: GoogleFonts.nunito(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  leading: Icon(Icons.edit_rounded,
+                      color: AppTheme.primaryColor),
+                  title: Text(
+                    'Editar nombre',
+                    style: GoogleFonts.nunito(
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _showEditPlayerDialog(context, ref);
+                  },
+                ),
+                ListTile(
+                  leading: Icon(Icons.delete_rounded,
+                      color: AppTheme.secondaryColor),
+                  title: Text(
+                    'Eliminar del grupo',
+                    style: GoogleFonts.nunito(
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.secondaryColor,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _confirmDeletePlayer(context, ref);
+                  },
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -628,20 +669,22 @@ class _PlayerTile extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Editar Jugador',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
         ),
         content: Form(
           key: formKey,
           child: TextFormField(
             controller: controller,
-            autofocus: true,
+            autofocus: false,
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del jugador',
-              hintStyle: GoogleFonts.poppins(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
-              prefixIcon: Icon(Icons.person_rounded, color: AppTheme.primaryColor),
+              hintStyle: GoogleFonts.nunito(
+                  color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+              prefixIcon:
+                  Icon(Icons.person_rounded, color: AppTheme.primaryColor),
             ),
-            style: GoogleFonts.poppins(color: AppTheme.textPrimary),
+            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'El nombre no puede estar vac\u00edo';
@@ -651,7 +694,8 @@ class _PlayerTile extends ConsumerWidget {
             onFieldSubmitted: (_) async {
               if (formKey.currentState!.validate()) {
                 final db = ref.read(databaseProvider);
-                await GroupPlayersService(db).updatePlayerName(player.id, controller.text.trim());
+                await GroupPlayersService(db)
+                    .updatePlayerName(player.id, controller.text.trim());
                 ref.invalidate(groupPlayersProvider(groupId));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
               }
@@ -663,25 +707,66 @@ class _PlayerTile extends ConsumerWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
             onPressed: () async {
               if (formKey.currentState!.validate()) {
                 final db = ref.read(databaseProvider);
-                await GroupPlayersService(db).updatePlayerName(player.id, controller.text.trim());
+                await GroupPlayersService(db)
+                    .updatePlayerName(player.id, controller.text.trim());
                 ref.invalidate(groupPlayersProvider(groupId));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
               }
             },
             child: Text(
               'Guardar',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _confirmDeletePlayer(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          'Eliminar jugador',
+          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          '\u00BFEliminar a "${player.name}" del grupo?',
+          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              'Cancelar',
+              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.secondaryColor,
+            ),
+            child: Text(
+              'Eliminar',
+              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    final db = ref.read(databaseProvider);
+    await GroupPlayersService(db).removePlayer(player.id);
+    ref.invalidate(groupPlayersProvider(groupId));
   }
 }

@@ -1,6 +1,7 @@
 enum ActionRevealType {
   vote,
   guess,
+  guessSkipped,
 }
 
 class ActionRevealData {
@@ -9,6 +10,7 @@ class ActionRevealData {
   final String subjectText;
   final String? actorText;
   final int? livesRemaining;
+  final Map<String, int> voteTallies;
 
   const ActionRevealData({
     required this.type,
@@ -16,5 +18,6 @@ class ActionRevealData {
     required this.subjectText,
     this.actorText,
     this.livesRemaining,
+    this.voteTallies = const {},
   });
 }

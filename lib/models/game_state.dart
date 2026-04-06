@@ -4,17 +4,29 @@ enum PlayerRole { civil, impostor }
 
 enum GamePhase { setup, roleReveal, playing, voting, results }
 
+enum GameMode {
+  express,
+  classic;
+
+  String get displayName => switch (this) {
+        GameMode.express => '\u26A1 Modo Express',
+        GameMode.classic => '\u{1F3DB}\uFE0F Modo Cl\u00E1sico',
+      };
+
+  String get subtitle => switch (this) {
+        GameMode.express => 'Votaci\u00F3n directa, vidas y ritmo r\u00E1pido',
+        GameMode.classic => 'Votaci\u00F3n an\u00F3nima por rondas y reglas tradicionales',
+      };
+}
+
 class GamePlayer {
   final String name;
   final PlayerRole role;
   final String? hint;
   final bool isEliminated;
   final int points;
-  /// Whether this civil correctly voted an impostor at least once.
   final bool votedImpostorCorrectly;
-  /// Whether this civil voted incorrectly (voted a non-impostor).
   final bool votedIncorrectly;
-  /// Whether this impostor was eliminated by a failed guess (not by vote).
   final bool eliminatedByFailedGuess;
 
   const GamePlayer({
@@ -41,9 +53,11 @@ class GamePlayer {
       hint: hint,
       isEliminated: isEliminated ?? this.isEliminated,
       points: points ?? this.points,
-      votedImpostorCorrectly: votedImpostorCorrectly ?? this.votedImpostorCorrectly,
+      votedImpostorCorrectly:
+          votedImpostorCorrectly ?? this.votedImpostorCorrectly,
       votedIncorrectly: votedIncorrectly ?? this.votedIncorrectly,
-      eliminatedByFailedGuess: eliminatedByFailedGuess ?? this.eliminatedByFailedGuess,
+      eliminatedByFailedGuess:
+          eliminatedByFailedGuess ?? this.eliminatedByFailedGuess,
     );
   }
 }
@@ -54,6 +68,7 @@ class GameConfig {
   final bool hintsEnabled;
   final int durationSeconds;
   final List<WordCategory> categories;
+  final GameMode mode;
   final int? groupId;
 
   const GameConfig({
@@ -62,6 +77,7 @@ class GameConfig {
     required this.hintsEnabled,
     required this.durationSeconds,
     required this.categories,
+    this.mode = GameMode.express,
     this.groupId,
   });
 }
@@ -80,15 +96,18 @@ class ActiveGame {
   final int timeRemainingSeconds;
   final bool civilsWon;
   final bool impostorGuessedWord;
-
-  /// Incorrect votes remaining. Civils lose if this reaches 0.
   final int livesRemaining;
-
-  /// Name of the impostor who guessed the word (for scoring).
   final String? impostorWhoGuessed;
-
-  /// Database ID of the saved game (for result overrides).
   final int? savedGameId;
+
+  final Map<String, String> classicVotes;
+  final List<String> classicVotingOrder;
+  final int classicVotingIndex;
+  final List<String> classicTieCandidates;
+  final String? pendingClassicGuesserName;
+  final String? lastEliminatedPlayerName;
+  final bool? lastEliminatedWasImpostor;
+  final Map<String, int> lastVoteTallies;
 
   ActiveGame({
     required this.config,
@@ -105,7 +124,18 @@ class ActiveGame {
     this.livesRemaining = maxLives,
     this.impostorWhoGuessed,
     this.savedGameId,
+    this.classicVotes = const {},
+    this.classicVotingOrder = const [],
+    this.classicVotingIndex = 0,
+    this.classicTieCandidates = const [],
+    this.pendingClassicGuesserName,
+    this.lastEliminatedPlayerName,
+    this.lastEliminatedWasImpostor,
+    this.lastVoteTallies = const {},
   }) : timeRemainingSeconds = timeRemainingSeconds ?? config.durationSeconds;
+
+  bool get isClassicMode => config.mode == GameMode.classic;
+  bool get isExpressMode => config.mode == GameMode.express;
 
   List<GamePlayer> get activePlayers =>
       players.where((p) => !p.isEliminated).toList();
@@ -126,8 +156,26 @@ class ActiveGame {
 
   bool get noLivesLeft => livesRemaining <= 0;
 
-  bool get gameOver => allImpostorsFound || impostorsWinByNumbers || noLivesLeft;
+  bool get awaitingClassicGuessDecision =>
+      isClassicMode && pendingClassicGuesserName != null;
+
+  bool get gameOver {
+    if (isClassicMode) {
+      if (awaitingClassicGuessDecision) return false;
+      return allImpostorsFound || impostorsWinByNumbers || phase == GamePhase.results;
+    }
+    return allImpostorsFound || impostorsWinByNumbers || noLivesLeft;
+  }
 
   bool get shouldShowStartingPlayer =>
-      startingPlayerName != null && players.every((player) => !player.isEliminated);
+      startingPlayerName != null &&
+      players.every((player) => !player.isEliminated);
+
+  String? get currentClassicVoterName {
+    if (!isClassicMode) return null;
+    if (classicVotingIndex < 0 || classicVotingIndex >= classicVotingOrder.length) {
+      return null;
+    }
+    return classicVotingOrder[classicVotingIndex];
+  }
 }

@@ -15,19 +15,19 @@ Future<bool> showActiveGameCancelDialog(
         builder: (dialogContext) => AlertDialog(
           title: Text(
             'Cancelar partida',
-            style: GoogleFonts.poppins(fontWeight: FontWeight.w700),
+            style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
           ),
           content: Text(
             '¿Seguro que quieres cancelar la partida? '
             'Se perderá el progreso actual.',
-            style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+            style: GoogleFonts.nunito(color: AppTheme.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
               child: Text(
                 'Seguir jugando',
-                style: GoogleFonts.poppins(color: AppTheme.textSecondary),
+                style: GoogleFonts.nunito(color: AppTheme.textSecondary),
               ),
             ),
             ElevatedButton(
@@ -37,7 +37,7 @@ Future<bool> showActiveGameCancelDialog(
               ),
               child: Text(
                 'Cancelar partida',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+                style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
               ),
             ),
           ],

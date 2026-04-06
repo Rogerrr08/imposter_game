@@ -29,7 +29,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
 
   bool get _shouldAutoAdvance {
     final reveal = widget.reveal;
-    // Auto-advance when civil was innocent (vote fail) or impostor guessed wrong
+    if (reveal.voteTallies.isNotEmpty) return false;
     return (reveal.type == ActionRevealType.vote && !reveal.success) ||
         (reveal.type == ActionRevealType.guess && !reveal.success);
   }
@@ -85,6 +85,14 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
       return;
     }
 
+    if (gameState.config.mode == GameMode.classic &&
+        widget.reveal.type == ActionRevealType.vote &&
+        widget.reveal.success &&
+        gameState.awaitingClassicGuessDecision) {
+      context.go('/classic-impostor-choice');
+      return;
+    }
+
     if (gameState.gameOver || gameState.phase == GamePhase.results) {
       context.go('/results');
     } else {
@@ -129,7 +137,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           const SizedBox(height: 28),
           Text(
             'Revelando resultado...',
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.nunito(
               fontSize: 24,
               fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
@@ -139,7 +147,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           Text(
             'Un poco de suspenso antes de mostrar lo que pasó',
             textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
+            style: GoogleFonts.nunito(
               fontSize: 14,
               color: AppTheme.textSecondary,
             ),
@@ -166,7 +174,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                     const SizedBox(height: 10),
                     Text(
                       '${(_controller.value * 100).round()}%',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textSecondary,
@@ -216,7 +224,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         const SizedBox(height: 32),
         Text(
           widget.reveal.subjectText,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 24,
             fontWeight: FontWeight.w700,
             color: AppTheme.textPrimary,
@@ -226,7 +234,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         const SizedBox(height: 8),
         Text(
           config.title,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 30,
             fontWeight: FontWeight.w900,
             color: config.color,
@@ -236,7 +244,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         const SizedBox(height: 12),
         Text(
           config.subtitle,
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 15,
             color: AppTheme.textSecondary,
           ),
@@ -265,6 +273,10 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
             ],
           ),
         ],
+        if (widget.reveal.voteTallies.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          _buildVoteTallies(config.color),
+        ],
         const Spacer(flex: 2),
         if (_shouldAutoAdvance && _autoAdvanceController != null)
           _buildAutoAdvanceBar(config.color)
@@ -276,7 +288,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: config.color,
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                textStyle: GoogleFonts.poppins(
+                textStyle: GoogleFonts.nunito(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
@@ -286,6 +298,106 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           ),
         const SizedBox(height: 32),
       ],
+    );
+  }
+
+  Widget _buildVoteTallies(Color accentColor) {
+    final tallies = widget.reveal.voteTallies;
+    final sorted = tallies.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final maxVotes = sorted.first.value;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppTheme.textSecondary.withValues(alpha: 0.1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Resultados de la votaci\u00F3n',
+            style: GoogleFonts.nunito(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...sorted.map((entry) {
+            final isEliminated = entry.key == widget.reveal.subjectText;
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 100,
+                    child: Text(
+                      entry.key,
+                      style: GoogleFonts.nunito(
+                        fontSize: 13,
+                        fontWeight:
+                            isEliminated ? FontWeight.w700 : FontWeight.w500,
+                        color: isEliminated
+                            ? accentColor
+                            : AppTheme.textPrimary,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final fraction = entry.value / maxVotes;
+                        return Stack(
+                          children: [
+                            Container(
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: AppTheme.textSecondary
+                                    .withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                            Container(
+                              height: 22,
+                              width: constraints.maxWidth * fraction,
+                              decoration: BoxDecoration(
+                                color: isEliminated
+                                    ? accentColor.withValues(alpha: 0.7)
+                                    : AppTheme.primaryColor
+                                        .withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    '${entry.value}',
+                    style: GoogleFonts.nunito(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: isEliminated
+                          ? accentColor
+                          : AppTheme.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
     );
   }
 
@@ -323,7 +435,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                   Center(
                     child: Text(
                       'Siguiente...',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.nunito(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: _autoAdvanceController!.value < 0.5
@@ -354,10 +466,13 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
             buttonLabel: 'Continuar',
           );
         }
-        final actor = reveal.actorText ?? 'El civil que vot\u00F3';
+        final actor = reveal.actorText == null
+            ? 'La mayor\u00EDa del grupo'
+            : reveal.actorText!;
         final lives = reveal.livesRemaining ?? 0;
-        final subtitle =
-            '$actor fall\u00F3 y queda eliminado.\n$lives vida${lives == 1 ? '' : 's'} restante${lives == 1 ? '' : 's'}';
+        final subtitle = reveal.livesRemaining == null
+            ? '$actor vot\u00F3 a un civil y queda eliminado.'
+            : '$actor fall\u00F3 y queda eliminado.\n$lives vida${lives == 1 ? '' : 's'} restante${lives == 1 ? '' : 's'}';
         return _RevealVisualConfig(
           color: AppTheme.successColor,
           imagePath: 'assets/images/civil_lose_life.png',
@@ -382,6 +497,15 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           imagePath: 'assets/images/impostor_failed_guess.png',
           title: '\u00A1Respuesta incorrecta!',
           subtitle: '$actor fall\u00F3 y queda eliminado.',
+          buttonLabel: 'Continuar',
+        );
+      case ActionRevealType.guessSkipped:
+        final actor = reveal.actorText ?? 'El impostor';
+        return _RevealVisualConfig(
+          color: AppTheme.warningColor,
+          imagePath: 'assets/images/player_impostor.png',
+          title: 'No quiso arriesgar',
+          subtitle: '$actor prefiri\u00F3 no intentar adivinar la palabra.',
           buttonLabel: 'Continuar',
         );
     }

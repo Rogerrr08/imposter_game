@@ -19,12 +19,22 @@ class GamePlayScreen extends ConsumerStatefulWidget {
   ConsumerState<GamePlayScreen> createState() => _GamePlayScreenState();
 }
 
-class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
+class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
+    with SingleTickerProviderStateMixin {
   Timer? _timer;
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
     _startTimer();
   }
 
@@ -97,7 +107,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                         children: [
                           Text(
                             '\u{1F6A8} Verificaci\u00f3n de impostor',
-                            style: GoogleFonts.poppins(
+                            style: GoogleFonts.nunito(
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
                               color: AppTheme.textPrimary,
@@ -122,7 +132,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                                   child: Text(
                                     'OJO: Escribe tu PISTA, NO la palabra que intentas adivinar. '
                                     'Esto es solo para verificar que eres impostor.',
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.nunito(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                       color: AppTheme.textPrimary,
@@ -135,12 +145,12 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                           const SizedBox(height: 16),
                           TextField(
                             controller: hintController,
-                            autofocus: true,
-                            style: GoogleFonts.poppins(color: AppTheme.textPrimary),
+                            autofocus: false,
+                            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
                             textCapitalization: TextCapitalization.words,
                             decoration: InputDecoration(
                               hintText: 'Escribe tu pista aquí...',
-                              hintStyle: GoogleFonts.poppins(
+                              hintStyle: GoogleFonts.nunito(
                                 color: AppTheme.textSecondary.withValues(alpha: 0.5),
                               ),
                               errorText: errorText,
@@ -174,7 +184,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                                   ),
                                   child: Text(
                                     'Confirmar',
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.nunito(
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -190,7 +200,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                                   ),
                                   child: Text(
                                     'Cancelar',
-                                    style: GoogleFonts.poppins(
+                                    style: GoogleFonts.nunito(
                                       color: AppTheme.textSecondary,
                                     ),
                                   ),
@@ -230,6 +240,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _pulseController.dispose();
     super.dispose();
   }
 
@@ -239,6 +250,15 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
 
     if (gameState == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (gameState.phase == GamePhase.playing &&
+        (_timer == null || !(_timer?.isActive ?? false))) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && (_timer == null || !(_timer?.isActive ?? false))) {
+          _startTimer();
+        }
+      });
     }
 
     // If state already moved to results (e.g. from elimination), navigate
@@ -255,6 +275,18 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
     final progress =
         gameState.timeRemainingSeconds / gameState.config.durationSeconds;
     final isLowTime = gameState.timeRemainingSeconds <= 30;
+    final isClassicMode = gameState.config.mode == GameMode.classic;
+    final eliminatedCount =
+        gameState.players.where((p) => p.isEliminated).length;
+    final activeCount = gameState.activePlayers.length;
+
+    // Manage pulse animation
+    if (isLowTime && !_pulseController.isAnimating) {
+      _pulseController.repeat(reverse: true);
+    } else if (!isLowTime && _pulseController.isAnimating) {
+      _pulseController.stop();
+      _pulseController.reset();
+    }
 
     return PopScope(
       canPop: false,
@@ -271,16 +303,18 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
             child: Column(
             children: [
               const SizedBox(height: 16),
-              // Header with cancel button
+              // Header with mode name + cancel button
               Row(
                 children: [
                   const Spacer(),
                   Text(
-                    'Discusi\u00F3n en curso',
-                    style: GoogleFonts.poppins(
+                    isClassicMode
+                        ? '\u{1F3DB}\uFE0F Cl\u00E1sico'
+                        : '\u26A1 Express',
+                    style: GoogleFonts.nunito(
                       fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textSecondary,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textPrimary,
                     ),
                   ),
                   Expanded(
@@ -298,75 +332,92 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
                   ),
                 ],
               ),
+              // Round + active players indicator (classic mode)
+              if (isClassicMode) ...[
+                const SizedBox(height: 4),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceColor,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Ronda ${eliminatedCount + 1}  \u00B7  $activeCount jugadores activos',
+                    style: GoogleFonts.nunito(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                ),
+              ],
               if (gameState.shouldShowStartingPlayer) ...[
                 const SizedBox(height: 8),
                 _buildStartingPlayerBanner(gameState.startingPlayerName!),
               ],
               // Center everything vertically
               const Spacer(flex: 2),
-              // Circular timer
-              _buildCircularTimer(timeString, progress, isLowTime),
+              // Circular timer (with pulse when low time)
+              AnimatedBuilder(
+                animation: _pulseAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _pulseAnimation.value,
+                    child: _buildCircularTimer(timeString, progress, isLowTime),
+                  );
+                },
+              ),
               const SizedBox(height: 12),
               // Eliminated players (compact chips)
               _buildEliminatedChips(gameState),
               const Spacer(flex: 3),
-              // Action section: vote
-              Text(
-                '\u00BFEres civil? \u{1F50D} Vota aqu\u00ED:',
-                style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppTheme.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
+              // Action buttons — clean, no repetitive text
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
+                child: ElevatedButton.icon(
                   onPressed: () async {
                     _timer?.cancel();
+                    if (isClassicMode) {
+                      ref.read(gameProvider.notifier).startVotingRound();
+                    }
                     await context.push('/vote');
                     if (mounted) _startTimer();
                   },
+                  icon: const Icon(Icons.how_to_vote_rounded, size: 20),
+                  label: Text(isClassicMode
+                      ? 'Iniciar votaci\u00F3n'
+                      : 'Votar'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    textStyle: GoogleFonts.poppins(
+                    textStyle: GoogleFonts.nunito(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  child: const Text('Votar'),
                 ),
               ),
-              const SizedBox(height: 20),
-              // Action section: impostor guess
-              Text(
-                '\u00BFNo? Entonces eres impostor \u{1F480}\nIntenta adivinar la palabra...',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  color: AppTheme.textPrimary.withValues(alpha: 0.7),
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: _verifyImpostorAndNavigate,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: AppTheme.secondaryColor,
-                    side: BorderSide(color: AppTheme.secondaryColor),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    textStyle: GoogleFonts.poppins(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
+              if (!isClassicMode) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _verifyImpostorAndNavigate,
+                    icon: const Icon(Icons.psychology_alt_rounded, size: 20),
+                    label: const Text('Adivinar palabra'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.secondaryColor,
+                      side: BorderSide(color: AppTheme.secondaryColor),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      textStyle: GoogleFonts.nunito(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
-                  child: const Text('Adivinar'),
                 ),
-              ),
+              ],
               const SizedBox(height: 24),
             ],
             ),
@@ -435,7 +486,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
               const SizedBox(height: 4),
               Text(
                 timeString,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 36,
                   fontWeight: FontWeight.w800,
                   color: timerColor,
@@ -471,7 +522,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
           Flexible(
             child: Text(
               'Empieza: $playerName',
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.nunito(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
@@ -493,7 +544,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
       children: [
         Text(
           'Eliminados (${eliminated.length})',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.nunito(
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: AppTheme.textSecondary,
@@ -516,7 +567,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
               ),
               child: Text(
                 player.name,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.nunito(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: AppTheme.textSecondary,

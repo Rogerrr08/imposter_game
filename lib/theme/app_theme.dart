@@ -161,7 +161,7 @@ class AppTheme {
       splashColor: primary.withValues(alpha: 0.12),
       highlightColor: Colors.transparent,
       dividerColor: textSecondary.withValues(alpha: 0.12),
-      textTheme: GoogleFonts.poppinsTextTheme(baseTextTheme).apply(
+      textTheme: GoogleFonts.nunitoTextTheme(baseTextTheme).apply(
         bodyColor: textPrimary,
         displayColor: textPrimary,
       ),
@@ -172,7 +172,7 @@ class AppTheme {
         centerTitle: true,
         foregroundColor: textPrimary,
         iconTheme: IconThemeData(color: textPrimary),
-        titleTextStyle: GoogleFonts.poppins(
+        titleTextStyle: GoogleFonts.nunito(
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: textPrimary,
@@ -189,7 +189,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.poppins(
+          textStyle: GoogleFonts.nunito(
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -203,7 +203,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.poppins(
+          textStyle: GoogleFonts.nunito(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -234,10 +234,10 @@ class AppTheme {
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: GoogleFonts.poppins(
+        hintStyle: GoogleFonts.nunito(
           color: textSecondary.withValues(alpha: 0.55),
         ),
-        labelStyle: GoogleFonts.poppins(
+        labelStyle: GoogleFonts.nunito(
           color: textSecondary.withValues(alpha: 0.7),
         ),
       ),
@@ -259,7 +259,7 @@ class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: isDark ? card : textPrimary,
-        contentTextStyle: GoogleFonts.poppins(
+        contentTextStyle: GoogleFonts.nunito(
           color: isDark ? textPrimary : background,
         ),
         actionTextColor: warning,
@@ -288,7 +288,7 @@ class AppTheme {
       iconTheme: IconThemeData(color: textPrimary),
       popupMenuTheme: PopupMenuThemeData(
         color: card,
-        textStyle: GoogleFonts.poppins(color: textPrimary),
+        textStyle: GoogleFonts.nunito(color: textPrimary),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
