@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../theme/app_theme.dart';
 import '../../database/database.dart';
@@ -65,7 +64,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 const SizedBox(height: 16),
                 Text(
                   'Error al cargar el grupo',
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary,
@@ -135,7 +134,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                         const SizedBox(height: 14),
                         Text(
                           group?.name ?? 'Grupo',
-                          style: GoogleFonts.nunito(
+                          style: TextStyle(fontFamily: 'Nunito',
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.textPrimary,
@@ -146,7 +145,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                         playersAsync.when(
                           data: (players) => Text(
                             '${players.length} jugador${players.length == 1 ? '' : 'es'}',
-                            style: GoogleFonts.nunito(
+                            style: TextStyle(fontFamily: 'Nunito',
                               fontSize: 14,
                               color: AppTheme.textSecondary,
                               fontWeight: FontWeight.w600,
@@ -168,7 +167,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                       icon: const Icon(Icons.play_arrow_rounded, size: 26),
                       label: Text(
                         'Jugar con este grupo',
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
                         ),
@@ -234,7 +233,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                       const SizedBox(width: 8),
                       Text(
                         'Jugadores',
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
@@ -265,7 +264,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       ),
       error: (_, __) => Text(
         'Error al cargar jugadores',
-        style: GoogleFonts.nunito(color: AppTheme.secondaryColor),
+        style: TextStyle(fontFamily: 'Nunito',color: AppTheme.secondaryColor),
       ),
       data: (players) {
         return Wrap(
@@ -282,7 +281,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                   size: 18, color: AppTheme.primaryColor),
               label: Text(
                 'Agregar',
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.primaryColor,
@@ -314,7 +313,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Agregar Jugador',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Form(
           key: formKey,
@@ -324,12 +323,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del jugador',
-              hintStyle: GoogleFonts.nunito(
+              hintStyle: TextStyle(fontFamily: 'Nunito',
                   color: AppTheme.textSecondary.withValues(alpha: 0.5)),
               prefixIcon:
                   Icon(Icons.person_rounded, color: AppTheme.primaryColor),
             ),
-            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
+            style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'El nombre no puede estar vac\u00edo';
@@ -352,7 +351,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -367,7 +366,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             child: Text(
               'Agregar',
-              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -386,7 +385,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Editar Nombre',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Form(
           key: formKey,
@@ -396,12 +395,12 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del grupo',
-              hintStyle: GoogleFonts.nunito(
+              hintStyle: TextStyle(fontFamily: 'Nunito',
                   color: AppTheme.textSecondary.withValues(alpha: 0.5)),
               prefixIcon:
                   Icon(Icons.group_rounded, color: AppTheme.primaryColor),
             ),
-            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
+            style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'El nombre no puede estar vac\u00edo';
@@ -424,7 +423,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -439,7 +438,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             child: Text(
               'Guardar',
-              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -455,18 +454,18 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Eliminar grupo',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Se eliminar\u00E1n el grupo "$groupName", sus jugadores, su historial y su ranking. Esta acci\u00F3n no se puede deshacer.',
-          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -476,7 +475,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             ),
             child: Text(
               'Eliminar',
-              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -525,7 +524,7 @@ class _ActionTile extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 label,
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: color,
@@ -560,7 +559,7 @@ class _PlayerChip extends ConsumerWidget {
           backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.15),
           child: Text(
             player.name[0].toUpperCase(),
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 11,
               fontWeight: FontWeight.w700,
               color: AppTheme.primaryColor,
@@ -569,7 +568,7 @@ class _PlayerChip extends ConsumerWidget {
         ),
         label: Text(
           player.name,
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: AppTheme.textPrimary,
@@ -614,7 +613,7 @@ class _PlayerChip extends ConsumerWidget {
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   child: Text(
                     player.name,
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
@@ -626,7 +625,7 @@ class _PlayerChip extends ConsumerWidget {
                       color: AppTheme.primaryColor),
                   title: Text(
                     'Editar nombre',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textPrimary,
                     ),
@@ -641,7 +640,7 @@ class _PlayerChip extends ConsumerWidget {
                       color: AppTheme.secondaryColor),
                   title: Text(
                     'Eliminar del grupo',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontWeight: FontWeight.w600,
                       color: AppTheme.secondaryColor,
                     ),
@@ -669,7 +668,7 @@ class _PlayerChip extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Editar Jugador',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Form(
           key: formKey,
@@ -679,12 +678,12 @@ class _PlayerChip extends ConsumerWidget {
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del jugador',
-              hintStyle: GoogleFonts.nunito(
+              hintStyle: TextStyle(fontFamily: 'Nunito',
                   color: AppTheme.textSecondary.withValues(alpha: 0.5)),
               prefixIcon:
                   Icon(Icons.person_rounded, color: AppTheme.primaryColor),
             ),
-            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
+            style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'El nombre no puede estar vac\u00edo';
@@ -707,7 +706,7 @@ class _PlayerChip extends ConsumerWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -722,7 +721,7 @@ class _PlayerChip extends ConsumerWidget {
             },
             child: Text(
               'Guardar',
-              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -736,18 +735,18 @@ class _PlayerChip extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Eliminar jugador',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Text(
           '\u00BFEliminar a "${player.name}" del grupo?',
-          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -757,7 +756,7 @@ class _PlayerChip extends ConsumerWidget {
             ),
             child: Text(
               'Eliminar',
-              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
           ),
         ],

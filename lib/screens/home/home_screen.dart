@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../providers/app_info_provider.dart';
 import '../../providers/theme_provider.dart';
@@ -12,7 +11,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appVersionLabelAsync = ref.watch(appVersionLabelProvider);
+    final appVersionLabel = ref.watch(appVersionLabelProvider);
     final isDark = ref.watch(isDarkModeProvider);
 
     return Scaffold(
@@ -54,7 +53,7 @@ class HomeScreen extends ConsumerWidget {
                   const Spacer(flex: 2),
                   // Logo / Title
                   Image.asset(
-                    'assets/images/app_logo_no_bg.png',
+                    'assets/images/app_logo_no_bg.webp',
                     width: 240,
                     height: 240,
                     fit: BoxFit.contain,
@@ -62,7 +61,7 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: 28),
                   Text(
                     'YEISON',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 42,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 6,
@@ -71,7 +70,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   Text(
                     'Impostor',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.primaryColor,
@@ -81,42 +80,91 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Text(
                     'El juego de la palabra secreta',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 13,
                       color: AppTheme.textSecondary,
                       letterSpacing: 1,
                     ),
                   ),
                   const Spacer(flex: 2),
-                  // Quick Play button
+                  // ── Local play ──
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () => _navigateWithLoading(context, '/setup'),
                       icon: const Icon(Icons.play_arrow_rounded, size: 28),
-                      label: const Text('Juego Rápido'),
+                      label: const Text('Juego r\u00e1pido'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryColor,
                         padding: const EdgeInsets.symmetric(vertical: 18),
-                        textStyle: GoogleFonts.nunito(
+                        textStyle: TextStyle(fontFamily: 'Nunito',
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  // Groups button
+                  const SizedBox(height: 12),
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: () => _navigateWithLoading(context, '/groups'),
                       icon: const Icon(Icons.group, size: 24),
-                      label: const Text('Mis Grupos'),
+                      label: const Text('Mis grupos'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 18),
-                        textStyle: GoogleFonts.nunito(
+                        textStyle: TextStyle(fontFamily: 'Nunito',
                           fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // ── Divider ──
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 1,
+                          color: AppTheme.textSecondary.withValues(alpha: 0.15),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        child: Text(
+                          'o',
+                          style: TextStyle(fontFamily: 'Nunito',
+                            fontSize: 13,
+                            color: AppTheme.textSecondary.withValues(alpha: 0.6),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Container(
+                          height: 1,
+                          color: AppTheme.textSecondary.withValues(alpha: 0.15),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  // ── Online play ──
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () =>
+                          _navigateWithLoading(context, '/online'),
+                      icon: const Icon(Icons.wifi_rounded, size: 22),
+                      label: const Text('Jugar en l\u00ednea'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryColor,
+                        side: BorderSide(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.35),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: TextStyle(fontFamily: 'Nunito',
+                          fontSize: 17,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -129,21 +177,17 @@ class HomeScreen extends ConsumerWidget {
                     icon: const Icon(Icons.help_outline, size: 20),
                     label: Text(
                       'C\u00F3mo jugar',
-                      style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+                      style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
                     ),
                   ),
                   const SizedBox(height: 4),
-                  appVersionLabelAsync.when(
-                    data: (label) => Text(
-                      label,
-                      style: GoogleFonts.nunito(
-                        fontSize: 12,
-                        color: AppTheme.textSecondary.withValues(alpha: 0.5),
-                        letterSpacing: 0.4,
-                      ),
+                  Text(
+                    appVersionLabel,
+                    style: TextStyle(fontFamily: 'Nunito',
+                      fontSize: 12,
+                      color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                      letterSpacing: 0.4,
                     ),
-                    loading: () => const SizedBox(height: 18),
-                    error: (_, _) => const SizedBox(height: 18),
                   ),
                   const SizedBox(height: 16),
                 ],

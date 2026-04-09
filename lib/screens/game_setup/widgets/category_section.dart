@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../data/word_bank.dart';
 import '../../../theme/app_theme.dart';
@@ -46,7 +45,7 @@ class CategorySection extends StatelessWidget {
                   Text(category.displayName),
                 ],
               ),
-              labelStyle: GoogleFonts.nunito(
+              labelStyle: TextStyle(fontFamily: 'Nunito',
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 color:
@@ -72,7 +71,7 @@ class CategorySection extends StatelessWidget {
           onTap: allSelected ? null : onSelectAll,
           child: Text(
             allSelected ? 'Todas seleccionadas' : 'Seleccionar todas',
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 12,
               color:
                   allSelected ? AppTheme.textSecondary : AppTheme.primaryColor,

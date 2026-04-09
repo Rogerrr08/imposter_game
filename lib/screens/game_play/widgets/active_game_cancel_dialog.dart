@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../providers/game_provider.dart';
 import '../../../theme/app_theme.dart';
@@ -15,19 +14,19 @@ Future<bool> showActiveGameCancelDialog(
         builder: (dialogContext) => AlertDialog(
           title: Text(
             'Cancelar partida',
-            style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+            style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
           ),
           content: Text(
             '¿Seguro que quieres cancelar la partida? '
             'Se perderá el progreso actual.',
-            style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+            style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
               child: Text(
                 'Seguir jugando',
-                style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+                style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
               ),
             ),
             ElevatedButton(
@@ -37,7 +36,7 @@ Future<bool> showActiveGameCancelDialog(
               ),
               child: Text(
                 'Cancelar partida',
-                style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
+                style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
               ),
             ),
           ],

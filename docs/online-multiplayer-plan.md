@@ -48,7 +48,7 @@ Estas funcionalidades se postergan para fases futuras:
 
 Separaci\u00f3n clara entre dominios:
 
-```
+```text
 lib/
 \u251c\u2500\u2500 ...                          # (c\u00f3digo local existente, sin cambios)
 \u251c\u2500\u2500 features/
@@ -383,10 +383,11 @@ Jugar en l\u00ednea
 - Heartbeat + manejo de desconexiones durante partida (saltar turno, marcar desconectado)
 - UI de estados de espera (esperando a que X escriba, esperando votos, reconectando...)
 - Manejo de abandono del host (reasignar o cancelar)
-- Filtro b\u00e1sico de palabras ofensivas en pistas y display names
-- Cleanup de salas y matches hu\u00e9rfanos (cron job o Edge Function programada)
-- Pruebas con m\u00faltiples dispositivos reales
-- Pruebas de reconexi\u00f3n (modo avi\u00f3n, cambio de red, app en background)
+- Filtro básico de palabras ofensivas en pistas y display names
+- Cleanup de salas y matches huérfanos (cron job o Edge Function programada)
+- Pulido visual del role reveal: animaciones de suspense (scale-up + shimmer + glow), skip en reconexión, estado "esperando a los demás"
+- Pruebas con múltiples dispositivos reales
+- Pruebas de reconexión (modo avión, cambio de red, app en background)
 
 **Criterio de salida**: la experiencia es estable y jugable con usuarios reales.
 
@@ -413,7 +414,10 @@ Estas fases se implementar\u00e1n solo despu\u00e9s de validar el MVP con usuari
 2. **Matchmaking** — cola autom\u00e1tica, emparejamiento por preferencias
 3. **Sala de grupo online** — requiere auth real (email/Google), membres\u00eda, permisos
 4. **Chat en sala** — mensajes de texto en el lobby y durante discusi\u00f3n
-5. **Perfiles avanzados** — avatares, estad\u00edsticas online, historial
+5. **Perfiles avanzados**:
+   - Avatares generados con `avatar_seed` (campo ya existe en `profiles`) usando DiceBear o Multiavatar — cada seed produce un avatar \u00fanico y consistente sin necesidad de subir foto
+   - Estad\u00edsticas online (partidas jugadas, victorias, racha)
+   - Historial de partidas online
 
 ---
 
@@ -427,3 +431,15 @@ Cuando quieras empezar, pide directamente:
 - `Implementemos el motor de juego online`
 
 La implementaci\u00f3n puede continuar fase por fase desde cualquier punto.
+
+---
+
+## Registro de avance
+
+El historial detallado del modo online se movio a:
+
+- `docs/online-multiplayer-progress.md`
+
+A partir de ahora:
+- este archivo se mantiene como hoja de ruta principal
+- todo avance del modo online se registra en `docs/online-multiplayer-progress.md`

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../models/action_reveal.dart';
 import '../../providers/game_provider.dart';
@@ -34,7 +33,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
             children: [
               const Spacer(flex: 2),
               Image.asset(
-                'assets/images/player_impostor.png',
+                'assets/images/player_impostor.webp',
                 width: 150,
                 height: 150,
               ),
@@ -42,7 +41,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
               Text(
                 '$guesserName fue eliminado',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -52,7 +51,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
               Text(
                 'Como era impostor, ahora puede intentar adivinar la palabra secreta.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 15,
                   color: AppTheme.textSecondary,
                 ),
@@ -65,7 +64,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.secondaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: GoogleFonts.nunito(
+                    textStyle: TextStyle(fontFamily: 'Nunito',
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -93,7 +92,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
                     foregroundColor: AppTheme.primaryColor,
                     side: BorderSide(color: AppTheme.primaryColor),
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: GoogleFonts.nunito(
+                    textStyle: TextStyle(fontFamily: 'Nunito',
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),

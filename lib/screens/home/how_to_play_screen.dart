@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../theme/app_theme.dart';
 
@@ -57,7 +56,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
                       onPressed: () => Navigator.of(context).pop(),
                       child: Text(
                         'Saltar',
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           color: AppTheme.textSecondary,
                           fontWeight: FontWeight.w500,
                         ),
@@ -124,7 +123,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
                         _currentPage < _totalPages - 1
                             ? 'Siguiente'
                             : '\u00A1A jugar!',
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -145,7 +144,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
   Widget _buildConceptPage() {
     return _PageLayout(
       image: Image.asset(
-        'assets/images/app_logo_no_bg.png',
+        'assets/images/app_logo_no_bg.webp',
         height: 200,
         fit: BoxFit.contain,
       ),
@@ -328,7 +327,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 14,
                 color: AppTheme.textPrimary,
                 height: 1.4,
@@ -356,7 +355,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
             child: Center(
               child: Text(
                 number,
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
@@ -368,7 +367,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 14,
                 color: AppTheme.textPrimary,
                 height: 1.4,
@@ -393,7 +392,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
       ),
       child: Text(
         text,
-        style: GoogleFonts.nunito(
+        style: TextStyle(fontFamily: 'Nunito',
           fontSize: 13,
           color: AppTheme.textPrimary,
           fontWeight: FontWeight.w500,
@@ -409,7 +408,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
       padding: const EdgeInsets.only(bottom: 6),
       child: Text(
         text,
-        style: GoogleFonts.nunito(
+        style: TextStyle(fontFamily: 'Nunito',
           fontSize: 13,
           fontWeight: FontWeight.w700,
           color: AppTheme.textSecondary,
@@ -434,7 +433,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
             child: Text(
               points,
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
                 color: color,
@@ -445,7 +444,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
           Expanded(
             child: Text(
               description,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 12.5,
                 color: AppTheme.textPrimary,
               ),
@@ -508,7 +507,7 @@ class _PageLayout extends StatelessWidget {
           // Title
           Text(
             title,
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 26,
               fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
@@ -518,7 +517,7 @@ class _PageLayout extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               subtitle!,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 15,
                 color: AppTheme.textSecondary,
                 fontWeight: FontWeight.w500,

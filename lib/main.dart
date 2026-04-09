@@ -1,14 +1,24 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
+import 'features/online/data/supabase_config.dart';
 import 'providers/theme_provider.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // On Android physical devices, Dart can start before native plugin
+  // registration completes — a small delay prevents MissingPluginException.
+  if (!kIsWeb) {
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+  }
+
   await initializeDateFormatting('es');
+  await SupabaseConfig.initialize();
   runApp(const ProviderScope(child: ImpostorApp()));
 }
 

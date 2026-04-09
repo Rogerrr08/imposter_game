@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../models/game_state.dart';
 import '../../../theme/app_theme.dart';
@@ -64,7 +63,7 @@ class GameModeSection extends StatelessWidget {
                         children: [
                           Text(
                             mode.displayName,
-                            style: GoogleFonts.nunito(
+                            style: TextStyle(fontFamily: 'Nunito',
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textPrimary,
@@ -73,7 +72,7 @@ class GameModeSection extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             mode.subtitle,
-                            style: GoogleFonts.nunito(
+                            style: TextStyle(fontFamily: 'Nunito',
                               fontSize: 12,
                               color: AppTheme.textSecondary,
                               height: 1.3,
