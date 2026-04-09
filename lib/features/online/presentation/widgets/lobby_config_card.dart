@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../data/word_bank.dart';
 import '../../../../screens/game_setup/widgets/category_section.dart';
@@ -58,7 +57,7 @@ class LobbyConfigCard extends StatelessWidget {
             isHost
                 ? 'Usa exactamente el mismo lenguaje visual del setup local, pero sincronizado con toda la sala.'
                 : 'Estas viendo la misma configuracion que el host mantiene para toda la sala.',
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 13,
               height: 1.4,
               color: AppTheme.textSecondary,
@@ -154,7 +153,7 @@ class LobbyConfigCard extends StatelessWidget {
               children: [
                 Text(
                   room.gameMode.displayName,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
@@ -163,7 +162,7 @@ class LobbyConfigCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   room.gameMode.subtitle,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 12,
                     height: 1.3,
                     color: AppTheme.textSecondary,
@@ -193,7 +192,7 @@ class LobbyConfigCard extends StatelessWidget {
           Expanded(
             child: Text(
               'Solo el host puede editar esta configuracion, pero aqui siempre veras los cambios al momento.',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 12,
                 height: 1.35,
                 color: AppTheme.textSecondary,

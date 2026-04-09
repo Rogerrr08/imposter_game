@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_theme.dart';
 import 'section_header.dart';
@@ -50,7 +49,7 @@ class ImpostorCountSection extends StatelessWidget {
                   children: [
                     Text(
                       '$impostorCount',
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 36,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.secondaryColor,
@@ -58,7 +57,7 @@ class ImpostorCountSection extends StatelessWidget {
                     ),
                     Text(
                       impostorCount == 1 ? 'impostor' : 'impostores',
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 12,
                         color: AppTheme.textSecondary,
                       ),
@@ -78,7 +77,7 @@ class ImpostorCountSection extends StatelessWidget {
             padding: const EdgeInsets.only(top: 8),
             child: Text(
               'M\u00E1ximo $maxImpostors impostor${maxImpostors == 1 ? '' : 'es'} para $playerCount jugadores',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 11,
                 color: AppTheme.textSecondary.withValues(alpha: 0.7),
               ),

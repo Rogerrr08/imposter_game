@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // ─── Fiesta Sospechosa (light) ───
@@ -161,7 +160,7 @@ class AppTheme {
       splashColor: primary.withValues(alpha: 0.12),
       highlightColor: Colors.transparent,
       dividerColor: textSecondary.withValues(alpha: 0.12),
-      textTheme: GoogleFonts.nunitoTextTheme(baseTextTheme).apply(
+      textTheme: baseTextTheme.apply(fontFamily: 'Nunito').apply(
         bodyColor: textPrimary,
         displayColor: textPrimary,
       ),
@@ -172,7 +171,7 @@ class AppTheme {
         centerTitle: true,
         foregroundColor: textPrimary,
         iconTheme: IconThemeData(color: textPrimary),
-        titleTextStyle: GoogleFonts.nunito(
+        titleTextStyle: TextStyle(fontFamily: 'Nunito',
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: textPrimary,
@@ -189,7 +188,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.nunito(
+          textStyle: TextStyle(fontFamily: 'Nunito',
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -203,7 +202,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: GoogleFonts.nunito(
+          textStyle: TextStyle(fontFamily: 'Nunito',
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -234,10 +233,10 @@ class AppTheme {
         ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: GoogleFonts.nunito(
+        hintStyle: TextStyle(fontFamily: 'Nunito',
           color: textSecondary.withValues(alpha: 0.55),
         ),
-        labelStyle: GoogleFonts.nunito(
+        labelStyle: TextStyle(fontFamily: 'Nunito',
           color: textSecondary.withValues(alpha: 0.7),
         ),
       ),
@@ -259,7 +258,7 @@ class AppTheme {
       ),
       snackBarTheme: SnackBarThemeData(
         backgroundColor: isDark ? card : textPrimary,
-        contentTextStyle: GoogleFonts.nunito(
+        contentTextStyle: TextStyle(fontFamily: 'Nunito',
           color: isDark ? textPrimary : background,
         ),
         actionTextColor: warning,
@@ -288,7 +287,7 @@ class AppTheme {
       iconTheme: IconThemeData(color: textPrimary),
       popupMenuTheme: PopupMenuThemeData(
         color: card,
-        textStyle: GoogleFonts.nunito(color: textPrimary),
+        textStyle: TextStyle(fontFamily: 'Nunito',color: textPrimary),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),

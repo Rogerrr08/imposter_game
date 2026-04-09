@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../theme/app_theme.dart';
 import '../../application/online_match_provider.dart';
@@ -100,7 +99,7 @@ class _ActiveRoomDialogState extends State<_ActiveRoomDialog> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -112,7 +111,7 @@ class _ActiveRoomDialogState extends State<_ActiveRoomDialog> {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 14,
                 height: 1.45,
                 color: AppTheme.textSecondary,

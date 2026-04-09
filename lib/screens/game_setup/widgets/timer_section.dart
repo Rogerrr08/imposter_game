@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_theme.dart';
 import 'section_header.dart';
@@ -73,7 +72,7 @@ class TimerSection extends StatelessWidget {
                   child: Center(
                     child: Text(
                       _presetLabels[index],
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 14,
                         fontWeight:
                             isSelected ? FontWeight.w700 : FontWeight.w500,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../screens/game_setup/widgets/section_header.dart';
 import '../../../../theme/app_theme.dart';
@@ -31,7 +30,7 @@ class LobbyPlayersSection extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           'El orden de esta lista sera la base para revelar turnos y acciones online.',
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 12,
             height: 1.35,
             color: AppTheme.textSecondary,
@@ -100,7 +99,7 @@ class _PlayerTile extends StatelessWidget {
             child: Center(
               child: Text(
                 player.displayName.characters.first.toUpperCase(),
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: avatarColor,
@@ -118,7 +117,7 @@ class _PlayerTile extends StatelessWidget {
                     Flexible(
                       child: Text(
                         player.displayName,
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                           color: AppTheme.textPrimary,
@@ -134,7 +133,7 @@ class _PlayerTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Jugador ${player.seatOrder}',
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 12,
                     color: AppTheme.textSecondary,
                   ),
@@ -155,7 +154,7 @@ class _PlayerTile extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       player.isConnected ? 'Conectado' : 'Desconectado',
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: player.isConnected
@@ -200,7 +199,7 @@ class _PlayerTile extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.nunito(
+        style: TextStyle(fontFamily: 'Nunito',
           fontSize: 12,
           fontWeight: FontWeight.w700,
           color: color,
@@ -240,7 +239,7 @@ class _KickButton extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               'Expulsar',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.secondaryColor,
@@ -258,11 +257,11 @@ class _KickButton extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Expulsar jugador',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Quieres expulsar a $playerName de la sala?',
-          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(

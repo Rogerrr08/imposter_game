@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_theme.dart';
 import '../application/online_auth_provider.dart';
@@ -76,7 +75,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
         ),
         title: Text(
           'Unirse por código',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
       ),
       body: profileAsync.when(
@@ -88,7 +87,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
             padding: const EdgeInsets.all(24),
             child: Text(
               'No pudimos cargar tu perfil online.',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textPrimary,
@@ -128,7 +127,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
                   const SizedBox(height: 18),
                   Text(
                     'Entrar a sala privada',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
                       color: AppTheme.textPrimary,
@@ -137,7 +136,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
                   const SizedBox(height: 8),
                   Text(
                     'Pide el código al host y escríbelo aquí para unirte al lobby.',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 15,
                       height: 1.45,
                       color: AppTheme.textSecondary,
@@ -152,7 +151,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
                     textCapitalization: TextCapitalization.characters,
                     maxLength: 6,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 6,

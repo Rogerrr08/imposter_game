@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../theme/app_theme.dart';
 import '../../application/room_lobby_notifier.dart';
@@ -55,7 +54,7 @@ class LobbyCodeCard extends StatelessWidget {
           const SizedBox(height: 18),
           Text(
             'Sala privada',
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: AppTheme.textSecondary,
@@ -65,7 +64,7 @@ class LobbyCodeCard extends StatelessWidget {
           Text(
             room.code,
             textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 34,
               fontWeight: FontWeight.w900,
               letterSpacing: 4,
@@ -78,7 +77,7 @@ class LobbyCodeCard extends StatelessWidget {
                 ? 'Comparte este codigo para que los demas entren a tu sala.'
                 : 'Ya estas dentro del lobby. Espera a que el host termine de prepararlo.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 14,
               height: 1.4,
               color: AppTheme.textSecondary,
@@ -116,7 +115,7 @@ class LobbyCodeCard extends StatelessWidget {
                 ? 'Ya hay suficientes jugadores listos para arrancar.'
                 : 'Se necesitan ${room.minPlayers} jugadores listos para empezar.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 13,
               color: AppTheme.textSecondary,
             ),
@@ -135,7 +134,7 @@ class LobbyCodeCard extends StatelessWidget {
   void _copyCode(BuildContext context, String code) {
     Clipboard.setData(ClipboardData(text: code));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Codigo copiado: $code', style: GoogleFonts.nunito())),
+      SnackBar(content: Text('Codigo copiado: $code', style: TextStyle(fontFamily: 'Nunito',))),
     );
   }
 
@@ -148,7 +147,7 @@ class LobbyCodeCard extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.nunito(
+        style: TextStyle(fontFamily: 'Nunito',
           fontSize: 12,
           fontWeight: FontWeight.w700,
           color: color,

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_theme.dart';
 import '../application/online_match_provider.dart';
@@ -28,7 +27,7 @@ class RoomLobbyScreen extends ConsumerWidget {
         final error = next.value?.error;
         if (error != null && error != prev?.value?.error) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error, style: GoogleFonts.nunito())),
+            SnackBar(content: Text(error, style: TextStyle(fontFamily: 'Nunito',))),
           );
         }
 
@@ -55,7 +54,7 @@ class RoomLobbyScreen extends ConsumerWidget {
           ),
           title: Text(
             'Lobby privado',
-            style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+            style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
           ),
           actions: [
             IconButton(
@@ -239,7 +238,7 @@ class RoomLobbyScreen extends ConsumerWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,
@@ -248,7 +247,7 @@ class RoomLobbyScreen extends ConsumerWidget {
                 const SizedBox(height: 6),
                 Text(
                   subtitle,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 13,
                     height: 1.4,
                     color: AppTheme.textSecondary,
@@ -296,11 +295,11 @@ class RoomLobbyScreen extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Salir de la sala',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Saldras del lobby actual. Si eras el host, la sala pasara al siguiente jugador.',
-          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
@@ -347,7 +346,7 @@ class RoomLobbyScreen extends ConsumerWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -357,7 +356,7 @@ class RoomLobbyScreen extends ConsumerWidget {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 14,
                 height: 1.45,
                 color: AppTheme.textSecondary,

@@ -21,6 +21,7 @@ enum OnlineMatchPhase {
   clueWriting,
   voting,
   voteResult,
+  impostorChoice,
   impostorGuess,
   finished;
 
@@ -32,6 +33,8 @@ enum OnlineMatchPhase {
         return OnlineMatchPhase.voting;
       case 'vote_result':
         return OnlineMatchPhase.voteResult;
+      case 'impostor_choice':
+        return OnlineMatchPhase.impostorChoice;
       case 'impostor_guess':
         return OnlineMatchPhase.impostorGuess;
       case 'finished':
@@ -52,6 +55,8 @@ enum OnlineMatchPhase {
         return 'voting';
       case OnlineMatchPhase.voteResult:
         return 'vote_result';
+      case OnlineMatchPhase.impostorChoice:
+        return 'impostor_choice';
       case OnlineMatchPhase.impostorGuess:
         return 'impostor_guess';
       case OnlineMatchPhase.finished:
@@ -150,6 +155,8 @@ class OnlineMatchPlayer {
   final bool votedIncorrectly;
   final bool eliminatedByFailedGuess;
   final bool roleConfirmed;
+  final bool isConnected;
+  final String? guessWord;
 
   const OnlineMatchPlayer({
     required this.id,
@@ -164,6 +171,8 @@ class OnlineMatchPlayer {
     required this.votedIncorrectly,
     required this.eliminatedByFailedGuess,
     required this.roleConfirmed,
+    required this.isConnected,
+    this.guessWord,
   });
 
   bool get isImpostor => role == 'impostor';
@@ -184,6 +193,8 @@ class OnlineMatchPlayer {
       eliminatedByFailedGuess:
           map['eliminated_by_failed_guess'] as bool? ?? false,
       roleConfirmed: map['role_confirmed'] as bool? ?? false,
+      isConnected: map['is_connected'] as bool? ?? true,
+      guessWord: map['guess_word'] as String?,
     );
   }
 
@@ -197,7 +208,8 @@ class OnlineMatchPlayer {
           points == other.points &&
           votedIncorrectly == other.votedIncorrectly &&
           eliminatedByFailedGuess == other.eliminatedByFailedGuess &&
-          roleConfirmed == other.roleConfirmed;
+          roleConfirmed == other.roleConfirmed &&
+          isConnected == other.isConnected;
 
   @override
   int get hashCode => Object.hash(
@@ -207,6 +219,7 @@ class OnlineMatchPlayer {
         votedIncorrectly,
         eliminatedByFailedGuess,
         roleConfirmed,
+        isConnected,
       );
 }
 
@@ -231,6 +244,7 @@ class MyMatchState {
   final int mySeatOrder;
   final bool myIsEliminated;
   final int myPoints;
+  final bool myRoleConfirmed;
   /// The secret word — null for impostors.
   final String? word;
 
@@ -252,6 +266,7 @@ class MyMatchState {
     required this.mySeatOrder,
     required this.myIsEliminated,
     required this.myPoints,
+    required this.myRoleConfirmed,
     this.word,
   });
 
@@ -279,6 +294,7 @@ class MyMatchState {
       mySeatOrder: map['my_seat_order'] as int? ?? 0,
       myIsEliminated: map['my_is_eliminated'] as bool? ?? false,
       myPoints: map['my_points'] as int? ?? 0,
+      myRoleConfirmed: map['my_role_confirmed'] as bool? ?? false,
       word: map['word'] as String?,
     );
   }
@@ -439,6 +455,7 @@ class PlayerScore {
   final bool isEliminated;
   final bool votedIncorrectly;
   final bool eliminatedByFailedGuess;
+  final String? guessWord;
 
   const PlayerScore({
     required this.playerId,
@@ -449,6 +466,7 @@ class PlayerScore {
     required this.isEliminated,
     required this.votedIncorrectly,
     required this.eliminatedByFailedGuess,
+    this.guessWord,
   });
 
   bool get isImpostor => role == 'impostor';
@@ -465,6 +483,7 @@ class PlayerScore {
       votedIncorrectly: map['voted_incorrectly'] as bool? ?? false,
       eliminatedByFailedGuess:
           map['eliminated_by_failed_guess'] as bool? ?? false,
+      guessWord: map['guess_word'] as String?,
     );
   }
 }

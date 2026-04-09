@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../models/action_reveal.dart';
 import '../../models/game_state.dart';
@@ -168,18 +167,18 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Voto no v\u00E1lido',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Text(
           message,
-          style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
         ),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Entendido',
-              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -254,7 +253,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                     ? 'Empate en la votaci\u00F3n'
                     : 'Votaci\u00F3n an\u00F3nima',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -266,7 +265,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                     ? 'Entre todos decidan cual de los empatados sera eliminado.'
                     : 'Participante $progress de $totalVoters',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 14,
                   color: AppTheme.textSecondary,
                 ),
@@ -287,7 +286,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                     children: [
                       Text(
                         'Ahora vota',
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 13,
                           color: AppTheme.textSecondary,
                         ),
@@ -295,7 +294,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                       const SizedBox(height: 6),
                       Text(
                         currentVoter ?? '-',
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 30,
                           fontWeight: FontWeight.w800,
                           color: AppTheme.primaryColor,
@@ -311,7 +310,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                   tieCandidates.isNotEmpty
                       ? 'Seleccionen al eliminado:'
                       : 'Selecciona a quien eliminar:',
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
@@ -355,7 +354,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                             Expanded(
                               child: Text(
                                 name,
-                                style: GoogleFonts.nunito(
+                                style: TextStyle(fontFamily: 'Nunito',
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                   color: AppTheme.textPrimary,
@@ -392,7 +391,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                     disabledBackgroundColor:
                         AppTheme.secondaryColor.withValues(alpha: 0.3),
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: GoogleFonts.nunito(
+                    textStyle: TextStyle(fontFamily: 'Nunito',
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -477,7 +476,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
         const SizedBox(height: 24),
         Text(
           stepTitle,
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 26,
             fontWeight: FontWeight.w800,
             color: AppTheme.textPrimary,
@@ -487,7 +486,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
         const SizedBox(height: 8),
         Text(
           stepSubtitle,
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 14,
             color: AppTheme.textSecondary,
           ),
@@ -553,14 +552,14 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                   onSelected(match);
                 }
               },
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 color: AppTheme.textPrimary,
                 fontSize: 18,
               ),
               textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: GoogleFonts.nunito(
+                hintStyle: TextStyle(fontFamily: 'Nunito',
                   color: AppTheme.textSecondary.withValues(alpha: 0.5),
                   fontSize: 16,
                 ),
@@ -622,7 +621,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                         dense: true,
                         title: Text(
                           option,
-                          style: GoogleFonts.nunito(
+                          style: TextStyle(fontFamily: 'Nunito',
                             color: AppTheme.textPrimary,
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
@@ -672,7 +671,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
             children: [
               Text(
                 'Confirmar voto',
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -707,7 +706,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
               padding: const EdgeInsets.symmetric(vertical: 18),
-              textStyle: GoogleFonts.nunito(
+              textStyle: TextStyle(fontFamily: 'Nunito',
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
@@ -720,7 +719,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
           onPressed: _stepBack,
           child: Text(
             'Cambiar',
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               color: AppTheme.textSecondary,
               fontSize: 15,
             ),
@@ -740,7 +739,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
       children: [
         Text(
           label,
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 13,
             color: AppTheme.textSecondary,
           ),
@@ -748,7 +747,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
         const SizedBox(height: 4),
         Text(
           name,
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 24,
             fontWeight: FontWeight.w800,
             color: color,

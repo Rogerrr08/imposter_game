@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../models/game_state.dart';
 import '../../providers/game_provider.dart';
@@ -125,7 +124,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
               const SizedBox(height: 8),
               Text(
                 'Jugador $playerNumber de $totalPlayers',
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 14,
                   color: AppTheme.textSecondary,
                 ),
@@ -173,7 +172,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                       disabledForegroundColor:
                           AppTheme.textSecondary.withValues(alpha: 0.55),
                       padding: const EdgeInsets.symmetric(vertical: 18),
-                      textStyle: GoogleFonts.nunito(
+                      textStyle: TextStyle(fontFamily: 'Nunito',
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
@@ -236,7 +235,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
               // Player name - main focus
               Text(
                 player.name,
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 38,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
@@ -252,7 +251,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                   child: FittedBox(
                     fit: BoxFit.contain,
                     child: Image.asset(
-                      'assets/images/app_logo_no_bg.png',
+                      'assets/images/app_logo_no_bg.webp',
                       width: 200,
                       height: 200,
                     ),
@@ -269,7 +268,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
               const SizedBox(height: 6),
               Text(
                 'Desliza hacia arriba para\nrevelar tu rol',
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 14,
                   color: Colors.white.withValues(alpha: 0.85),
                 ),
@@ -278,7 +277,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
               const SizedBox(height: 8),
               Text(
                 '\u00A1Que nadie m\u00E1s vea la pantalla!',
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Colors.white.withValues(alpha: 0.6),
@@ -304,8 +303,8 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
         // Role image
         Image.asset(
           isImpostor
-              ? 'assets/images/player_impostor.png'
-              : 'assets/images/player_civil.png',
+              ? 'assets/images/player_impostor.webp'
+              : 'assets/images/player_civil.webp',
           width: 110,
           height: 110,
         ),
@@ -313,7 +312,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
         // Role text
         Text(
           isImpostor ? 'IMPOSTOR' : 'CIVIL',
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 32,
             fontWeight: FontWeight.w900,
             letterSpacing: 4,
@@ -341,7 +340,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                 if (!isImpostor) ...[
                   Text(
                     'La palabra secreta es:',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 13,
                       color: AppTheme.textSecondary,
                     ),
@@ -349,7 +348,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                   const SizedBox(height: 6),
                   Text(
                     gameState.secretWord,
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 26,
                       fontWeight: FontWeight.w800,
                       color: AppTheme.textPrimary,
@@ -360,7 +359,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                   if (player.hint != null) ...[
                     Text(
                       'Tu pista:',
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 13,
                         color: AppTheme.textSecondary,
                       ),
@@ -368,7 +367,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                     const SizedBox(height: 6),
                     Text(
                       player.hint!,
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.warningColor,
@@ -384,7 +383,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                     const SizedBox(height: 6),
                     Text(
                       'No tienes pistas',
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.textSecondary.withValues(alpha: 0.5),
@@ -393,7 +392,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                     const SizedBox(height: 2),
                     Text(
                       'Descubre la palabra escuchando a los dem\u00E1s',
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 12,
                         color: AppTheme.textSecondary.withValues(alpha: 0.3),
                       ),
@@ -408,7 +407,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
         const SizedBox(height: 12),
         Text(
           'Pasa al siguiente jugador.',
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 13,
             color: AppTheme.textSecondary,
           ),

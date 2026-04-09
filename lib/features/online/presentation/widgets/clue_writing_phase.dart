@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../theme/app_theme.dart';
 import '../../application/online_match_provider.dart';
@@ -11,11 +10,13 @@ import '../../domain/online_match.dart';
 class ClueWritingPhase extends ConsumerStatefulWidget {
   final String matchId;
   final MyMatchState myState;
+  final bool isSpectator;
 
   const ClueWritingPhase({
     super.key,
     required this.matchId,
     required this.myState,
+    this.isSpectator = false,
   });
 
   @override
@@ -77,6 +78,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
   }
 
   bool get _isMyTurn =>
+      !widget.isSpectator &&
       widget.myState.mySeatOrder == widget.myState.currentTurnIndex;
 
   Future<void> _handleSubmitClue() async {
@@ -112,6 +114,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
   }
 
   Future<void> _handleTimeout() async {
+    if (widget.isSpectator) return;
     if (!_isMyTurn) {
       // Any player can trigger skip when they detect timeout
       try {
@@ -209,15 +212,34 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              _isMyTurn
-                  ? 'Tu turno — escribe una pista'
-                  : 'Turno de ${currentPlayer?.displayName ?? '...'}',
-              style: GoogleFonts.nunito(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: _isMyTurn ? accentColor : AppTheme.textPrimary,
-              ),
+            child: Row(
+              children: [
+                if (currentPlayer != null &&
+                    !currentPlayer.isConnected &&
+                    !_isMyTurn) ...[
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: AppTheme.textSecondary.withValues(alpha: 0.4),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Expanded(
+                  child: Text(
+                    _isMyTurn
+                        ? 'Tu turno — escribe una pista'
+                        : 'Turno de ${currentPlayer?.displayName ?? '...'}${currentPlayer != null && !currentPlayer.isConnected ? ' (desconectado)' : ''}',
+                    style: TextStyle(fontFamily: 'Nunito',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: _isMyTurn ? accentColor : AppTheme.textPrimary,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           Container(
@@ -233,7 +255,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
                 const SizedBox(width: 4),
                 Text(
                   '${_secondsLeft}s',
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: timerColor,
@@ -270,7 +292,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: accentColor,
@@ -278,7 +300,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
             ),
           ),
           _buildBadge(
-            widget.myState.category,
+            _capitalize(widget.myState.category),
             AppTheme.textSecondary,
           ),
         ],
@@ -303,7 +325,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
             const SizedBox(height: 12),
             Text(
               'Aun no hay pistas',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textSecondary,
@@ -325,6 +347,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
           playerName: player?.displayName ?? 'Jugador',
           clue: clue.clue,
           seatOrder: clue.turnOrder,
+          isConnected: player?.isConnected ?? true,
         );
       },
     );
@@ -350,14 +373,14 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
               autofocus: true,
               maxLength: 50,
               textCapitalization: TextCapitalization.none,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
               ),
               decoration: InputDecoration(
                 hintText: 'Escribe tu pista...',
-                hintStyle: GoogleFonts.nunito(
+                hintStyle: TextStyle(fontFamily: 'Nunito',
                   color: AppTheme.textSecondary,
                 ),
                 counterText: '',
@@ -437,18 +460,27 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
             ),
           ),
           const SizedBox(width: 12),
-          Text(
-            'Esperando a ${currentPlayer?.displayName ?? '...'}...',
-            style: GoogleFonts.nunito(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textSecondary,
+          Flexible(
+            child: Text(
+              currentPlayer != null && !currentPlayer.isConnected
+                  ? 'Esperando a ${currentPlayer.displayName} (desconectado)...'
+                  : 'Esperando a ${currentPlayer?.displayName ?? '...'}...',
+              style: TextStyle(fontFamily: 'Nunito',
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: currentPlayer != null && !currentPlayer.isConnected
+                    ? AppTheme.warningColor
+                    : AppTheme.textSecondary,
+              ),
             ),
           ),
         ],
       ),
     );
   }
+
+  String _capitalize(String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
   Widget _buildBadge(String label, Color color) {
     return Container(
@@ -459,7 +491,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
       ),
       child: Text(
         label,
-        style: GoogleFonts.nunito(
+        style: TextStyle(fontFamily: 'Nunito',
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: color,
@@ -473,11 +505,13 @@ class _ClueCard extends StatelessWidget {
   final String playerName;
   final String clue;
   final int seatOrder;
+  final bool isConnected;
 
   const _ClueCard({
     required this.playerName,
     required this.clue,
     required this.seatOrder,
+    this.isConnected = true,
   });
 
   @override
@@ -494,22 +528,48 @@ class _ClueCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                playerName.characters.first.toUpperCase(),
-                style: GoogleFonts.nunito(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: AppTheme.primaryColor,
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: Stack(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      playerName.characters.first.toUpperCase(),
+                      style: TextStyle(fontFamily: 'Nunito',
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.primaryColor,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                if (!isConnected)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: AppTheme.surfaceColor,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.wifi_off_rounded,
+                        size: 11,
+                        color: AppTheme.warningColor,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           const SizedBox(width: 12),
@@ -519,7 +579,7 @@ class _ClueCard extends StatelessWidget {
               children: [
                 Text(
                   playerName,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textSecondary,
@@ -527,7 +587,7 @@ class _ClueCard extends StatelessWidget {
                 ),
                 Text(
                   clue,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,

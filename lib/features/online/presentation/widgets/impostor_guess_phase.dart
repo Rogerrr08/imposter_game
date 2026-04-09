@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../theme/app_theme.dart';
 import '../../application/online_match_provider.dart';
@@ -165,7 +164,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                         const SizedBox(width: 6),
                         Text(
                           '${_secondsLeft}s',
-                          style: GoogleFonts.nunito(
+                          style: TextStyle(fontFamily: 'Nunito',
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
                             color: timerColor,
@@ -197,7 +196,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                   Text(
                     'Intenta adivinar la palabra',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: AppTheme.textPrimary,
@@ -207,7 +206,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                   Text(
                     'Escribe la palabra secreta que crees que es',
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 14,
                       color: AppTheme.textSecondary,
                     ),
@@ -220,7 +219,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                     runSpacing: 8,
                     children: [
                       _badge(
-                          widget.myState.category, AppTheme.textSecondary),
+                          _capitalize(widget.myState.category), AppTheme.textSecondary),
                       if (widget.myState.myHint != null)
                         _badge('Pista: ${widget.myState.myHint!}',
                             AppTheme.secondaryColor),
@@ -235,14 +234,14 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                     maxLength: 80,
                     textAlign: TextAlign.center,
                     textCapitalization: TextCapitalization.words,
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 20,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textPrimary,
                     ),
                     decoration: InputDecoration(
                       hintText: 'Escribe tu respuesta...',
-                      hintStyle: GoogleFonts.nunito(
+                      hintStyle: TextStyle(fontFamily: 'Nunito',
                         fontSize: 16,
                         color: AppTheme.textSecondary.withValues(alpha: 0.5),
                       ),
@@ -287,7 +286,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                         Expanded(
                           child: Text(
                             'Si aciertas, los impostores ganan. Si fallas, el juego continua.',
-                            style: GoogleFonts.nunito(
+                            style: TextStyle(fontFamily: 'Nunito',
                               fontSize: 12,
                               color: AppTheme.warningColor
                                   .withValues(alpha: 0.8),
@@ -324,7 +323,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                             )
                           : Text(
                               'Confirmar',
-                              style: GoogleFonts.nunito(
+                              style: TextStyle(fontFamily: 'Nunito',
                                 fontSize: 17,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -346,7 +345,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                       ),
                       child: Text(
                         'Pasar',
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
@@ -373,11 +372,11 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
         .where((p) => p.isImpostor && p.isEliminated)
         .lastOrNull;
 
-    return SafeArea(
+    return Center(
       child: Padding(
         padding: const EdgeInsets.all(28),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: 100,
@@ -400,7 +399,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
             Text(
               'El impostor esta intentando\nadivinar la palabra...',
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -434,7 +433,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                         child: Text(
                           eliminatedImpostor.displayName.characters.first
                               .toUpperCase(),
-                          style: GoogleFonts.nunito(
+                          style: TextStyle(fontFamily: 'Nunito',
                             fontSize: 14,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.secondaryColor,
@@ -448,7 +447,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                       children: [
                         Text(
                           eliminatedImpostor.displayName,
-                          style: GoogleFonts.nunito(
+                          style: TextStyle(fontFamily: 'Nunito',
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                             color: AppTheme.textPrimary,
@@ -456,7 +455,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                         ),
                         Text(
                           'Impostor eliminado',
-                          style: GoogleFonts.nunito(
+                          style: TextStyle(fontFamily: 'Nunito',
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.secondaryColor,
@@ -480,7 +479,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
             const SizedBox(height: 12),
             Text(
               'Esperando...',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textSecondary,
@@ -492,6 +491,9 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
     );
   }
 
+  String _capitalize(String s) =>
+      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
+
   Widget _badge(String label, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -501,7 +503,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
       ),
       child: Text(
         label,
-        style: GoogleFonts.nunito(
+        style: TextStyle(fontFamily: 'Nunito',
           fontSize: 13,
           fontWeight: FontWeight.w700,
           color: color,

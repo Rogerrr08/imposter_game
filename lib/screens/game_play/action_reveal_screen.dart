@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../models/action_reveal.dart';
 import '../../models/game_state.dart';
@@ -137,7 +136,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           const SizedBox(height: 28),
           Text(
             'Revelando resultado...',
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 24,
               fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
@@ -147,7 +146,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           Text(
             'Un poco de suspenso antes de mostrar lo que pasó',
             textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 14,
               color: AppTheme.textSecondary,
             ),
@@ -174,7 +173,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                     const SizedBox(height: 10),
                     Text(
                       '${(_controller.value * 100).round()}%',
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textSecondary,
@@ -224,7 +223,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         const SizedBox(height: 32),
         Text(
           widget.reveal.subjectText,
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 24,
             fontWeight: FontWeight.w700,
             color: AppTheme.textPrimary,
@@ -234,7 +233,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         const SizedBox(height: 8),
         Text(
           config.title,
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 30,
             fontWeight: FontWeight.w900,
             color: config.color,
@@ -244,7 +243,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         const SizedBox(height: 12),
         Text(
           config.subtitle,
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 15,
             color: AppTheme.textSecondary,
           ),
@@ -288,7 +287,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: config.color,
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                textStyle: GoogleFonts.nunito(
+                textStyle: TextStyle(fontFamily: 'Nunito',
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
@@ -322,7 +321,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         children: [
           Text(
             'Resultados de la votaci\u00F3n',
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: AppTheme.textSecondary,
@@ -339,7 +338,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                     width: 100,
                     child: Text(
                       entry.key,
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 13,
                         fontWeight:
                             isEliminated ? FontWeight.w700 : FontWeight.w500,
@@ -384,7 +383,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                   const SizedBox(width: 10),
                   Text(
                     '${entry.value}',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: isEliminated
@@ -435,7 +434,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                   Center(
                     child: Text(
                       'Siguiente...',
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: _autoAdvanceController!.value < 0.5
@@ -460,7 +459,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         if (reveal.success) {
           return _RevealVisualConfig(
             color: AppTheme.secondaryColor,
-            imagePath: 'assets/images/civil_correct_guess.png',
+            imagePath: 'assets/images/civil_correct_guess.webp',
             title: '\u00A1Era impostor!',
             subtitle: 'Buen trabajo, encontraron a un impostor.',
             buttonLabel: 'Continuar',
@@ -475,7 +474,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
             : '$actor fall\u00F3 y queda eliminado.\n$lives vida${lives == 1 ? '' : 's'} restante${lives == 1 ? '' : 's'}';
         return _RevealVisualConfig(
           color: AppTheme.successColor,
-          imagePath: 'assets/images/civil_lose_life.png',
+          imagePath: 'assets/images/civil_lose_life.webp',
           title: '\u00A1Era inocente!',
           subtitle: subtitle,
           buttonLabel: 'Continuar',
@@ -485,7 +484,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           final actor = reveal.actorText ?? 'El impostor';
           return _RevealVisualConfig(
             color: AppTheme.secondaryColor,
-            imagePath: 'assets/images/impostor_correct_guess.png',
+            imagePath: 'assets/images/impostor_correct_guess.webp',
             title: '\u00A1El impostor adivin\u00F3 la palabra!',
             subtitle: '$actor gana 3 puntos y los dem\u00E1s impostores 1',
             buttonLabel: 'Ver resultados',
@@ -494,7 +493,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         final actor = reveal.actorText ?? 'El impostor';
         return _RevealVisualConfig(
           color: AppTheme.successColor,
-          imagePath: 'assets/images/impostor_failed_guess.png',
+          imagePath: 'assets/images/impostor_failed_guess.webp',
           title: '\u00A1Respuesta incorrecta!',
           subtitle: '$actor fall\u00F3 y queda eliminado.',
           buttonLabel: 'Continuar',
@@ -503,7 +502,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         final actor = reveal.actorText ?? 'El impostor';
         return _RevealVisualConfig(
           color: AppTheme.warningColor,
-          imagePath: 'assets/images/player_impostor.png',
+          imagePath: 'assets/images/player_impostor.webp',
           title: 'No quiso arriesgar',
           subtitle: '$actor prefiri\u00F3 no intentar adivinar la palabra.',
           buttonLabel: 'Continuar',

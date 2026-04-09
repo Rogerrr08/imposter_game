@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../theme/app_theme.dart';
 import '../../application/online_match_provider.dart';
@@ -9,11 +8,13 @@ import '../../domain/online_match.dart';
 class VoteResultPhase extends ConsumerStatefulWidget {
   final String matchId;
   final MyMatchState myState;
+  final bool isSpectator;
 
   const VoteResultPhase({
     super.key,
     required this.matchId,
     required this.myState,
+    this.isSpectator = false,
   });
 
   @override
@@ -92,7 +93,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
             const SizedBox(height: 16),
             Text(
               'Contando votos...',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textSecondary,
@@ -142,7 +143,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
                   // Title
                   Text(
                     'Resultado de la votacion',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
                       color: AppTheme.textPrimary,
@@ -186,7 +187,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
       children: [
         Text(
           'Votos',
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 14,
             fontWeight: FontWeight.w700,
             color: AppTheme.textSecondary,
@@ -234,7 +235,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
                   child: Center(
                     child: Text(
                       '$voteCount',
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.secondaryColor,
@@ -249,7 +250,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
                     children: [
                       Text(
                         target?.displayName ?? '?',
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
@@ -257,7 +258,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
                       ),
                       Text(
                         'Votaron: ${voters.join(', ')}',
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 11,
                           color: AppTheme.textSecondary,
                         ),
@@ -278,6 +279,8 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
 
   Widget _buildResolutionCard(
       VoteResolutionResult resolution, List<OnlineMatchPlayer> players) {
+    final viewerIsImpostor = widget.myState.isImpostor;
+
     if (resolution.isTie) {
       final tiedNames = resolution.tiedPlayerIds
               ?.map((id) =>
@@ -297,11 +300,15 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
         ),
         child: Column(
           children: [
-            Icon(Icons.balance_rounded, color: AppTheme.warningColor, size: 40),
-            const SizedBox(height: 12),
+            Image.asset(
+              'assets/images/tie_after_voting.webp',
+              width: 140,
+              height: 140,
+            ),
+            const SizedBox(height: 16),
             Text(
               'Empate!',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.warningColor,
@@ -311,7 +318,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
             Text(
               'Empataron: ${tiedNames.join(' y ')}',
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 14,
                 color: AppTheme.textSecondary,
               ),
@@ -319,7 +326,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
             const SizedBox(height: 4),
             Text(
               'Se hara una ronda de desempate.',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textSecondary,
@@ -347,17 +354,21 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
       ),
       child: Column(
         children: [
-          Icon(
+          Image.asset(
             isImpostor
-                ? Icons.visibility_off_rounded
-                : Icons.visibility_rounded,
-            color: roleColor,
-            size: 40,
+                ? (viewerIsImpostor
+                    ? 'assets/images/impostor_failed_guess.webp'
+                    : 'assets/images/civil_correct_guess.webp')
+                : (viewerIsImpostor
+                    ? 'assets/images/impostor_correct_guess.webp'
+                    : 'assets/images/civil_lose_life.webp'),
+            width: 140,
+            height: 140,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Text(
             '${eliminatedPlayer?.displayName ?? '?'} fue eliminado',
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 18,
               fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
@@ -372,7 +383,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
             ),
             child: Text(
               isImpostor ? 'Era Impostor!' : 'Era Civil',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: roleColor,
@@ -385,7 +396,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
               resolution.winner == 'civils'
                   ? 'Los civiles ganan!'
                   : 'Los impostores ganan!',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
                 color: resolution.winner == 'civils'
@@ -411,7 +422,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
     return Text(
       text,
       textAlign: TextAlign.center,
-      style: GoogleFonts.nunito(
+      style: TextStyle(fontFamily: 'Nunito',
         fontSize: 13,
         height: 1.4,
         fontWeight: FontWeight.w600,

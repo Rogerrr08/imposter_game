@@ -53,18 +53,15 @@ class RoomLobbyState {
 
   bool get isHost => currentPlayer?.isHost ?? false;
   bool get isReady => currentPlayer?.isReady ?? false;
-  int get readyCount => players.where((p) => p.isReady).length;
+  int get readyCount => players.where((p) => p.isReady || p.isHost).length;
   int get maxImpostors => (players.length / 3).floor().clamp(1, 3);
 
   bool get canStartVisual =>
       room != null &&
       players.length >= room!.minPlayers &&
-      readyCount >= room!.minPlayers;
+      readyCount == players.length;
 
-  int get missingReady =>
-      room != null
-          ? (room!.minPlayers - readyCount).clamp(0, room!.minPlayers)
-          : 0;
+  int get missingReady => (players.length - readyCount).clamp(0, players.length);
 
   int get missingPlayers =>
       room != null

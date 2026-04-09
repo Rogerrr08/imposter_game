@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_theme.dart';
 
@@ -60,7 +59,7 @@ class StartButton extends StatelessWidget {
               canStart
                   ? 'Comenzar Partida'
                   : 'Faltan $missingPlayers jugador${missingPlayers == 1 ? '' : 'es'}',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
               ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_theme.dart';
 import '../application/online_auth_provider.dart';
@@ -57,7 +56,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
         ),
         title: Text(
           'Crear sala privada',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
       ),
       body: profileAsync.when(
@@ -139,7 +138,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
         const SizedBox(height: 18),
         Text(
           'Sala privada',
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 28,
             fontWeight: FontWeight.w800,
             color: AppTheme.textPrimary,
@@ -147,9 +146,9 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Se generará un código para compartir con tus amigos. '
-          'En este MVP, las salas online arrancan en Modo Clásico.',
-          style: GoogleFonts.nunito(
+          'Se generara un codigo para compartir con tus amigos. '
+          'Las salas online arrancan en Modo Clasico.',
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 15,
             height: 1.45,
             color: AppTheme.textSecondary,
@@ -175,7 +174,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
         children: [
           Text(
             'Configuración inicial',
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: AppTheme.textPrimary,
@@ -190,7 +189,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
           const SizedBox(height: 12),
           Text(
             'Podrás ajustar categorías, tiempo, pistas e impostores dentro del lobby.',
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 13,
               color: AppTheme.textSecondary,
             ),
@@ -208,7 +207,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
           Expanded(
             child: Text(
               label,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 14,
                 color: AppTheme.textSecondary,
               ),
@@ -216,7 +215,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
           ),
           Text(
             value,
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 14,
               fontWeight: FontWeight.w700,
               color: AppTheme.textPrimary,
@@ -240,7 +239,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
       ),
       child: Text(
         message,
-        style: GoogleFonts.nunito(
+        style: TextStyle(fontFamily: 'Nunito',
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: AppTheme.errorColor,
@@ -269,7 +268,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textPrimary,

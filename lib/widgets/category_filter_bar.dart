@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../theme/app_theme.dart';
 
@@ -37,7 +36,7 @@ class CategoryFilterBar extends StatelessWidget {
               selected: isSelected,
               label: Text(
                 entry.value,
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   color: isSelected ? Colors.white : AppTheme.textPrimary,

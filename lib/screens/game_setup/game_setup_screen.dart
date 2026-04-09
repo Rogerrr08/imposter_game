@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../data/word_bank.dart';
 import '../../database/database.dart';
@@ -210,7 +209,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message, style: GoogleFonts.nunito())),
+      SnackBar(content: Text(message, style: TextStyle(fontFamily: 'Nunito',))),
     );
   }
 
@@ -295,7 +294,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
         appBar: AppBar(
           title: Text(
             'Nueva Partida',
-            style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+            style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
@@ -444,7 +443,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
             ),
             child: Text(
               'Error cargando jugadores del grupo',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 color: AppTheme.secondaryColor,
                 fontSize: 13,
               ),
@@ -475,7 +474,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                 ),
                 child: Text(
                   'Este grupo no tiene jugadores todav\u00EDa.',
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 13,
                     color: AppTheme.textSecondary,
                   ),
@@ -496,7 +495,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                 Expanded(
                   child: Text(
                     'Jugadores: $_playerCount/${_groupPlayers.length}',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
@@ -509,7 +508,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                       size: 18, color: AppTheme.primaryColor),
                   label: Text(
                     'Orden',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.primaryColor,
@@ -527,7 +526,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
             const SizedBox(height: 12),
             Text(
               'Toca para excluir o incluir',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 12,
                 color: AppTheme.textSecondary.withValues(alpha: 0.6),
               ),
@@ -566,7 +565,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                               : AppTheme.primaryColor.withValues(alpha: 0.2),
                           child: Text(
                             player.name[0].toUpperCase(),
-                            style: GoogleFonts.nunito(
+                            style: TextStyle(fontFamily: 'Nunito',
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: isExcluded
@@ -579,7 +578,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                         const SizedBox(width: 8),
                         Text(
                           player.name,
-                          style: GoogleFonts.nunito(
+                          style: TextStyle(fontFamily: 'Nunito',
                             fontSize: 13,
                             fontWeight: isExcluded
                                 ? FontWeight.w400
@@ -652,7 +651,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                           const SizedBox(width: 8),
                           Text(
                             'Reordenar jugadores',
-                            style: GoogleFonts.nunito(
+                            style: TextStyle(fontFamily: 'Nunito',
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textPrimary,
@@ -663,7 +662,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                             onPressed: () => Navigator.pop(sheetContext),
                             child: Text(
                               'Listo',
-                              style: GoogleFonts.nunito(
+                              style: TextStyle(fontFamily: 'Nunito',
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.primaryColor,
                               ),
@@ -725,7 +724,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                                           .withValues(alpha: 0.15),
                                   child: Text(
                                     player.name[0].toUpperCase(),
-                                    style: GoogleFonts.nunito(
+                                    style: TextStyle(fontFamily: 'Nunito',
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
                                       color: isExcluded
@@ -738,7 +737,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                                 Expanded(
                                   child: Text(
                                     player.name,
-                                    style: GoogleFonts.nunito(
+                                    style: TextStyle(fontFamily: 'Nunito',
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: isExcluded
@@ -753,7 +752,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                                 ),
                                 Text(
                                   '${index + 1}',
-                                  style: GoogleFonts.nunito(
+                                  style: TextStyle(fontFamily: 'Nunito',
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                     color: AppTheme.textSecondary
@@ -783,11 +782,11 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           child: TextField(
             controller: _playerController,
             focusNode: _playerFocusNode,
-            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
+            style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textPrimary),
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del jugador',
-              hintStyle: GoogleFonts.nunito(color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+              hintStyle: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary.withValues(alpha: 0.5)),
               prefixIcon: Icon(
                 Icons.person_add_alt_1_rounded,
                 color: AppTheme.textSecondary.withValues(alpha: 0.5),

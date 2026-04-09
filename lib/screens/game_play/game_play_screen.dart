@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../theme/app_theme.dart';
 import '../../providers/game_provider.dart';
@@ -107,7 +106,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                         children: [
                           Text(
                             '\u{1F6A8} Verificaci\u00f3n de impostor',
-                            style: GoogleFonts.nunito(
+                            style: TextStyle(fontFamily: 'Nunito',
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
                               color: AppTheme.textPrimary,
@@ -132,7 +131,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                                   child: Text(
                                     'OJO: Escribe tu PISTA, NO la palabra que intentas adivinar. '
                                     'Esto es solo para verificar que eres impostor.',
-                                    style: GoogleFonts.nunito(
+                                    style: TextStyle(fontFamily: 'Nunito',
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                       color: AppTheme.textPrimary,
@@ -146,11 +145,11 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                           TextField(
                             controller: hintController,
                             autofocus: false,
-                            style: GoogleFonts.nunito(color: AppTheme.textPrimary),
+                            style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textPrimary),
                             textCapitalization: TextCapitalization.words,
                             decoration: InputDecoration(
                               hintText: 'Escribe tu pista aquí...',
-                              hintStyle: GoogleFonts.nunito(
+                              hintStyle: TextStyle(fontFamily: 'Nunito',
                                 color: AppTheme.textSecondary.withValues(alpha: 0.5),
                               ),
                               errorText: errorText,
@@ -184,7 +183,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                                   ),
                                   child: Text(
                                     'Confirmar',
-                                    style: GoogleFonts.nunito(
+                                    style: TextStyle(fontFamily: 'Nunito',
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -200,7 +199,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                                   ),
                                   child: Text(
                                     'Cancelar',
-                                    style: GoogleFonts.nunito(
+                                    style: TextStyle(fontFamily: 'Nunito',
                                       color: AppTheme.textSecondary,
                                     ),
                                   ),
@@ -311,7 +310,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                     isClassicMode
                         ? '\u{1F3DB}\uFE0F Cl\u00E1sico'
                         : '\u26A1 Express',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
@@ -344,7 +343,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                   ),
                   child: Text(
                     'Ronda ${eliminatedCount + 1}  \u00B7  $activeCount jugadores activos',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textSecondary,
@@ -391,7 +390,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    textStyle: GoogleFonts.nunito(
+                    textStyle: TextStyle(fontFamily: 'Nunito',
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -410,7 +409,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                       foregroundColor: AppTheme.secondaryColor,
                       side: BorderSide(color: AppTheme.secondaryColor),
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      textStyle: GoogleFonts.nunito(
+                      textStyle: TextStyle(fontFamily: 'Nunito',
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                       ),
@@ -486,7 +485,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
               const SizedBox(height: 4),
               Text(
                 timeString,
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 36,
                   fontWeight: FontWeight.w800,
                   color: timerColor,
@@ -522,7 +521,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
           Flexible(
             child: Text(
               'Empieza: $playerName',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
@@ -544,7 +543,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
       children: [
         Text(
           'Eliminados (${eliminated.length})',
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: AppTheme.textSecondary,
@@ -567,7 +566,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
               ),
               child: Text(
                 player.name,
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: AppTheme.textSecondary,

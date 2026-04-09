@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_theme.dart';
 import '../application/online_auth_provider.dart';
@@ -100,7 +99,7 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
               const SizedBox(height: 20),
               Text(
                 '\u00bfC\u00f3mo te llamas?',
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 26,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -109,7 +108,7 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
               const SizedBox(height: 8),
               Text(
                 'Este nombre ver\u00e1n los dem\u00e1s jugadores',
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 14,
                   color: AppTheme.textSecondary,
                 ),
@@ -122,7 +121,7 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                 enabled: !_saving,
                 textCapitalization: TextCapitalization.words,
                 maxLength: 20,
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.textPrimary,
@@ -155,7 +154,7 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                         )
                       : Text(
                           'Continuar',
-                          style: GoogleFonts.nunito(
+                          style: TextStyle(fontFamily: 'Nunito',
                             fontSize: 17,
                             fontWeight: FontWeight.w700,
                           ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../theme/app_theme.dart';
 import '../../application/room_lobby_notifier.dart';
@@ -47,11 +46,17 @@ class LobbyStartBar extends StatelessWidget {
         icon = Icons.play_arrow_rounded;
         elevation = 6;
       } else {
-        buttonText = 'Faltan $missingReady listos';
+        final missingPlayers = lobbyState.missingPlayers;
+        if (missingPlayers > 0) {
+          buttonText = 'Faltan $missingPlayers jugador${missingPlayers > 1 ? 'es' : ''}';
+          icon = Icons.group_add_rounded;
+        } else {
+          buttonText = 'Faltan $missingReady listos';
+          icon = Icons.lock_rounded;
+        }
         onPressed = null;
         bgColor = AppTheme.surfaceColor;
         fgColor = AppTheme.textSecondary.withValues(alpha: 0.45);
-        icon = Icons.lock_rounded;
         elevation = 0;
       }
     } else {
@@ -75,8 +80,8 @@ class LobbyStartBar extends StatelessWidget {
     final String subtitle;
     if (isHost) {
       subtitle = canStart
-          ? 'Todos los jugadores necesarios estan listos. Puedes iniciar la partida.'
-          : 'Necesitas que al menos ${lobbyState.room!.minPlayers} jugadores esten listos.';
+          ? 'Todos los jugadores estan listos. Puedes iniciar la partida.'
+          : 'Necesitas que todos los jugadores esten listos para iniciar.';
     } else {
       subtitle = isReady
           ? 'Ya notificaste que estas listo. Espera a que el host lance la partida.'
@@ -102,7 +107,7 @@ class LobbyStartBar extends StatelessWidget {
         children: [
           Text(
             subtitle,
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 12,
               height: 1.35,
               color: AppTheme.textSecondary,
@@ -143,7 +148,7 @@ class LobbyStartBar extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     buttonText,
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),

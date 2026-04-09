@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../theme/app_theme.dart';
 import '../../application/online_match_provider.dart';
@@ -9,11 +8,13 @@ import '../../domain/online_match.dart';
 class VotingPhase extends ConsumerStatefulWidget {
   final String matchId;
   final MyMatchState myState;
+  final bool isSpectator;
 
   const VotingPhase({
     super.key,
     required this.matchId,
     required this.myState,
+    this.isSpectator = false,
   });
 
   @override
@@ -68,6 +69,10 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
         .where((v) => v.voterId == widget.myState.myPlayerId)
         .firstOrNull;
     if (myVote != null && !_hasVoted) {
+      _hasVoted = true;
+    }
+    // Spectators always see the waiting/status view
+    if (widget.isSpectator && !_hasVoted) {
       _hasVoted = true;
     }
 
@@ -142,7 +147,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
               isTiebreak
                   ? 'Desempate — vota de nuevo'
                   : 'Votacion — elige al sospechoso',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.warningColor,
@@ -157,7 +162,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
             ),
             child: Text(
               '$votedCount/$totalActive',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.primaryColor,
@@ -179,7 +184,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
       tilePadding: const EdgeInsets.symmetric(horizontal: 20),
       title: Text(
         'Pistas de esta ronda (${roundClues.length})',
-        style: GoogleFonts.nunito(
+        style: TextStyle(fontFamily: 'Nunito',
           fontSize: 13,
           fontWeight: FontWeight.w700,
           color: AppTheme.textSecondary,
@@ -201,7 +206,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                       AppTheme.primaryColor.withValues(alpha: 0.12),
                   child: Text(
                     (player?.displayName ?? '?').characters.first.toUpperCase(),
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
                       color: AppTheme.primaryColor,
@@ -210,7 +215,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                 ),
                 label: Text(
                   clue.clue,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -263,7 +268,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                   child: Center(
                     child: Text(
                       player.displayName.characters.first.toUpperCase(),
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         color: isSelected
@@ -275,13 +280,28 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    player.displayName,
-                    style: GoogleFonts.nunito(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        player.displayName,
+                        style: TextStyle(fontFamily: 'Nunito',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      if (!player.isConnected)
+                        Text(
+                          '(desconectado)',
+                          style: TextStyle(fontFamily: 'Nunito',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.warningColor,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
                 if (isSelected)
@@ -311,46 +331,48 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: [
-          // My vote summary
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: AppTheme.secondaryColor.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppTheme.secondaryColor.withValues(alpha: 0.2),
+          // My vote summary (only if player actually voted)
+          if (myVote != null) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.secondaryColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: AppTheme.secondaryColor.withValues(alpha: 0.2),
+                ),
               ),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.how_to_vote_rounded,
-                    color: AppTheme.secondaryColor, size: 24),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text.rich(
-                    TextSpan(
-                      text: 'Votaste por ',
-                      style: GoogleFonts.nunito(
-                        fontSize: 14,
-                        color: AppTheme.textSecondary,
-                      ),
-                      children: [
-                        TextSpan(
-                          text: myTarget?.displayName ?? '...',
-                          style: GoogleFonts.nunito(
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.secondaryColor,
-                          ),
+              child: Row(
+                children: [
+                  Icon(Icons.how_to_vote_rounded,
+                      color: AppTheme.secondaryColor, size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'Votaste por ',
+                        style: TextStyle(fontFamily: 'Nunito',
+                          fontSize: 14,
+                          color: AppTheme.textSecondary,
                         ),
-                      ],
+                        children: [
+                          TextSpan(
+                            text: myTarget?.displayName ?? '...',
+                            style: TextStyle(fontFamily: 'Nunito',
+                              fontWeight: FontWeight.w800,
+                              color: AppTheme.secondaryColor,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
+            const SizedBox(height: 20),
+          ],
 
           // Player vote status list
           Expanded(
@@ -361,46 +383,57 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                 final hasVoted = votedPlayerIds.contains(player.id);
                 final isMe = player.id == widget.myState.myPlayerId;
 
-                return ListTile(
+                final isDisconnected = !player.isConnected;
+                final statusColor = hasVoted
+                    ? AppTheme.successColor
+                    : isDisconnected
+                        ? AppTheme.warningColor
+                        : AppTheme.textSecondary;
+                final statusText = hasVoted
+                    ? 'Voto'
+                    : isDisconnected
+                        ? 'Desconectado'
+                        : 'Esperando...';
+                final statusIcon = hasVoted
+                    ? Icons.check_rounded
+                    : isDisconnected
+                        ? Icons.wifi_off_rounded
+                        : Icons.hourglass_top_rounded;
+
+                final tile = ListTile(
                   leading: Container(
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: (hasVoted
-                              ? AppTheme.successColor
-                              : AppTheme.textSecondary)
-                          .withValues(alpha: 0.12),
+                      color: statusColor.withValues(alpha: 0.12),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      hasVoted
-                          ? Icons.check_rounded
-                          : Icons.hourglass_top_rounded,
-                      size: 18,
-                      color: hasVoted
-                          ? AppTheme.successColor
-                          : AppTheme.textSecondary,
-                    ),
+                    child: Icon(statusIcon, size: 18, color: statusColor),
                   ),
                   title: Text(
                     '${player.displayName}${isMe ? ' (Tu)' : ''}',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary,
+                      color: isDisconnected && !hasVoted
+                          ? AppTheme.textSecondary
+                          : AppTheme.textPrimary,
                     ),
                   ),
                   trailing: Text(
-                    hasVoted ? 'Voto' : 'Esperando...',
-                    style: GoogleFonts.nunito(
+                    statusText,
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: hasVoted
-                          ? AppTheme.successColor
-                          : AppTheme.textSecondary,
+                      color: statusColor,
                     ),
                   ),
                 );
+
+                if (isDisconnected && !hasVoted) {
+                  return Opacity(opacity: 0.55, child: tile);
+                }
+                return tile;
               },
             ),
           ),
@@ -447,7 +480,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                   _selectedTargetId != null
                       ? 'Confirmar voto'
                       : 'Selecciona un jugador',
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),

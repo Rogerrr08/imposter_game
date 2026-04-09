@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../theme/app_theme.dart';
 import '../application/online_auth_provider.dart';
@@ -107,7 +106,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
         ),
         title: Text(
           'Jugar en linea',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
       ),
       body: authAsync.when(
@@ -235,8 +234,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
               onPressed: () => context.go('/online/join-room'),
               filled: false,
             ),
-            const SizedBox(height: 24),
-            _buildScopeCard(),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -274,7 +272,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
                 const SizedBox(width: 8),
                 Text(
                   profile.displayName!,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.primaryColor,
@@ -286,7 +284,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           const SizedBox(height: 18),
           Text(
             'Yeison Impostor online',
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 28,
               fontWeight: FontWeight.w900,
               color: AppTheme.textPrimary,
@@ -294,10 +292,9 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Arrancamos el MVP con salas privadas y Modo Clasico. '
-            'El objetivo ahora es que varios telefonos entren al mismo lobby, '
-            'sin romper nada del modo local.',
-            style: GoogleFonts.nunito(
+            'Juega con tus amigos en tiempo real. '
+            'Crea una sala privada o unite con un codigo.',
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 15,
               height: 1.45,
               color: AppTheme.textSecondary,
@@ -345,7 +342,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           const SizedBox(height: 14),
           Text(
             title,
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 20,
               fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
@@ -354,7 +351,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           const SizedBox(height: 8),
           Text(
             description,
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 14,
               height: 1.45,
               color: AppTheme.textSecondary,
@@ -380,63 +377,6 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
     );
   }
 
-  Widget _buildScopeCard() {
-    const items = [
-      'Sala privada con codigo',
-      'Modo Clasico online',
-      'Auth anonima con display name',
-      'Reconexi\u00f3n basica y RLS',
-    ];
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Alcance del MVP actual',
-            style: GoogleFonts.nunito(
-              fontSize: 16,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...items.map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.check_circle_rounded,
-                    size: 18,
-                    color: AppTheme.successColor,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      item,
-                      style: GoogleFonts.nunito(
-                        fontSize: 14,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildLoadingState({
     required String title,
     required String subtitle,
@@ -452,7 +392,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -462,7 +402,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 14,
                 height: 1.45,
                 color: AppTheme.textSecondary,
@@ -495,7 +435,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -505,7 +445,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 14,
                 height: 1.45,
                 color: AppTheme.textSecondary,

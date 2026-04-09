@@ -199,6 +199,44 @@ class OnlineMatchRepository {
     }
   }
 
+  /// Impostor makes their choice: 'guess' or 'skip'.
+  Future<Map<String, dynamic>> impostorMakeChoice({
+    required String matchId,
+    required String choice,
+  }) async {
+    try {
+      final result = await _client.rpc(
+        'impostor_make_choice',
+        params: {
+          'input_match_id': matchId,
+          'input_choice': choice,
+        },
+      );
+      return result as Map<String, dynamic>;
+    } on PostgrestException catch (error) {
+      throw Exception(_friendlyMessage(error));
+    }
+  }
+
+  /// Override match result to give victory to an impostor.
+  Future<MatchScoresResult> overrideImpostorVictory({
+    required String matchId,
+    required String impostorPlayerId,
+  }) async {
+    try {
+      final result = await _client.rpc(
+        'override_impostor_victory',
+        params: {
+          'input_match_id': matchId,
+          'input_impostor_player_id': impostorPlayerId,
+        },
+      );
+      return MatchScoresResult.fromMap(result as Map<String, dynamic>);
+    } on PostgrestException catch (error) {
+      throw Exception(_friendlyMessage(error));
+    }
+  }
+
   /// Submit an impostor's guess for the secret word.
   Future<ImpostorGuessResult> submitImpostorGuess({
     required String matchId,

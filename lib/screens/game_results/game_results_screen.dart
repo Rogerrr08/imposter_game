@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../models/game_state.dart';
 import '../../providers/game_provider.dart';
@@ -67,7 +66,7 @@ class GameResultsScreen extends ConsumerWidget {
                   },
                   child: Text(
                     groupId != null ? 'Volver al grupo' : 'Ir al inicio',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textSecondary,
@@ -124,8 +123,8 @@ class GameResultsScreen extends ConsumerWidget {
       children: [
         Image.asset(
           civilsWon
-              ? 'assets/images/player_civil.png'
-              : 'assets/images/player_impostor.png',
+              ? 'assets/images/player_civil.webp'
+              : 'assets/images/player_impostor.webp',
           width: 188,
           height: 188,
         ),
@@ -133,7 +132,7 @@ class GameResultsScreen extends ConsumerWidget {
         Text(
           title,
           textAlign: TextAlign.center,
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 36,
             fontWeight: FontWeight.w900,
             color: color,
@@ -146,7 +145,7 @@ class GameResultsScreen extends ConsumerWidget {
           child: Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 15,
               fontWeight: FontWeight.w500,
               color: AppTheme.textSecondary,
@@ -174,7 +173,7 @@ class GameResultsScreen extends ConsumerWidget {
         children: [
           Text(
             'La Palabra Secreta',
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 13,
               fontWeight: FontWeight.w500,
               color: AppTheme.textSecondary,
@@ -185,7 +184,7 @@ class GameResultsScreen extends ConsumerWidget {
           Text(
             word,
             textAlign: TextAlign.center,
-            style: GoogleFonts.nunito(
+            style: TextStyle(fontFamily: 'Nunito',
               fontSize: 38,
               fontWeight: FontWeight.w800,
               color: AppTheme.warningColor,
@@ -201,7 +200,7 @@ class GameResultsScreen extends ConsumerWidget {
             ),
             child: Text(
               category,
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.primaryColor,
@@ -242,7 +241,7 @@ class GameResultsScreen extends ConsumerWidget {
               const SizedBox(width: 8),
               Text(
                 'Pistas de los impostores',
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.secondaryColor,
@@ -270,7 +269,7 @@ class GameResultsScreen extends ConsumerWidget {
                     Expanded(
                       child: Text(
                         player.name,
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
@@ -290,7 +289,7 @@ class GameResultsScreen extends ConsumerWidget {
                       ),
                       child: Text(
                         player.hint!,
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.secondaryColor,
@@ -316,7 +315,7 @@ class GameResultsScreen extends ConsumerWidget {
       children: [
         Text(
           'Ranking',
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: AppTheme.textPrimary,
@@ -367,7 +366,7 @@ class GameResultsScreen extends ConsumerWidget {
               const SizedBox(height: 2),
               Text(
                 '1\u00BA',
-                style: GoogleFonts.nunito(
+                style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.warningColor,
@@ -382,7 +381,7 @@ class GameResultsScreen extends ConsumerWidget {
               children: [
                 Text(
                   player.name,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,
@@ -400,7 +399,7 @@ class GameResultsScreen extends ConsumerWidget {
                       ),
                       child: Text(
                         roleText,
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           color: roleColor,
@@ -412,7 +411,7 @@ class GameResultsScreen extends ConsumerWidget {
                       const SizedBox(width: 6),
                       Text(
                         'Eliminado',
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 10,
                           color:
                               AppTheme.textSecondary.withValues(alpha: 0.6),
@@ -435,7 +434,7 @@ class GameResultsScreen extends ConsumerWidget {
             ),
             child: Text(
               '${player.points >= 0 ? '+' : ''}${player.points}',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: player.points >= 0
@@ -474,7 +473,7 @@ class GameResultsScreen extends ConsumerWidget {
             width: 32,
             child: Text(
               '$position\u00BA',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textSecondary,
@@ -488,7 +487,7 @@ class GameResultsScreen extends ConsumerWidget {
               children: [
                 Text(
                   player.name,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary,
@@ -500,7 +499,7 @@ class GameResultsScreen extends ConsumerWidget {
                   children: [
                     Text(
                       roleText,
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(fontFamily: 'Nunito',
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: roleColor,
@@ -511,7 +510,7 @@ class GameResultsScreen extends ConsumerWidget {
                       const SizedBox(width: 6),
                       Text(
                         'Eliminado',
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 10,
                           color:
                               AppTheme.textSecondary.withValues(alpha: 0.6),
@@ -534,7 +533,7 @@ class GameResultsScreen extends ConsumerWidget {
             ),
             child: Text(
               '${player.points >= 0 ? '+' : ''}${player.points}',
-              style: GoogleFonts.nunito(
+              style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: player.points >= 0
@@ -598,7 +597,7 @@ class GameResultsScreen extends ConsumerWidget {
         ),
         label: Text(
           'Darle la victoria al impostor',
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -624,7 +623,7 @@ class GameResultsScreen extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           '¿Qué impostor adivinó?',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -644,7 +643,7 @@ class GameResultsScreen extends ConsumerWidget {
                   ),
                   child: Text(
                     impostor.name,
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -659,7 +658,7 @@ class GameResultsScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
             ),
           ),
         ],
@@ -677,20 +676,20 @@ class GameResultsScreen extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Confirmar cambio',
-          style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Se cambiará el resultado a victoria de impostores. '
           '$impostorName recibirá 3 pts y los demás impostores 1 pt. '
           'Los civiles no recibirán puntos.',
-          style: GoogleFonts.nunito(fontSize: 14),
+          style: TextStyle(fontFamily: 'Nunito',fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -705,7 +704,7 @@ class GameResultsScreen extends ConsumerWidget {
             ),
             child: Text(
               'Confirmar',
-              style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
+              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -718,7 +717,7 @@ class GameResultsScreen extends ConsumerWidget {
       children: [
         Text(
           '$points pts',
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 24,
             fontWeight: FontWeight.w800,
             color: color,
@@ -726,7 +725,7 @@ class GameResultsScreen extends ConsumerWidget {
         ),
         Text(
           label,
-          style: GoogleFonts.nunito(
+          style: TextStyle(fontFamily: 'Nunito',
             fontSize: 12,
             color: AppTheme.textSecondary,
           ),

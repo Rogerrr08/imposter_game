@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../providers/app_info_provider.dart';
 import '../../providers/theme_provider.dart';
@@ -12,7 +11,7 @@ class HomeScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final appVersionLabelAsync = ref.watch(appVersionLabelProvider);
+    final appVersionLabel = ref.watch(appVersionLabelProvider);
     final isDark = ref.watch(isDarkModeProvider);
 
     return Scaffold(
@@ -54,7 +53,7 @@ class HomeScreen extends ConsumerWidget {
                   const Spacer(flex: 2),
                   // Logo / Title
                   Image.asset(
-                    'assets/images/app_logo_no_bg.png',
+                    'assets/images/app_logo_no_bg.webp',
                     width: 240,
                     height: 240,
                     fit: BoxFit.contain,
@@ -62,7 +61,7 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: 28),
                   Text(
                     'YEISON',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 42,
                       fontWeight: FontWeight.w900,
                       letterSpacing: 6,
@@ -71,7 +70,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   Text(
                     'Impostor',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.primaryColor,
@@ -81,7 +80,7 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Text(
                     'El juego de la palabra secreta',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 13,
                       color: AppTheme.textSecondary,
                       letterSpacing: 1,
@@ -98,7 +97,7 @@ class HomeScreen extends ConsumerWidget {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryColor,
                         padding: const EdgeInsets.symmetric(vertical: 18),
-                        textStyle: GoogleFonts.nunito(
+                        textStyle: TextStyle(fontFamily: 'Nunito',
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
@@ -114,7 +113,7 @@ class HomeScreen extends ConsumerWidget {
                       label: const Text('Mis grupos'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 18),
-                        textStyle: GoogleFonts.nunito(
+                        textStyle: TextStyle(fontFamily: 'Nunito',
                           fontSize: 18,
                           fontWeight: FontWeight.w700,
                         ),
@@ -135,7 +134,7 @@ class HomeScreen extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 14),
                         child: Text(
                           'o',
-                          style: GoogleFonts.nunito(
+                          style: TextStyle(fontFamily: 'Nunito',
                             fontSize: 13,
                             color: AppTheme.textSecondary.withValues(alpha: 0.6),
                           ),
@@ -164,7 +163,7 @@ class HomeScreen extends ConsumerWidget {
                           color: AppTheme.primaryColor.withValues(alpha: 0.35),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        textStyle: GoogleFonts.nunito(
+                        textStyle: TextStyle(fontFamily: 'Nunito',
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                         ),
@@ -178,21 +177,17 @@ class HomeScreen extends ConsumerWidget {
                     icon: const Icon(Icons.help_outline, size: 20),
                     label: Text(
                       'C\u00F3mo jugar',
-                      style: GoogleFonts.nunito(color: AppTheme.textSecondary),
+                      style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
                     ),
                   ),
                   const SizedBox(height: 4),
-                  appVersionLabelAsync.when(
-                    data: (label) => Text(
-                      label,
-                      style: GoogleFonts.nunito(
-                        fontSize: 12,
-                        color: AppTheme.textSecondary.withValues(alpha: 0.5),
-                        letterSpacing: 0.4,
-                      ),
+                  Text(
+                    appVersionLabel,
+                    style: TextStyle(fontFamily: 'Nunito',
+                      fontSize: 12,
+                      color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                      letterSpacing: 0.4,
                     ),
-                    loading: () => const SizedBox(height: 18),
-                    error: (_, _) => const SizedBox(height: 18),
                   ),
                   const SizedBox(height: 16),
                 ],
