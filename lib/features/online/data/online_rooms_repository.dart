@@ -30,7 +30,7 @@ class OnlineRoomsRepository {
             'input_impostor_count': 1,
             'input_duration_seconds': 120,
             'input_min_players': 4,
-            'input_max_players': 8,
+            'input_max_players': 15,
           },
         );
 
@@ -42,7 +42,7 @@ class OnlineRoomsRepository {
       }
     }
 
-    throw Exception('No se pudo generar un codigo unico de sala.');
+    throw Exception('No se pudo generar un código único de sala.');
   }
 
   Future<String> joinPrivateRoom({

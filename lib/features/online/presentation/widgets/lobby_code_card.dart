@@ -74,8 +74,8 @@ class LobbyCodeCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             isHost
-                ? 'Comparte este codigo para que los demas entren a tu sala.'
-                : 'Ya estas dentro del lobby. Espera a que el host termine de prepararlo.',
+                ? 'Comparte este código para que los demás entren a tu sala.'
+                : 'Ya estás dentro del lobby. Espera a que el host termine de prepararlo.',
             textAlign: TextAlign.center,
             style: TextStyle(fontFamily: 'Nunito',
               fontSize: 14,
@@ -124,7 +124,7 @@ class LobbyCodeCard extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: () => _copyCode(context, room.code),
             icon: const Icon(Icons.copy_rounded, size: 18),
-            label: const Text('Copiar codigo'),
+            label: const Text('Copiar código'),
           ),
         ],
       ),
@@ -134,7 +134,7 @@ class LobbyCodeCard extends StatelessWidget {
   void _copyCode(BuildContext context, String code) {
     Clipboard.setData(ClipboardData(text: code));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Codigo copiado: $code', style: TextStyle(fontFamily: 'Nunito',))),
+      SnackBar(content: Text('Código copiado: $code', style: TextStyle(fontFamily: 'Nunito',))),
     );
   }
 

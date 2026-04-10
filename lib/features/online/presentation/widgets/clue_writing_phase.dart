@@ -11,12 +11,14 @@ class ClueWritingPhase extends ConsumerStatefulWidget {
   final String matchId;
   final MyMatchState myState;
   final bool isSpectator;
+  final int? countdownSeconds; // Pre-vote countdown (null = normal mode)
 
   const ClueWritingPhase({
     super.key,
     required this.matchId,
     required this.myState,
     this.isSpectator = false,
+    this.countdownSeconds,
   });
 
   @override
@@ -28,13 +30,16 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
   final _focusNode = FocusNode();
   bool _submitting = false;
   bool _myClueWritten = false;
+  bool _autoSkipping = false;
   Timer? _turnTimer;
   int _secondsLeft = 30;
 
   @override
   void initState() {
     super.initState();
-    _startTurnTimer();
+    if (widget.countdownSeconds == null) {
+      _startTurnTimer();
+    }
   }
 
   @override
@@ -45,6 +50,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
         widget.myState.currentTurnIndex) {
       _resetTurnTimer();
       _clueController.clear();
+      _autoSkipping = false;
     }
   }
 
@@ -155,6 +161,24 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
         .where((p) => p.seatOrder == (match?.currentTurnIndex ?? 0))
         .firstOrNull;
 
+    // Auto-skip when the current turn player was eliminated (abandoned)
+    if (currentTurnPlayer == null &&
+        activePlayers.isNotEmpty &&
+        players.isNotEmpty &&
+        !_autoSkipping &&
+        !widget.isSpectator &&
+        widget.countdownSeconds == null) {
+      _autoSkipping = true;
+      Future.microtask(() async {
+        try {
+          await ref
+              .read(onlineMatchRepositoryProvider)
+              .skipClueTurn(widget.matchId);
+        } catch (_) {}
+        if (mounted) _autoSkipping = false;
+      });
+    }
+
     // Detect when all clues for this round are in — force phase refresh
     final currentRound = match?.currentRound ?? widget.myState.currentRound;
     final roundClues =
@@ -177,18 +201,22 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
       child: Column(
         children: [
           // ─── Turn indicator + timer ───
-          _buildTurnHeader(currentTurnPlayer, accentColor),
+          if (widget.countdownSeconds == null)
+            _buildTurnHeader(currentTurnPlayer, accentColor),
 
           // ─── Role context reminder ───
-          _buildRoleReminder(accentColor),
+          if (widget.countdownSeconds == null)
+            _buildRoleReminder(accentColor),
 
           // ─── Clue list ───
           Expanded(
             child: _buildClueList(clues, players),
           ),
 
-          // ─── Input or waiting ───
-          if (_isMyTurn && !_myClueWritten)
+          // ─── Input, waiting, or pre-vote countdown ───
+          if (widget.countdownSeconds != null)
+            _buildPreVoteCountdown(widget.countdownSeconds!)
+          else if (_isMyTurn && !_myClueWritten)
             _buildClueInput(accentColor)
           else
             _buildWaiting(currentTurnPlayer),
@@ -271,9 +299,13 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
 
   Widget _buildRoleReminder(Color accentColor) {
     final isImpostor = widget.myState.isImpostor;
-    final text = isImpostor
-        ? 'Pista: ${widget.myState.myHint ?? 'Sin pista'}'
-        : 'Palabra: ${widget.myState.word ?? '???'}';
+    // Spectators (eliminated or late joiners) always see the word
+    final isActualSpectator =
+        widget.myState.myIsEliminated || widget.myState.isSpectator;
+    final showWord = isActualSpectator || !isImpostor;
+    final text = showWord
+        ? 'Palabra: ${widget.myState.word ?? '???'}'
+        : 'Pista: ${widget.myState.myHint ?? 'Sin pista'}';
 
     return Container(
       width: double.infinity,
@@ -299,10 +331,11 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
               ),
             ),
           ),
-          _buildBadge(
-            _capitalize(widget.myState.category),
-            AppTheme.textSecondary,
-          ),
+          if (!isImpostor)
+            _buildBadge(
+              _capitalize(widget.myState.category),
+              AppTheme.textSecondary,
+            ),
         ],
       ),
     );
@@ -324,7 +357,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Aun no hay pistas',
+              'Aún no hay pistas',
               style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -348,6 +381,9 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
           clue: clue.clue,
           seatOrder: clue.turnOrder,
           isConnected: player?.isConnected ?? true,
+          role: (widget.myState.myIsEliminated || widget.myState.isSpectator)
+              ? player?.role
+              : null,
         );
       },
     );
@@ -479,6 +515,56 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
     );
   }
 
+  Widget _buildPreVoteCountdown(int seconds) {
+    final progress = seconds / 5.0;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: AppTheme.surfaceColor,
+        border: Border(
+          top: BorderSide(
+            color: AppTheme.textSecondary.withValues(alpha: 0.1),
+          ),
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              backgroundColor: AppTheme.textSecondary.withValues(alpha: 0.1),
+              valueColor: AlwaysStoppedAnimation<Color>(AppTheme.warningColor),
+              minHeight: 6,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.how_to_vote_rounded,
+                size: 20,
+                color: AppTheme.warningColor,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Votación en $seconds...',
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.warningColor,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   String _capitalize(String s) =>
       s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
@@ -506,12 +592,14 @@ class _ClueCard extends StatelessWidget {
   final String clue;
   final int seatOrder;
   final bool isConnected;
+  final String? role; // Show role badge for spectators
 
   const _ClueCard({
     required this.playerName,
     required this.clue,
     required this.seatOrder,
     this.isConnected = true,
+    this.role,
   });
 
   @override
@@ -577,13 +665,40 @@ class _ClueCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  playerName,
-                  style: TextStyle(fontFamily: 'Nunito',
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textSecondary,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      playerName,
+                      style: TextStyle(fontFamily: 'Nunito',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                    if (role != null) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: role == 'impostor'
+                              ? AppTheme.secondaryColor.withValues(alpha: 0.15)
+                              : AppTheme.successColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          role == 'impostor' ? 'Impostor' : 'Civil',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: role == 'impostor'
+                                ? AppTheme.secondaryColor
+                                : AppTheme.successColor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 Text(
                   clue,

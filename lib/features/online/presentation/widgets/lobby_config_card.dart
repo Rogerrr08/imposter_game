@@ -50,13 +50,13 @@ class LobbyConfigCard extends StatelessWidget {
         children: [
           const SectionHeader(
             icon: Icons.tune_rounded,
-            title: 'Configuracion de la sala',
+            title: 'Configuración de la sala',
           ),
           const SizedBox(height: 8),
           Text(
             isHost
                 ? 'Usa exactamente el mismo lenguaje visual del setup local, pero sincronizado con toda la sala.'
-                : 'Estas viendo la misma configuracion que el host mantiene para toda la sala.',
+                : 'Estás viendo la misma configuración que el host mantiene para toda la sala.',
             style: TextStyle(fontFamily: 'Nunito',
               fontSize: 13,
               height: 1.4,
@@ -191,7 +191,7 @@ class LobbyConfigCard extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Solo el host puede editar esta configuracion, pero aqui siempre veras los cambios al momento.',
+              'Solo el host puede editar esta configuración, pero aquí siempre verás los cambios al momento.',
               style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 12,
                 height: 1.35,

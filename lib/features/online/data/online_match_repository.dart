@@ -81,12 +81,17 @@ class OnlineMatchRepository {
         .from('match_players')
         .stream(primaryKey: ['id'])
         .eq('match_id', matchId)
-        .map(
-          (rows) => rows
-              .map((row) => OnlineMatchPlayer.fromMap(row))
-              .toList()
-            ..sort((a, b) => a.seatOrder.compareTo(b.seatOrder)),
-        );
+        .map((rows) {
+      // Deduplicate by userId — keep latest entry (highest seat_order) if
+      // Realtime delivers phantom duplicates after rapid state changes.
+      final byUserId = <String, OnlineMatchPlayer>{};
+      for (final row in rows) {
+        final player = OnlineMatchPlayer.fromMap(row);
+        byUserId[player.userId] = player;
+      }
+      return byUserId.values.toList()
+        ..sort((a, b) => a.seatOrder.compareTo(b.seatOrder));
+    });
   }
 
   /// Abandon match: marks player as eliminated, may cancel the match.

@@ -12,11 +12,13 @@ import '../../domain/online_room.dart';
 class MatchResultsPhase extends ConsumerStatefulWidget {
   final String matchId;
   final MyMatchState myState;
+  final bool isSpectator;
 
   const MatchResultsPhase({
     super.key,
     required this.matchId,
     required this.myState,
+    this.isSpectator = false,
   });
 
   @override
@@ -37,7 +39,11 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
   @override
   void initState() {
     super.initState();
-    _loadScores();
+    if (widget.isSpectator) {
+      _loadScoresForSpectator();
+    } else {
+      _loadScores();
+    }
   }
 
   Future<void> _loadScores() async {
@@ -63,6 +69,53 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
     }
   }
 
+  /// Spectators can't call the RPC — derive from streams.
+  void _loadScoresForSpectator() {
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      final players =
+          ref.read(onlineMatchPlayersProvider(widget.matchId)).value ?? [];
+      final match =
+          ref.read(onlineMatchProvider(widget.matchId)).value;
+
+      if (players.isEmpty || match == null) {
+        setState(() => _loading = false);
+        return;
+      }
+
+      // Derive winner from players data
+      final activeImpostors =
+          players.where((p) => p.role == 'impostor' && !p.isEliminated).length;
+      final winner = activeImpostors == 0 ? 'civils' : 'impostors';
+
+      final scores = players.map((p) => PlayerScore(
+        playerId: p.id,
+        userId: p.userId,
+        displayName: p.displayName,
+        role: p.role,
+        points: p.points,
+        isEliminated: p.isEliminated,
+        votedIncorrectly: p.votedIncorrectly,
+        eliminatedByFailedGuess: p.eliminatedByFailedGuess,
+        guessWord: p.guessWord,
+      )).toList()
+        ..sort((a, b) {
+          final cmp = b.points.compareTo(a.points);
+          return cmp != 0 ? cmp : a.displayName.compareTo(b.displayName);
+        });
+
+      setState(() {
+        _scores = MatchScoresResult(
+          winner: winner,
+          word: widget.myState.word ?? '???',
+          category: widget.myState.category,
+          scores: scores,
+        );
+        _loading = false;
+      });
+    });
+  }
+
   Future<void> _handlePlayAgain() async {
     if (_settingReady || _readyPressed) return;
     setState(() {
@@ -70,10 +123,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
       _readyPressed = true;
     });
     try {
-      await ref.read(onlineRoomsRepositoryProvider).setReady(
-            roomId: widget.myState.roomId,
-            isReady: true,
-          );
+      await _setReadyWithRetry();
     } catch (e) {
       if (mounted) {
         setState(() => _readyPressed = false);
@@ -85,6 +135,25 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
       }
     } finally {
       if (mounted) setState(() => _settingReady = false);
+    }
+  }
+
+  Future<void> _setReadyWithRetry() async {
+    const maxRetries = 3;
+    for (var i = 0; i < maxRetries; i++) {
+      try {
+        await ref.read(onlineRoomsRepositoryProvider).setReady(
+              roomId: widget.myState.roomId,
+              isReady: true,
+            );
+        return;
+      } catch (e) {
+        if (i < maxRetries - 1) {
+          await Future.delayed(Duration(milliseconds: 800 * (i + 1)));
+        } else {
+          rethrow;
+        }
+      }
     }
   }
 
@@ -126,7 +195,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
         ref.watch(onlineRoomProvider(widget.myState.roomId));
     final roomPlayers = roomPlayersAsync.value ?? [];
     final room = roomAsync.value;
-    final readyCount = roomPlayers.where((p) => p.isReady || p.isHost).length;
+    final readyCount = roomPlayers.where((p) => p.isReady).length;
     final totalCount = roomPlayers.length;
     final minPlayers = room?.minPlayers ?? 4;
     final hasEnoughPlayers = totalCount >= minPlayers;
@@ -169,7 +238,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
             CircularProgressIndicator(color: AppTheme.primaryColor),
             const SizedBox(height: 16),
             Text(
-              'Calculando puntuacion...',
+              'Calculando puntuación...',
               style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -332,6 +401,8 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                     final player = entry.value;
                     return _buildPlayerRow(index, player);
                   }),
+                  // Late joiners (room members not in match)
+                  ..._buildLateJoiners(scores, roomPlayers),
                   const SizedBox(height: 16),
                 ],
               ),
@@ -731,6 +802,150 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
         ],
       ),
     );
+  }
+
+  List<Widget> _buildLateJoiners(
+    MatchScoresResult scores,
+    List<OnlineRoomPlayer> roomPlayers,
+  ) {
+    final scoreUserIds = scores.scores.map((s) => s.userId).toSet();
+    final lateJoiners =
+        roomPlayers.where((p) => !scoreUserIds.contains(p.userId)).toList();
+
+    if (lateJoiners.isEmpty) return [];
+
+    return lateJoiners.map((player) {
+      final isCurrentUser = player.userId == _currentUserId;
+      return Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isCurrentUser
+              ? AppTheme.primaryColor.withValues(alpha: 0.08)
+              : AppTheme.cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isCurrentUser
+                ? AppTheme.primaryColor.withValues(alpha: 0.3)
+                : AppTheme.textSecondary.withValues(alpha: 0.08),
+            width: isCurrentUser ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            // No position — dash
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: AppTheme.textSecondary.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  '-',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Avatar
+            Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: AppTheme.textSecondary.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: Text(
+                  player.displayName.characters.first.toUpperCase(),
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Name + "Se unió" badge
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    player.displayName,
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppTheme.textSecondary.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          'Se unió',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                      ),
+                      if (isCurrentUser) ...[
+                        const SizedBox(width: 4),
+                        Text(
+                          '(Tu)',
+                          style: TextStyle(
+                            fontFamily: 'Nunito',
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.primaryColor,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // 0 pts
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppTheme.textSecondary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                '0 pts',
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
   }
 
   Widget _buildImpostorOverrideButton() {

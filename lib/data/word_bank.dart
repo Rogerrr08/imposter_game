@@ -13,8 +13,6 @@ export 'word_bank/word_bank_models.dart';
 final _random = Random();
 
 class WordBank {
-  static const int _recentWordLimit = 10;
-
   static const Map<WordCategory, List<WordEntry>> _wordsByCategory = {
     WordCategory.cosas: cosasWords,
     WordCategory.comidas: comidasWords,
@@ -27,9 +25,10 @@ class WordBank {
   static final List<WordEntry> _allWords = _wordsByCategory.values
       .expand((words) => words)
       .toList(growable: false);
-  static final List<String> _recentWords = <String>[];
   static final Map<String, List<WordCategory>> _categoryBagsBySelection =
       <String, List<WordCategory>>{};
+  static final Map<WordCategory, List<WordEntry>> _wordBagsByCategory =
+      <WordCategory, List<WordEntry>>{};
 
   static List<WordEntry> get allWords => List.unmodifiable(_allWords);
 
@@ -43,9 +42,7 @@ class WordBank {
   }
 
   static WordEntry getRandomWord(WordCategory category) {
-    final entry = _pickRandomWord(getWordsByCategory(category));
-    _rememberWord(entry.word);
-    return entry;
+    return _pickFromWordBag(category);
   }
 
   static WordEntry getRandomWordFromCategories(List<WordCategory> categories) {
@@ -58,9 +55,7 @@ class WordBank {
     }
 
     final category = _pickRandomCategoryFromBag(validCategories);
-    final entry = _pickRandomWord(getWordsByCategory(category));
-    _rememberWord(entry.word);
-    return entry;
+    return _pickFromWordBag(category);
   }
 
   static List<String> getHardHints(WordEntry word, {required int count}) {
@@ -108,24 +103,23 @@ class WordBank {
     return bag.removeLast();
   }
 
-  static WordEntry _pickRandomWord(List<WordEntry> words) {
+  /// Shuffle-bag per category: cycles through all words before repeating.
+  static WordEntry _pickFromWordBag(WordCategory category) {
+    final words = getWordsByCategory(category);
     if (words.isEmpty) {
       throw StateError('No hay palabras disponibles en esta categoría.');
     }
 
-    final recentWordSet = _recentWords.toSet();
-    final eligibleWords = words
-        .where((entry) => !recentWordSet.contains(entry.word))
-        .toList(growable: false);
+    final bag = _wordBagsByCategory.putIfAbsent(
+      category,
+      () => <WordEntry>[],
+    );
 
-    final pool = eligibleWords.isNotEmpty ? eligibleWords : words;
-    return pool[_random.nextInt(pool.length)];
-  }
-
-  static void _rememberWord(String word) {
-    _recentWords.add(word);
-    if (_recentWords.length > _recentWordLimit) {
-      _recentWords.removeAt(0);
+    if (bag.isEmpty) {
+      bag.addAll(words);
+      bag.shuffle(_random);
     }
+
+    return bag.removeLast();
   }
 }

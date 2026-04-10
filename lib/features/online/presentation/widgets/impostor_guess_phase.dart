@@ -212,19 +212,10 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Category + hint reminder
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      _badge(
-                          _capitalize(widget.myState.category), AppTheme.textSecondary),
-                      if (widget.myState.myHint != null)
-                        _badge('Pista: ${widget.myState.myHint!}',
-                            AppTheme.secondaryColor),
-                    ],
-                  ),
+                  // Hint reminder (no category — impostor shouldn't see it)
+                  if (widget.myState.myHint != null)
+                    _badge('Pista: ${widget.myState.myHint!}',
+                        AppTheme.secondaryColor),
                   const SizedBox(height: 28),
                   // Guess input
                   TextField(
@@ -397,7 +388,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
             ),
             const SizedBox(height: 28),
             Text(
-              'El impostor esta intentando\nadivinar la palabra...',
+              'El impostor está intentando\nadivinar la palabra...',
               textAlign: TextAlign.center,
               style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 20,
@@ -491,8 +482,6 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
     );
   }
 
-  String _capitalize(String s) =>
-      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
   Widget _badge(String label, Color color) {
     return Container(

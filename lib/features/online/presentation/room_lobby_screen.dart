@@ -73,7 +73,7 @@ class RoomLobbyScreen extends ConsumerWidget {
           error: (_, __) => _buildCenteredMessage(
             title: 'No pudimos cargar la sala',
             subtitle:
-                'Puede que la sala ya no este disponible. Intenta salir y volver.',
+                'Puede que la sala ya no esté disponible. Intenta salir y volver.',
           ),
           data: (lobbyState) {
             final profile = lobbyState.profile;
@@ -95,8 +95,12 @@ class RoomLobbyScreen extends ConsumerWidget {
               return _buildCenteredMessage(
                 title: 'No encontramos tu jugador en la sala',
                 subtitle:
-                    'Puede que todavia se este sincronizando o que ya no formes parte del lobby.',
+                    'Puede que todavía se esté sincronizando o que ya no formes parte del lobby.',
               );
+            }
+
+            if (lobbyState.room!.status == OnlineRoomStatus.playing) {
+              return _buildMatchInProgress(context, ref, lobbyState);
             }
 
             return _buildLobbyContent(context, ref, lobbyState);
@@ -174,9 +178,9 @@ class RoomLobbyScreen extends ConsumerWidget {
     final missingReady = s.missingReady;
 
     final title = isHost
-        ? 'Tu sala ya esta lista para configurarse'
+        ? 'Tu sala ya está lista para configurarse'
         : isReady
-            ? 'Ya estas listo'
+            ? 'Ya estás listo'
             : 'Marca cuando estes listo';
 
     final subtitle = isHost
@@ -184,7 +188,7 @@ class RoomLobbyScreen extends ConsumerWidget {
             ? 'Faltan $missingPlayers jugador${missingPlayers == 1 ? '' : 'es'} para completar el minimo.'
             : missingReady > 0
                 ? 'Aun faltan $missingReady jugador${missingReady == 1 ? '' : 'es'} listos para empezar.'
-                : 'La sala ya cumplio el minimo de listos y queda preparada para el siguiente paso del online.'
+                : 'La sala ya cumplió el mínimo de listos y queda preparada para el siguiente paso del online.'
         : isReady
             ? 'Puedes esperar mientras el host termina de ajustar la sala.'
             : 'Cuando lo confirmes con el boton inferior, el host lo vera al instante.';
@@ -262,6 +266,117 @@ class RoomLobbyScreen extends ConsumerWidget {
   }
 
   // ---------------------------------------------------------------------------
+  // Match in progress (for late joiners / spectators)
+  // ---------------------------------------------------------------------------
+
+  Widget _buildMatchInProgress(
+    BuildContext context,
+    WidgetRef ref,
+    RoomLobbyState lobbyState,
+  ) {
+    return SafeArea(
+      child: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  LobbyCodeCard(lobbyState: lobbyState),
+                  const SizedBox(height: 24),
+                  // Match in progress banner
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: AppTheme.warningColor.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: AppTheme.warningColor.withValues(alpha: 0.22),
+                      ),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: AppTheme.warningColor.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.sports_esports_rounded,
+                            color: AppTheme.warningColor,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Hay una partida en curso',
+                                style: TextStyle(
+                                  fontFamily: 'Nunito',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppTheme.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Puedes espectar la partida actual. Cuando termine, podrás unirte a la siguiente.',
+                                style: TextStyle(
+                                  fontFamily: 'Nunito',
+                                  fontSize: 13,
+                                  height: 1.4,
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _navigateToActiveMatch(context, ref),
+                      icon: const Icon(Icons.visibility_rounded),
+                      label: const Text('Espectar partida'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  LobbyPlayersSection(
+                    players: lobbyState.players,
+                    currentUserId: lobbyState.profile!.id,
+                    isHost: lobbyState.isHost,
+                    onKickPlayer: (userId) => ref
+                        .read(roomLobbyNotifierProvider(roomId).notifier)
+                        .kickPlayer(userId),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
   // Helpers
   // ---------------------------------------------------------------------------
 
@@ -298,7 +413,7 @@ class RoomLobbyScreen extends ConsumerWidget {
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'Saldras del lobby actual. Si eras el host, la sala pasara al siguiente jugador.',
+          'Saldrás del lobby actual. Si eras el host, la sala pasará al siguiente jugador.',
           style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
         ),
         actions: [

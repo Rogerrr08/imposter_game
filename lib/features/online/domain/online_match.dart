@@ -78,6 +78,7 @@ class OnlineMatch {
   final int currentTurnIndex;
   final String? startingPlayerId;
   final int stateVersion;
+  final String? word;
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -94,6 +95,7 @@ class OnlineMatch {
     required this.currentTurnIndex,
     this.startingPlayerId,
     required this.stateVersion,
+    this.word,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -114,6 +116,7 @@ class OnlineMatch {
       currentTurnIndex: map['current_turn_index'] as int? ?? 0,
       startingPlayerId: map['starting_player_id'] as String?,
       stateVersion: map['state_version'] as int? ?? 1,
+      word: map['word'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
@@ -272,6 +275,32 @@ class MyMatchState {
 
   bool get isImpostor => myRole == 'impostor';
   bool get isCivil => myRole == 'civil';
+  bool get isSpectator => myRole == 'spectator';
+
+  /// Creates a spectator view from an [OnlineMatch] for late joiners
+  /// who are room members but not match players.
+  factory MyMatchState.spectator(OnlineMatch match) {
+    return MyMatchState(
+      matchId: match.id,
+      roomId: match.roomId,
+      status: match.status,
+      category: match.category,
+      hintsEnabled: match.hintsEnabled,
+      impostorCount: match.impostorCount,
+      durationSeconds: match.durationSeconds,
+      currentPhase: match.currentPhase,
+      currentRound: match.currentRound,
+      currentTurnIndex: match.currentTurnIndex,
+      stateVersion: match.stateVersion,
+      myPlayerId: '',
+      myRole: 'spectator',
+      mySeatOrder: -1,
+      myIsEliminated: true,
+      myPoints: 0,
+      myRoleConfirmed: true,
+      word: match.word,
+    );
+  }
 
   factory MyMatchState.fromMap(Map<String, dynamic> map) {
     return MyMatchState(

@@ -86,37 +86,6 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             ),
             const SizedBox(height: 20),
 
-            // Category badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.25),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.category_rounded,
-                    size: 16,
-                    color: AppTheme.primaryColor,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _capitalize(widget.myState.category),
-                    style: TextStyle(fontFamily: 'Nunito',
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
             // Impostor hint (if enabled)
             if (widget.myState.hintsEnabled && widget.myState.myHint != null) ...[
               const SizedBox(height: 16),
@@ -280,7 +249,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             const SizedBox(height: 28),
 
             Text(
-              'El impostor esta decidiendo...',
+              'El impostor está decidiendo...',
               textAlign: TextAlign.center,
               style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 24,
@@ -290,7 +259,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             ),
             const SizedBox(height: 12),
             Text(
-              'Esta eligiendo si arriesgar e intentar adivinar la palabra secreta o no.',
+              'Está eligiendo si arriesgar e intentar adivinar la palabra secreta o no.',
               textAlign: TextAlign.center,
               style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 15,
@@ -375,9 +344,6 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
   }
 
   // ─── Actions ───
-
-  String _capitalize(String s) =>
-      s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
   Future<void> _handleChoice(String choice) async {
     if (_submitting) return;

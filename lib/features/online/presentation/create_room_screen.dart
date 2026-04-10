@@ -146,8 +146,8 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
         ),
         const SizedBox(height: 8),
         Text(
-          'Se generara un codigo para compartir con tus amigos. '
-          'Las salas online arrancan en Modo Clasico.',
+          'Se generará un código para compartir con tus amigos. '
+          'Las salas online arrancan en Modo Clásico.',
           style: TextStyle(fontFamily: 'Nunito',
             fontSize: 15,
             height: 1.45,

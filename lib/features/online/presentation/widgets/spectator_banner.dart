@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../theme/app_theme.dart';
 
 class SpectatorBanner extends StatelessWidget {
-  const SpectatorBanner({super.key});
+  final String? label;
+  const SpectatorBanner({super.key, this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +22,7 @@ class SpectatorBanner extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            'Estas observando la partida',
+            label ?? 'Estas observando la partida',
             style: TextStyle(
               fontFamily: 'Nunito',
               fontSize: 13,

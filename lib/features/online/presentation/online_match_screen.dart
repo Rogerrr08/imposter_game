@@ -17,6 +17,7 @@ import 'widgets/impostor_guess_phase.dart';
 import 'widgets/impostor_result_hold.dart';
 import 'widgets/match_results_phase.dart';
 import 'widgets/role_reveal_phase.dart';
+import 'widgets/reveal_countdown.dart';
 import 'widgets/vote_result_phase.dart';
 import 'widgets/voting_phase.dart';
 
@@ -32,6 +33,7 @@ class OnlineMatchScreen extends ConsumerStatefulWidget {
 class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     with WidgetsBindingObserver {
   bool _abandonCalled = false;
+  bool _isLateJoinSpectator = false;
   bool _roleConfirmed = false;
   bool _confirmingRole = false;
   bool _isReconnecting = false;
@@ -44,6 +46,15 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
   MyMatchState? _heldVoteResultState;
   Timer? _voteResultTimer;
   bool _pendingElimination = false;
+
+  // Hold clue_writing screen before voting (5s countdown)
+  bool _holdingPreVote = false;
+  int _preVoteCountdown = 5;
+  Timer? _preVoteTimer;
+
+  // Reveal countdown before vote_result or finished
+  bool _showingRevealCountdown = false;
+  String? _revealTarget; // 'vote_result' or 'finished'
 
   // Hold impostor result intermediate screen
   bool _holdingImpostorResult = false;
@@ -76,6 +87,12 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       _holdingImpostorResult = false;
       _impostorResultTimer?.cancel();
       _impostorResultTimer = null;
+      _holdingPreVote = false;
+      _preVoteTimer?.cancel();
+      _preVoteTimer = null;
+      _showingRevealCountdown = false;
+      _revealTarget = null;
+      _isLateJoinSpectator = false;
     }
   }
 
@@ -83,6 +100,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
   void dispose() {
     _voteResultTimer?.cancel();
     _impostorResultTimer?.cancel();
+    _preVoteTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -133,8 +151,50 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     final myStateAsync = ref.watch(myMatchStateProvider(widget.matchId));
     final matchAsync = ref.watch(onlineMatchProvider(widget.matchId));
 
+    // Detect spectator mode: myMatchState errors but match exists (late joiner)
+    final match = matchAsync.value;
+    if (myStateAsync.hasError && match != null && !_isLateJoinSpectator) {
+      _isLateJoinSpectator = true;
+    }
+
+    // Build effective myState: real or spectator
+    MyMatchState? myState;
+    if (_isLateJoinSpectator && match != null) {
+      myState = MyMatchState.spectator(match);
+    } else {
+      myState = myStateAsync.value;
+      // Supplement word from match stream for eliminated impostors
+      // (the RPC returns word=null for impostors, but eliminated players
+      // should see the word since they're now spectating)
+      if (myState != null &&
+          myState.myIsEliminated &&
+          myState.word == null &&
+          match?.word != null) {
+        myState = MyMatchState(
+          matchId: myState.matchId,
+          roomId: myState.roomId,
+          status: myState.status,
+          category: myState.category,
+          hintsEnabled: myState.hintsEnabled,
+          impostorCount: myState.impostorCount,
+          durationSeconds: myState.durationSeconds,
+          currentPhase: myState.currentPhase,
+          currentRound: myState.currentRound,
+          currentTurnIndex: myState.currentTurnIndex,
+          stateVersion: myState.stateVersion,
+          myPlayerId: myState.myPlayerId,
+          myRole: myState.myRole,
+          myHint: myState.myHint,
+          mySeatOrder: myState.mySeatOrder,
+          myIsEliminated: myState.myIsEliminated,
+          myPoints: myState.myPoints,
+          myRoleConfirmed: myState.myRoleConfirmed,
+          word: match!.word,
+        );
+      }
+    }
+
     // Cache roomId for lifecycle callbacks & start heartbeat
-    final myState = myStateAsync.value;
     if (myState != null && _roomId == null) {
       _roomId = myState.roomId;
     }
@@ -169,9 +229,11 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
               nextMatch.currentPhase != OnlineMatchPhase.voteResult &&
               !_holdingVoteResult) {
             _holdingVoteResult = true;
-            _heldVoteResultState = myStateAsync.value;
+            _heldVoteResultState = _isLateJoinSpectator && prevMatch != null
+                ? MyMatchState.spectator(prevMatch)
+                : myStateAsync.value;
             _voteResultTimer?.cancel();
-            _voteResultTimer = Timer(const Duration(seconds: 4), () {
+            _voteResultTimer = Timer(const Duration(seconds: 5), () {
               if (mounted) {
                 setState(() {
                   _holdingVoteResult = false;
@@ -185,33 +247,96 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             });
           }
 
+          // Reset reveal countdown target when entering a new round
+          if (nextMatch.currentPhase == OnlineMatchPhase.clueWriting ||
+              nextMatch.currentPhase == OnlineMatchPhase.voting) {
+            _revealTarget = null;
+          }
+
+          // Catch clue_writing → voting: hold clues for 5s countdown
+          if (prevMatch.currentPhase == OnlineMatchPhase.clueWriting &&
+              nextMatch.currentPhase == OnlineMatchPhase.voting &&
+              !_holdingPreVote) {
+            _startPreVoteCountdown();
+          }
+
           // Impostor choice/guess → next phase: show intermediate screen
           _detectImpostorTransition(prevMatch, nextMatch);
 
-          ref.invalidate(myMatchStateProvider(widget.matchId));
+          if (!_isLateJoinSpectator) {
+            ref.invalidate(myMatchStateProvider(widget.matchId));
+          }
+          // Force-refresh match players on phase change to avoid stale
+          // Realtime data (e.g. abandoned player still showing as active)
+          ref.invalidate(onlineMatchPlayersProvider(widget.matchId));
+        }
+      },
+    );
+
+    // Listen for other players leaving (show snackbar notification)
+    ref.listen<AsyncValue<List<OnlineMatchPlayer>>>(
+      onlineMatchPlayersProvider(widget.matchId),
+      (prev, next) {
+        final prevPlayers = prev?.value;
+        final nextPlayers = next.value;
+        if (prevPlayers == null || nextPlayers == null) return;
+
+        // Find players who were active before but are now eliminated
+        // Only show "left" notification if it's not a vote elimination
+        final currentPhase = match?.currentPhase;
+        final isVoteElimination = currentPhase == OnlineMatchPhase.voteResult ||
+            currentPhase == OnlineMatchPhase.impostorChoice ||
+            currentPhase == OnlineMatchPhase.impostorGuess;
+        if (!isVoteElimination) {
+          for (final prevPlayer in prevPlayers) {
+            if (prevPlayer.isEliminated) continue;
+            // Skip self
+            if (!_isLateJoinSpectator && myState != null && prevPlayer.id == myState.myPlayerId) continue;
+            final nextPlayer = nextPlayers.where((p) => p.id == prevPlayer.id).firstOrNull;
+            if (nextPlayer != null && nextPlayer.isEliminated) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '${prevPlayer.displayName} salió de la partida',
+                      style: const TextStyle(fontFamily: 'Nunito'),
+                    ),
+                    duration: const Duration(seconds: 3),
+                    behavior: SnackBarBehavior.floating,
+                    margin: const EdgeInsets.only(
+                      bottom: 80,
+                      left: 16,
+                      right: 16,
+                    ),
+                  ),
+                );
+              }
+            }
+          }
         }
       },
     );
 
     // Listen for self-elimination (another device, or server-side)
-    ref.listen<AsyncValue<MyMatchState>>(
-      myMatchStateProvider(widget.matchId),
-      (prev, next) {
-        final prevState = prev?.value;
-        final nextState = next.value;
-        if (prevState != null &&
-            nextState != null &&
-            !prevState.myIsEliminated &&
-            nextState.myIsEliminated) {
-          // If vote_result is being held, wait for the hold to finish
-          if (_holdingVoteResult) {
-            _pendingElimination = true;
-          } else {
-            _showEliminatedAndLeave();
+    if (!_isLateJoinSpectator) {
+      ref.listen<AsyncValue<MyMatchState>>(
+        myMatchStateProvider(widget.matchId),
+        (prev, next) {
+          final prevState = prev?.value;
+          final nextState = next.value;
+          if (prevState != null &&
+              nextState != null &&
+              !prevState.myIsEliminated &&
+              nextState.myIsEliminated) {
+            if (_holdingVoteResult) {
+              _pendingElimination = true;
+            } else {
+              _showEliminatedAndLeave();
+            }
           }
-        }
-      },
-    );
+        },
+      );
+    }
 
     return PopScope(
       canPop: false,
@@ -232,32 +357,32 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
         body: Column(
           children: [
             ConnectionStatusBanner(isReconnecting: _isReconnecting),
-            // Spectator banner for eliminated players (not during impostor's decision phases)
+            // Spectator banner for eliminated players or late joiners
             if (myState != null &&
-                myState.myIsEliminated &&
+                (myState.isSpectator || myState.myIsEliminated) &&
                 myState.currentPhase != OnlineMatchPhase.impostorChoice &&
                 myState.currentPhase != OnlineMatchPhase.impostorGuess &&
                 myState.currentPhase != OnlineMatchPhase.finished)
-              const SpectatorBanner(),
-            Expanded(
-              child: myStateAsync.when(
-                loading: () => Center(
-                  child:
-                      CircularProgressIndicator(color: AppTheme.primaryColor),
-                ),
-                error: (e, _) => _buildError(e.toString()),
-                data: (myState) {
-                  // If match is cancelled, show cancelled UI
-                  final match = matchAsync.value;
-                  if (match != null &&
-                      match.status == OnlineMatchStatus.cancelled) {
-                    return _buildCancelled();
-                  }
-                  // All players (including eliminated spectators) go through
-                  // _buildMatchContent — phase widgets handle isSpectator
-                  return _buildMatchContent(myState);
-                },
+              SpectatorBanner(
+                label: _isLateJoinSpectator ? 'Espectando partida' : null,
               ),
+            Expanded(
+              child: _isLateJoinSpectator && myState != null
+                  ? _buildSpectatorContent(myState)
+                  : myStateAsync.when(
+                      loading: () => Center(
+                        child: CircularProgressIndicator(
+                            color: AppTheme.primaryColor),
+                      ),
+                      error: (e, _) => _buildError(e.toString()),
+                      data: (myState) {
+                        if (match != null &&
+                            match.status == OnlineMatchStatus.cancelled) {
+                          return _buildCancelled();
+                        }
+                        return _buildMatchContent(myState);
+                      },
+                    ),
             ),
           ],
         ),
@@ -266,6 +391,12 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
   }
 
   Future<void> _confirmLeave() async {
+    // Late join spectators can leave without confirmation
+    if (_isLateJoinSpectator && mounted) {
+      context.go(_roomId != null ? '/online/room/$_roomId' : '/online');
+      return;
+    }
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -274,7 +405,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'Si sales ahora seras eliminado de la partida. Si no quedan suficientes jugadores, la partida se cancelara.',
+          'Si sales ahora serás eliminado de la partida. Si no quedan suficientes jugadores, la partida se cancelará.',
           style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
         ),
         actions: [
@@ -295,7 +426,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
 
     if (confirmed == true && mounted) {
       _fireAndForgetAbandon();
-      context.go('/online');
+      context.go(_roomId != null ? '/online/room/$_roomId' : '/online');
     }
   }
 
@@ -333,6 +464,27 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     } finally {
       if (mounted) setState(() => _confirmingRole = false);
     }
+  }
+
+  // ─── Pre-vote countdown ─────────────────────────────────────────────
+
+  void _startPreVoteCountdown() {
+    setState(() {
+      _holdingPreVote = true;
+      _preVoteCountdown = 5;
+    });
+    _preVoteTimer?.cancel();
+    _preVoteTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      setState(() => _preVoteCountdown--);
+      if (_preVoteCountdown <= 0) {
+        timer.cancel();
+        setState(() => _holdingPreVote = false);
+      }
+    });
   }
 
   // ─── Impostor transition detection ──────────────────────────────────
@@ -430,12 +582,61 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
   Widget _buildMatchContent(MyMatchState myState) {
     final phase = myState.currentPhase;
 
-    // When entering vote_result, hold it for 3 seconds
-    if (phase == OnlineMatchPhase.voteResult && !_holdingVoteResult) {
+    // Show reveal countdown before vote_result
+    if (phase == OnlineMatchPhase.voteResult && !_holdingVoteResult && !_showingRevealCountdown && _revealTarget != 'vote_result_done') {
+      _showingRevealCountdown = true;
+      _revealTarget = 'vote_result';
+    }
+
+    // Show reveal countdown before finished (final results)
+    if (phase == OnlineMatchPhase.finished && !_showingRevealCountdown && _revealTarget != 'finished_done') {
+      _showingRevealCountdown = true;
+      _revealTarget = 'finished';
+    }
+
+    // Render the reveal countdown
+    if (_showingRevealCountdown) {
+      return RevealCountdown(
+        key: ValueKey('reveal_$_revealTarget'),
+        durationSeconds: 3,
+        onComplete: () {
+          if (mounted) {
+            setState(() {
+              _showingRevealCountdown = false;
+              // Mark as done so we don't re-trigger
+              if (_revealTarget == 'vote_result') {
+                _revealTarget = 'vote_result_done';
+                // Start the vote_result hold timer
+                _holdingVoteResult = true;
+                _heldVoteResultState = myState;
+                _voteResultTimer?.cancel();
+                _voteResultTimer = Timer(const Duration(seconds: 5), () {
+                  if (mounted) {
+                    setState(() {
+                      _holdingVoteResult = false;
+                      _heldVoteResultState = null;
+                    });
+                    if (_pendingElimination) {
+                      _pendingElimination = false;
+                      _showEliminatedAndLeave();
+                    }
+                  }
+                });
+              } else if (_revealTarget == 'finished') {
+                _revealTarget = 'finished_done';
+              }
+            });
+          }
+        },
+      );
+    }
+
+    // When entering vote_result (after countdown), hold it for 5 seconds
+    if (phase == OnlineMatchPhase.voteResult && !_holdingVoteResult && _revealTarget == 'vote_result_done') {
       _holdingVoteResult = true;
       _heldVoteResultState = myState;
       _voteResultTimer?.cancel();
-      _voteResultTimer = Timer(const Duration(seconds: 4), () {
+      _voteResultTimer = Timer(const Duration(seconds: 5), () {
         if (mounted) {
           setState(() {
             _holdingVoteResult = false;
@@ -465,6 +666,11 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       );
     }
 
+    // Hold clue_writing screen with countdown before showing voting
+    if (_holdingPreVote && phase == OnlineMatchPhase.voting) {
+      return _buildClueWritingWithCountdown(myState);
+    }
+
     switch (phase) {
       case OnlineMatchPhase.roleReveal:
         return _buildRoleReveal(myState);
@@ -483,11 +689,143 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     }
   }
 
+  Widget _buildSpectatorContent(MyMatchState myState) {
+    final phase = myState.currentPhase;
+
+    // Reveal countdown for spectators too
+    if (_showingRevealCountdown) {
+      return RevealCountdown(
+        key: ValueKey('reveal_spectator_$_revealTarget'),
+        durationSeconds: 3,
+        onComplete: () {
+          if (mounted) {
+            setState(() {
+              _showingRevealCountdown = false;
+              if (_revealTarget == 'vote_result') {
+                _revealTarget = 'vote_result_done';
+                _holdingVoteResult = true;
+                _heldVoteResultState = myState;
+                _voteResultTimer?.cancel();
+                _voteResultTimer = Timer(const Duration(seconds: 5), () {
+                  if (mounted) {
+                    setState(() {
+                      _holdingVoteResult = false;
+                      _heldVoteResultState = null;
+                    });
+                  }
+                });
+              } else if (_revealTarget == 'finished') {
+                _revealTarget = 'finished_done';
+              }
+            });
+          }
+        },
+      );
+    }
+
+    // Trigger reveal countdown for spectator
+    if (phase == OnlineMatchPhase.voteResult && !_holdingVoteResult && !_showingRevealCountdown && _revealTarget != 'vote_result_done') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() { _showingRevealCountdown = true; _revealTarget = 'vote_result'; });
+      });
+    }
+    if (phase == OnlineMatchPhase.finished && !_showingRevealCountdown && _revealTarget != 'finished_done') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() { _showingRevealCountdown = true; _revealTarget = 'finished'; });
+      });
+    }
+
+    // Hold vote result for spectators too
+    if (_holdingVoteResult && phase != OnlineMatchPhase.voteResult) {
+      return _buildVoteResult(_heldVoteResultState ?? myState);
+    }
+
+    // Hold impostor result
+    if (_holdingImpostorResult && _impostorResultType != null) {
+      return ImpostorResultHold(
+        key: ValueKey('impostor_hold_$_impostorResultType'),
+        type: _impostorResultType!,
+        impostorName: _impostorName ?? 'Impostor',
+        guessWord: _impostorGuessWord,
+        durationSeconds: _impostorHoldDuration,
+      );
+    }
+
+    // Hold clue_writing screen with countdown
+    if (_holdingPreVote && phase == OnlineMatchPhase.voting) {
+      return _buildClueWritingWithCountdown(myState);
+    }
+
+    switch (phase) {
+      case OnlineMatchPhase.roleReveal:
+        // Spectators see the clue writing view (waiting for players to confirm roles)
+        return ClueWritingPhase(
+          matchId: widget.matchId,
+          myState: myState,
+          isSpectator: true,
+        );
+      case OnlineMatchPhase.clueWriting:
+        return ClueWritingPhase(
+          matchId: widget.matchId,
+          myState: myState,
+          isSpectator: true,
+        );
+      case OnlineMatchPhase.voting:
+        return VotingPhase(
+          matchId: widget.matchId,
+          myState: myState,
+          isSpectator: true,
+        );
+      case OnlineMatchPhase.voteResult:
+        return VoteResultPhase(
+          matchId: widget.matchId,
+          myState: myState,
+          isSpectator: true,
+        );
+      case OnlineMatchPhase.impostorChoice:
+      case OnlineMatchPhase.impostorGuess:
+        // Spectators see a waiting message during impostor decision
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.hourglass_top_rounded, size: 56,
+                    color: AppTheme.primaryColor.withValues(alpha: 0.5)),
+                const SizedBox(height: 16),
+                Text('El impostor está tomando una decisión...',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontFamily: 'Nunito',
+                    fontSize: 18, fontWeight: FontWeight.w800,
+                    color: AppTheme.textPrimary)),
+              ],
+            ),
+          ),
+        );
+      case OnlineMatchPhase.finished:
+        return MatchResultsPhase(
+          matchId: widget.matchId,
+          myState: myState,
+          isSpectator: true,
+        );
+    }
+  }
+
   Widget _buildClueWriting(MyMatchState myState) {
     return ClueWritingPhase(
       matchId: widget.matchId,
       myState: myState,
       isSpectator: myState.myIsEliminated,
+    );
+  }
+
+  Widget _buildClueWritingWithCountdown(MyMatchState myState) {
+    return ClueWritingPhase(
+      matchId: widget.matchId,
+      myState: myState,
+      isSpectator: true, // No input during countdown
+      countdownSeconds: _preVoteCountdown,
     );
   }
 
@@ -576,8 +914,8 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => context.go('/online'),
-                child: const Text('Volver al inicio'),
+                onPressed: () => context.go(_roomId != null ? '/online/room/$_roomId' : '/online'),
+                child: const Text('Volver a la sala'),
               ),
             ),
           ],
