@@ -29,7 +29,7 @@ class LobbyPlayersSection extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          'El orden de esta lista sera la base para revelar turnos y acciones online.',
+          'El orden de esta lista será la base para revelar turnos y acciones online.',
           style: TextStyle(fontFamily: 'Nunito',
             fontSize: 12,
             height: 1.35,

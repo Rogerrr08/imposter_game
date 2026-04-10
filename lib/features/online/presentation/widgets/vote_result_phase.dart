@@ -36,13 +36,92 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
       vsync: this,
       duration: const Duration(seconds: 3),
     );
-    _resolveVotes();
+    if (widget.isSpectator) {
+      _resolveForSpectator();
+    } else {
+      _resolveVotes();
+    }
   }
 
   @override
   void dispose() {
     _timerController.dispose();
     super.dispose();
+  }
+
+  /// Spectators can't call the RPC — derive the result from streams.
+  void _resolveForSpectator() {
+    // Wait a moment for streams to settle, then derive from players data
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      final players =
+          ref.read(onlineMatchPlayersProvider(widget.matchId)).value ?? [];
+      final votes =
+          ref.read(onlineMatchVotesProvider(widget.matchId)).value ?? [];
+      final currentRound = widget.myState.currentRound;
+      final roundVotes =
+          votes.where((v) => v.roundNumber == currentRound).toList();
+
+      // Count votes by target
+      final votesByTarget = <String, int>{};
+      for (final v in roundVotes) {
+        votesByTarget[v.targetPlayerId] =
+            (votesByTarget[v.targetPlayerId] ?? 0) + 1;
+      }
+
+      if (votesByTarget.isEmpty) {
+        // No votes yet, show loading
+        setState(() {
+          _resolved = true;
+          _resolving = false;
+          _resolution = VoteResolutionResult(result: 'tie');
+        });
+        _timerController.forward();
+        return;
+      }
+
+      final maxVotes = votesByTarget.values.reduce((a, b) => a > b ? a : b);
+      final topTargets =
+          votesByTarget.entries.where((e) => e.value == maxVotes).toList();
+
+      VoteResolutionResult result;
+      if (topTargets.length > 1) {
+        result = VoteResolutionResult(
+          result: 'tie',
+          tiedPlayerIds: topTargets.map((e) => e.key).toList(),
+          maxVotes: maxVotes,
+        );
+      } else {
+        final eliminatedId = topTargets.first.key;
+        final eliminated =
+            players.where((p) => p.id == eliminatedId).firstOrNull;
+        final isImpostor = eliminated?.role == 'impostor';
+        // Check if game is over
+        final activeImpostors = players
+            .where((p) => p.role == 'impostor' && !p.isEliminated)
+            .length;
+        final gameOver = isImpostor && activeImpostors == 0;
+
+        result = VoteResolutionResult(
+          result: gameOver
+              ? 'game_over'
+              : isImpostor
+                  ? 'impostor_eliminated'
+                  : 'civil_eliminated',
+          eliminatedPlayerId: eliminatedId,
+          eliminatedRole: eliminated?.role,
+          winner: gameOver ? 'civils' : null,
+          maxVotes: maxVotes,
+        );
+      }
+
+      setState(() {
+        _resolution = result;
+        _resolved = true;
+        _resolving = false;
+      });
+      _timerController.forward();
+    });
   }
 
   Future<void> _resolveVotes() async {
@@ -142,7 +221,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
                 children: [
                   // Title
                   Text(
-                    'Resultado de la votacion',
+                    'Resultado de la votación',
                     style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
@@ -325,7 +404,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
             ),
             const SizedBox(height: 4),
             Text(
-              'Se hara una ronda de desempate.',
+              'Se hará una ronda de desempate.',
               style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
@@ -412,7 +491,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
 
   Widget _buildNextPhaseInfo(VoteResolutionResult resolution) {
     final text = resolution.isTie
-        ? 'La votacion de desempate comenzara en unos segundos...'
+        ? 'La votación de desempate comenzará en unos segundos...'
         : resolution.isGameOver
             ? 'La partida ha terminado.'
             : resolution.isImpostorEliminated

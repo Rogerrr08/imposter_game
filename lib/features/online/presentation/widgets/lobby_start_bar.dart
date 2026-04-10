@@ -80,12 +80,12 @@ class LobbyStartBar extends StatelessWidget {
     final String subtitle;
     if (isHost) {
       subtitle = canStart
-          ? 'Todos los jugadores estan listos. Puedes iniciar la partida.'
-          : 'Necesitas que todos los jugadores esten listos para iniciar.';
+          ? 'Todos los jugadores están listos. Puedes iniciar la partida.'
+          : 'Necesitas que todos los jugadores estén listos para iniciar.';
     } else {
       subtitle = isReady
-          ? 'Ya notificaste que estas listo. Espera a que el host lance la partida.'
-          : 'Confirma abajo que estas listo para que el host pueda avanzar.';
+          ? 'Ya notificaste que estás listo. Espera a que el host lance la partida.'
+          : 'Confirma abajo que estás listo para que el host pueda avanzar.';
     }
 
     return Container(

@@ -146,7 +146,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
             child: Text(
               isTiebreak
                   ? 'Desempate — vota de nuevo'
-                  : 'Votacion — elige al sospechoso',
+                  : 'Votación — elige al sospechoso',
               style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
@@ -284,13 +284,41 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        player.displayName,
-                        style: TextStyle(fontFamily: 'Nunito',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textPrimary,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            player.displayName,
+                            style: TextStyle(fontFamily: 'Nunito',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.textPrimary,
+                            ),
+                          ),
+                          if (widget.myState.myIsEliminated ||
+                              widget.myState.isSpectator) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: player.role == 'impostor'
+                                    ? AppTheme.secondaryColor.withValues(alpha: 0.15)
+                                    : AppTheme.successColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                player.role == 'impostor' ? 'Impostor' : 'Civil',
+                                style: TextStyle(
+                                  fontFamily: 'Nunito',
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  color: player.role == 'impostor'
+                                      ? AppTheme.secondaryColor
+                                      : AppTheme.successColor,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       if (!player.isConnected)
                         Text(

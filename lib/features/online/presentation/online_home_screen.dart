@@ -111,11 +111,11 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
       ),
       body: authAsync.when(
         loading: () => _buildLoadingState(
-          title: 'Preparando tu sesion online',
+          title: 'Preparando tu sesión online',
           subtitle: 'Estamos restaurando tu acceso antes de entrar al lobby.',
         ),
         error: (error, _) => _buildErrorState(
-          title: 'No pudimos iniciar la sesion online',
+          title: 'No pudimos iniciar la sesión online',
           subtitle: error.toString(),
           actionLabel: 'Reintentar',
           onPressed: _ensureAnonymousAuth,
@@ -124,7 +124,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           if (session == null) {
             if (_authError != null) {
               return _buildErrorState(
-                title: 'No pudimos crear tu sesion online',
+                title: 'No pudimos crear tu sesión online',
                 subtitle: _authError!,
                 actionLabel: 'Intentar de nuevo',
                 onPressed: _ensureAnonymousAuth,
@@ -139,7 +139,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
 
             return _buildLoadingState(
               title: 'Conectando con Supabase',
-              subtitle: 'Tu perfil anonimo se esta creando por primera vez.',
+              subtitle: 'Tu perfil anónimo se está creando por primera vez.',
             );
           }
 
@@ -169,7 +169,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
               final activeRoomAsync = ref.watch(myActiveRoomProvider);
               return activeRoomAsync.when(
                 loading: () => _buildLoadingState(
-                  title: 'Verificando sesion activa',
+                  title: 'Verificando sesión activa',
                   subtitle: 'Estamos revisando si tienes una sala en curso.',
                 ),
                 error: (_, __) => _buildContent(profile),
@@ -184,7 +184,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
                     _redirectingToActiveRoom = true;
                     _resolveActiveRoomRedirect(activeRoomId);
                     return _buildLoadingState(
-                      title: 'Tienes una sesion activa',
+                      title: 'Tienes una sesión activa',
                       subtitle: 'Verificando si hay partida en curso...',
                     );
                   }
@@ -194,7 +194,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
                   }
 
                   return _buildLoadingState(
-                    title: 'Tienes una sesion activa',
+                    title: 'Tienes una sesión activa',
                     subtitle: 'Verificando si hay partida en curso...',
                   );
                 },
@@ -219,7 +219,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
               icon: Icons.add_circle_rounded,
               title: 'Crear sala privada',
               description:
-                  'Genera un codigo para compartir con tus amigos y configura la partida desde el lobby.',
+                  'Genera un código para compartir con tus amigos y configura la partida desde el lobby.',
               buttonLabel: 'Crear sala',
               onPressed: () => context.go('/online/create-room'),
               filled: true,
@@ -227,10 +227,10 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
             const SizedBox(height: 14),
             _buildActionCard(
               icon: Icons.login_rounded,
-              title: 'Unirse por codigo',
+              title: 'Unirse por código',
               description:
-                  'Entra a un lobby existente con el codigo de 6 caracteres que te comparta el host.',
-              buttonLabel: 'Entrar con codigo',
+                  'Entra a un lobby existente con el código de 6 caracteres que te comparta el host.',
+              buttonLabel: 'Entrar con código',
               onPressed: () => context.go('/online/join-room'),
               filled: false,
             ),
@@ -293,7 +293,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           const SizedBox(height: 8),
           Text(
             'Juega con tus amigos en tiempo real. '
-            'Crea una sala privada o unite con un codigo.',
+            'Crea una sala privada o únete con un código.',
             style: TextStyle(fontFamily: 'Nunito',
               fontSize: 15,
               height: 1.45,

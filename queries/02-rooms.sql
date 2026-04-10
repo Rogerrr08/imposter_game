@@ -75,7 +75,7 @@ begin
   where code = upper(trim(input_code)) for update;
 
   if target_room.id is null then raise exception 'No existe una sala con ese codigo'; end if;
-  if target_room.status <> 'waiting' then raise exception 'La sala ya no esta disponible para unirse'; end if;
+  if target_room.status not in ('waiting', 'playing') then raise exception 'La sala ya no esta disponible para unirse'; end if;
 
   select * into existing_membership from public.room_players
   where room_id = target_room.id and user_id = current_user_id;

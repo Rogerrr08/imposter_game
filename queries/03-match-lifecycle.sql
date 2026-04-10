@@ -217,9 +217,6 @@ begin
 
   update public.match_players set is_eliminated = true where id = my_player.id;
 
-  delete from public.room_players
-  where room_id = the_match.room_id and user_id = current_user_id;
-
   select
     count(*) filter (where not is_eliminated),
     count(*) filter (where not is_eliminated and role = 'impostor'),

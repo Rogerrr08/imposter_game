@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../theme/app_theme.dart';
 import '../../application/online_match_provider.dart';
-import '../../application/online_rooms_provider.dart';
 
 /// Result returned by the active room dialog.
 enum ActiveRoomAction { continueRoom, leaveRoom }

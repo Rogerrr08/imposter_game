@@ -127,6 +127,7 @@ create index if not exists idx_matches_room_id on public.matches(room_id);
 create index if not exists idx_matches_status on public.matches(status);
 create index if not exists idx_match_players_match_id on public.match_players(match_id);
 create index if not exists idx_match_players_user_id on public.match_players(user_id);
+create unique index if not exists idx_match_players_match_user on public.match_players(match_id, user_id);
 create index if not exists idx_match_clues_match_id on public.match_clues(match_id);
 create index if not exists idx_match_votes_match_id on public.match_votes(match_id);
 
@@ -173,21 +174,27 @@ create policy room_players_select_for_members on public.room_players
   for select to authenticated using (public.is_room_member(room_id));
 
 -- Match policies
+drop policy if exists "match_players_can_read_match" on public.matches;
 create policy "match_players_can_read_match" on public.matches
   for select using (public.is_match_player(id));
 
+drop policy if exists "match_members_can_read_players" on public.match_players;
 create policy "match_members_can_read_players" on public.match_players
   for select using (public.is_match_player(match_id));
 
+drop policy if exists "match_members_can_read_clues" on public.match_clues;
 create policy "match_members_can_read_clues" on public.match_clues
   for select using (public.is_match_player(match_id));
 
+drop policy if exists "match_players_can_insert_clues" on public.match_clues;
 create policy "match_players_can_insert_clues" on public.match_clues
   for insert with check (public.is_match_player(match_id));
 
+drop policy if exists "match_members_can_read_votes" on public.match_votes;
 create policy "match_members_can_read_votes" on public.match_votes
   for select using (public.is_match_player(match_id));
 
+drop policy if exists "match_players_can_insert_votes" on public.match_votes;
 create policy "match_players_can_insert_votes" on public.match_votes
   for insert with check (public.is_match_player(match_id));
 

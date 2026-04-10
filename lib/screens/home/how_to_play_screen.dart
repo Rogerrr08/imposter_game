@@ -13,7 +13,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
   final _controller = PageController();
   int _currentPage = 0;
 
-  static const _totalPages = 6;
+  static const _totalPages = 8;
 
   @override
   void dispose() {
@@ -78,6 +78,8 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
                   _buildExpressScoringPage(),
                   _buildClassicPage(),
                   _buildClassicScoringPage(),
+                  _buildOnlinePage(),
+                  _buildOnlineScoringPage(),
                 ],
               ),
             ),
@@ -301,6 +303,73 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
         const SizedBox(height: 14),
         _infoBadge(
           '\u{2757} En cl\u00E1sico, votar mal tiene doble costo: pierdes 1 punto en la ronda y pierdes el bonus final.',
+        ),
+      ],
+    );
+  }
+
+  // ─── Page 7: Online Mode ────────────────────────────────────
+
+  Widget _buildOnlinePage() {
+    return _PageLayout(
+      icon: Icons.wifi_rounded,
+      iconColor: AppTheme.primaryColor,
+      title: 'Modo Online',
+      subtitle: 'Cada quien en su dispositivo',
+      children: [
+        _bullet(Icons.add_circle_outline_rounded, AppTheme.primaryColor,
+            'El host crea una sala privada y comparte el c\u00F3digo con los dem\u00E1s.'),
+        _bullet(Icons.people_rounded, AppTheme.primaryColor,
+            'Cada jugador se une desde su propio celular o navegador.'),
+        _bullet(Icons.check_circle_outline_rounded, AppTheme.successColor,
+            'Todos marcan "Listo" y el host inicia la partida.'),
+        _bullet(Icons.visibility_off_rounded, AppTheme.secondaryColor,
+            'Cada uno ve su rol en secreto en su pantalla.'),
+        _bullet(Icons.edit_rounded, AppTheme.primaryColor,
+            'Se dan pistas por turnos, escribi\u00E9ndolas en la app.'),
+        _bullet(Icons.how_to_vote_rounded, AppTheme.warningColor,
+            'Todos votan de forma an\u00F3nima. El m\u00E1s votado queda eliminado.'),
+        _bullet(Icons.psychology_rounded, AppTheme.secondaryColor,
+            'Si eliminan a un impostor, puede arriesgar e intentar adivinar la palabra.'),
+        const SizedBox(height: 12),
+        _infoBadge(
+          '\u{1F310} Juega con amigos a distancia. Solo necesitan conexi\u00F3n a internet.',
+        ),
+      ],
+    );
+  }
+
+  // ─── Page 8: Online Scoring ────────────────────────────────
+
+  Widget _buildOnlineScoringPage() {
+    return _PageLayout(
+      icon: Icons.wifi_rounded,
+      iconColor: AppTheme.primaryColor,
+      title: 'Puntos Online',
+      subtitle: '\u{1F310} Se calculan al finalizar la partida',
+      children: [
+        _sectionLabel('Si ganan los civiles'),
+        _scoreRow('+3', 'Civil que nunca vot\u00F3 mal (+1 base + 2 bonus)',
+            AppTheme.primaryColor),
+        _scoreRow('+1', 'Civil que vot\u00F3 mal al menos una vez',
+            AppTheme.primaryColor),
+        _scoreRow('\u00A00', 'Impostores (no reciben puntos)',
+            AppTheme.textSecondary),
+        const SizedBox(height: 14),
+        _sectionLabel('Si ganan los impostores (sin adivinar)'),
+        _scoreRow('+5', 'Impostor que sobrevivi\u00F3 sin ser descubierto',
+            AppTheme.secondaryColor),
+        const SizedBox(height: 14),
+        _sectionLabel('Si un impostor adivina la palabra'),
+        _scoreRow('+3', 'El impostor que adivin\u00F3 correctamente',
+            AppTheme.secondaryColor),
+        _scoreRow('+1', 'Los dem\u00E1s impostores',
+            AppTheme.secondaryColor),
+        _scoreRow('\u00A00', 'Civiles (no reciben puntos)',
+            AppTheme.textSecondary),
+        const SizedBox(height: 14),
+        _infoBadge(
+          '\u{1F3C6} Si el impostor adivina la palabra de forma verbal, cualquier jugador puede darle la victoria desde la pantalla de resultados.',
         ),
       ],
     );

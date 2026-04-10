@@ -180,10 +180,12 @@ class OnlineLobbySyncController {
   }
 
   void _invalidateRoom() {
+    if (_disposed) return;
     ref.invalidate(onlineRoomProvider(roomId));
   }
 
   void _invalidatePlayers() {
+    if (_disposed) return;
     ref.invalidate(onlineRoomPlayersProvider(roomId));
   }
 }

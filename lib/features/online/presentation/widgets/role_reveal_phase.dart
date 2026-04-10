@@ -396,8 +396,10 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
               color: AppTheme.textPrimary,
             ),
           ),
-          const SizedBox(height: 12),
-          _badge(_capitalize(widget.myState.category), accentColor),
+          if (!isImpostor) ...[
+            const SizedBox(height: 12),
+            _badge(_capitalize(widget.myState.category), accentColor),
+          ],
         ],
       ),
     );

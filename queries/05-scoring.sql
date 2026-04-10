@@ -49,15 +49,35 @@ begin
     select 1 from public.match_players where match_id = input_match_id and points > 0
   ) then
     if winner = 'civils' then
+      -- +1 to all civils
+      update public.match_players set points = 1
+      where match_id = input_match_id and role = 'civil';
+
+      -- bonus +2 to civils who never voted incorrectly (total 3)
       update public.match_players set points = points + 2
       where match_id = input_match_id and role = 'civil' and not voted_incorrectly;
-    else
-      update public.match_players set points = points + 5
-      where match_id = input_match_id and role = 'impostor' and not is_eliminated;
 
-      update public.match_players set points = points + 1
-      where match_id = input_match_id and role = 'impostor'
-        and is_eliminated and not eliminated_by_failed_guess;
+      -- impostors get 0
+    else
+      -- Check if an impostor won by guessing correctly (winner_override = 'impostors')
+      if the_match.winner_override = 'impostors' then
+        -- An impostor guessed correctly: +3 to the guesser, +1 to other impostors
+        -- The guesser is the eliminated impostor who did NOT fail (eliminated but not eliminated_by_failed_guess)
+        update public.match_players set points = 3
+        where match_id = input_match_id and role = 'impostor'
+          and is_eliminated and not eliminated_by_failed_guess;
+
+        update public.match_players set points = 1
+        where match_id = input_match_id and role = 'impostor'
+          and points = 0; -- the rest
+      else
+        -- Impostors won by surviving (no impostor was eliminated, or eliminated impostor didn't guess right)
+        -- +5 to all surviving impostors
+        update public.match_players set points = 5
+        where match_id = input_match_id and role = 'impostor' and not is_eliminated;
+      end if;
+
+      -- civils get 0
     end if;
   end if;
 
