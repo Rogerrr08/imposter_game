@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../theme/app_theme.dart';
 import '../../application/online_match_provider.dart';
 import '../../domain/online_match.dart';
+import 'player_avatar.dart';
 
 class ClueWritingPhase extends ConsumerStatefulWidget {
   final String matchId;
@@ -31,6 +32,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
   bool _submitting = false;
   bool _myClueWritten = false;
   bool _autoSkipping = false;
+  int? _autoSkippedTurnIndex; // Track which turn we already skipped
   Timer? _turnTimer;
   int _secondsLeft = 30;
 
@@ -51,6 +53,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
       _resetTurnTimer();
       _clueController.clear();
       _autoSkipping = false;
+      _autoSkippedTurnIndex = null;
     }
   }
 
@@ -161,14 +164,20 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
         .where((p) => p.seatOrder == (match?.currentTurnIndex ?? 0))
         .firstOrNull;
 
-    // Auto-skip when the current turn player was eliminated (abandoned)
-    if (currentTurnPlayer == null &&
-        activePlayers.isNotEmpty &&
-        players.isNotEmpty &&
+    // Auto-skip when the current turn player was eliminated (abandoned).
+    // Guard: only skip once per turn index to prevent loops caused by
+    // Realtime lag (the RPC completes but the stream hasn't updated yet).
+    final turnIndex = match?.currentTurnIndex ?? 0;
+    final turnPlayerEliminated = currentTurnPlayer == null &&
+        players.any((p) => p.seatOrder == turnIndex && p.isEliminated);
+
+    if (turnPlayerEliminated &&
         !_autoSkipping &&
+        _autoSkippedTurnIndex != turnIndex &&
         !widget.isSpectator &&
         widget.countdownSeconds == null) {
       _autoSkipping = true;
+      _autoSkippedTurnIndex = turnIndex;
       Future.microtask(() async {
         try {
           await ref
@@ -378,6 +387,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
             players.where((p) => p.id == clue.playerId).firstOrNull;
         return _ClueCard(
           playerName: player?.displayName ?? 'Jugador',
+          avatarUrl: player?.avatarUrl,
           clue: clue.clue,
           seatOrder: clue.turnOrder,
           isConnected: player?.isConnected ?? true,
@@ -407,7 +417,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
               controller: _clueController,
               focusNode: _focusNode,
               autofocus: true,
-              maxLength: 50,
+              maxLength: 40,
               textCapitalization: TextCapitalization.none,
               style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 16,
@@ -589,6 +599,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
 
 class _ClueCard extends StatelessWidget {
   final String playerName;
+  final String? avatarUrl;
   final String clue;
   final int seatOrder;
   final bool isConnected;
@@ -596,6 +607,7 @@ class _ClueCard extends StatelessWidget {
 
   const _ClueCard({
     required this.playerName,
+    this.avatarUrl,
     required this.clue,
     required this.seatOrder,
     this.isConnected = true,
@@ -621,23 +633,10 @@ class _ClueCard extends StatelessWidget {
             height: 40,
             child: Stack(
               children: [
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      playerName.characters.first.toUpperCase(),
-                      style: TextStyle(fontFamily: 'Nunito',
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: AppTheme.primaryColor,
-                      ),
-                    ),
-                  ),
+                PlayerAvatar(
+                  displayName: playerName,
+                  avatarUrl: avatarUrl,
+                  size: 36,
                 ),
                 if (!isConnected)
                   Positioned(

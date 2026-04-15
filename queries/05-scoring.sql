@@ -85,6 +85,7 @@ begin
   select jsonb_agg(
     jsonb_build_object(
       'player_id', mp.id, 'user_id', mp.user_id, 'display_name', mp.display_name,
+      'avatar_url', mp.avatar_url,
       'role', mp.role, 'points', mp.points, 'is_eliminated', mp.is_eliminated,
       'voted_incorrectly', mp.voted_incorrectly,
       'eliminated_by_failed_guess', mp.eliminated_by_failed_guess,
@@ -147,6 +148,7 @@ begin
   select jsonb_agg(
     jsonb_build_object(
       'player_id', mp.id, 'user_id', mp.user_id, 'display_name', mp.display_name,
+      'avatar_url', mp.avatar_url,
       'role', mp.role, 'points', mp.points, 'is_eliminated', mp.is_eliminated,
       'voted_incorrectly', mp.voted_incorrectly,
       'eliminated_by_failed_guess', mp.eliminated_by_failed_guess,

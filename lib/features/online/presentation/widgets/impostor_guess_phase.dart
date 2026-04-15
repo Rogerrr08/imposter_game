@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../theme/app_theme.dart';
 import '../../application/online_match_provider.dart';
 import '../../domain/online_match.dart';
+import 'player_avatar.dart';
 
 class ImpostorGuessPhase extends ConsumerStatefulWidget {
   final String matchId;
@@ -222,7 +223,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                     controller: _guessController,
                     autofocus: true,
                     enabled: !_submitting,
-                    maxLength: 80,
+                    maxLength: 40,
                     textAlign: TextAlign.center,
                     textCapitalization: TextCapitalization.words,
                     style: TextStyle(fontFamily: 'Nunito',
@@ -412,25 +413,12 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      width: 36,
-                      height: 36,
-                      decoration: BoxDecoration(
-                        color: AppTheme.secondaryColor
-                            .withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          eliminatedImpostor.displayName.characters.first
-                              .toUpperCase(),
-                          style: TextStyle(fontFamily: 'Nunito',
-                            fontSize: 14,
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.secondaryColor,
-                          ),
-                        ),
-                      ),
+                    PlayerAvatar(
+                      displayName: eliminatedImpostor.displayName,
+                      avatarUrl: eliminatedImpostor.avatarUrl,
+                      size: 36,
+                      backgroundColor: AppTheme.secondaryColor.withValues(alpha: 0.15),
+                      textColor: AppTheme.secondaryColor,
                     ),
                     const SizedBox(width: 12),
                     Column(

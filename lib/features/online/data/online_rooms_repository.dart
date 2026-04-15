@@ -14,6 +14,7 @@ class OnlineRoomsRepository {
 
   Future<String> createPrivateRoom({
     required String displayName,
+    String? avatarUrl,
   }) async {
     for (int attempt = 0; attempt < 12; attempt++) {
       try {
@@ -31,6 +32,7 @@ class OnlineRoomsRepository {
             'input_duration_seconds': 120,
             'input_min_players': 4,
             'input_max_players': 15,
+            'input_avatar_url': avatarUrl,
           },
         );
 
@@ -48,6 +50,7 @@ class OnlineRoomsRepository {
   Future<String> joinPrivateRoom({
     required String code,
     required String displayName,
+    String? avatarUrl,
   }) async {
     try {
       final roomId = await _client.rpc(
@@ -55,6 +58,7 @@ class OnlineRoomsRepository {
         params: {
           'input_code': code.trim().toUpperCase(),
           'input_display_name': displayName.trim(),
+          'input_avatar_url': avatarUrl,
         },
       );
 

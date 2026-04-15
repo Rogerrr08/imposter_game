@@ -60,6 +60,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
   bool _holdingImpostorResult = false;
   String? _impostorResultType; // 'risk', 'no_risk', 'wrong_guess'
   String? _impostorName;
+  String? _impostorAvatarUrl;
   String? _impostorGuessWord;
   int _impostorHoldDuration = 3;
   Timer? _impostorResultTimer;
@@ -340,7 +341,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _confirmLeave();
       },
       child: Scaffold(
@@ -548,6 +549,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
         .where((p) => p.isImpostor && p.isEliminated)
         .lastOrNull;
     _impostorName = impostor?.displayName ?? 'Impostor';
+    _impostorAvatarUrl = impostor?.avatarUrl;
   }
 
   void _findImpostorGuessWord() {
@@ -661,6 +663,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
         key: ValueKey('impostor_hold_$_impostorResultType'),
         type: _impostorResultType!,
         impostorName: _impostorName ?? 'Impostor',
+        impostorAvatarUrl: _impostorAvatarUrl,
         guessWord: _impostorGuessWord,
         durationSeconds: _impostorHoldDuration,
       );
@@ -746,6 +749,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
         key: ValueKey('impostor_hold_$_impostorResultType'),
         type: _impostorResultType!,
         impostorName: _impostorName ?? 'Impostor',
+        impostorAvatarUrl: _impostorAvatarUrl,
         guessWord: _impostorGuessWord,
         durationSeconds: _impostorHoldDuration,
       );

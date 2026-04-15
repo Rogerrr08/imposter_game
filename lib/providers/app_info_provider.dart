@@ -1,3 +1,3 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final appVersionLabelProvider = Provider<String>((_) => 'v2.0.0');
+final appVersionLabelProvider = Provider<String>((_) => 'v2.1.0');

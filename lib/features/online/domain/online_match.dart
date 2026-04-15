@@ -150,6 +150,7 @@ class OnlineMatchPlayer {
   final String matchId;
   final String userId;
   final String displayName;
+  final String? avatarUrl;
   final int seatOrder;
   final String role;
   final String? hint;
@@ -166,6 +167,7 @@ class OnlineMatchPlayer {
     required this.matchId,
     required this.userId,
     required this.displayName,
+    this.avatarUrl,
     required this.seatOrder,
     required this.role,
     this.hint,
@@ -187,6 +189,7 @@ class OnlineMatchPlayer {
       matchId: map['match_id'] as String,
       userId: map['user_id'] as String,
       displayName: map['display_name'] as String,
+      avatarUrl: map['avatar_url'] as String?,
       seatOrder: map['seat_order'] as int? ?? 0,
       role: map['role'] as String? ?? 'civil',
       hint: map['hint'] as String?,
@@ -479,6 +482,7 @@ class PlayerScore {
   final String playerId;
   final String userId;
   final String displayName;
+  final String? avatarUrl;
   final String role;
   final int points;
   final bool isEliminated;
@@ -490,6 +494,7 @@ class PlayerScore {
     required this.playerId,
     required this.userId,
     required this.displayName,
+    this.avatarUrl,
     required this.role,
     required this.points,
     required this.isEliminated,
@@ -506,6 +511,7 @@ class PlayerScore {
       playerId: map['player_id'] as String,
       userId: map['user_id'] as String,
       displayName: map['display_name'] as String,
+      avatarUrl: map['avatar_url'] as String?,
       role: map['role'] as String,
       points: map['points'] as int? ?? 0,
       isEliminated: map['is_eliminated'] as bool? ?? false,

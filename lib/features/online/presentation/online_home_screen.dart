@@ -7,6 +7,7 @@ import '../application/online_auth_provider.dart';
 import '../application/online_match_provider.dart';
 import '../application/online_rooms_provider.dart';
 import 'widgets/active_room_dialog.dart';
+import 'widgets/player_avatar.dart';
 
 class OnlineHomeScreen extends ConsumerStatefulWidget {
   const OnlineHomeScreen({super.key});
@@ -98,7 +99,12 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
     final authAsync = ref.watch(onlineAuthProvider);
     final profileAsync = ref.watch(onlineProfileProvider);
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) context.go('/');
+      },
+      child: Scaffold(
       appBar: AppBar(
         leading: IconButton(
           onPressed: () => context.go('/'),
@@ -203,6 +209,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           );
         },
       ),
+    ),
     );
   }
 
@@ -255,31 +262,44 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.12),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => context.go('/online/display-name'),
               borderRadius: BorderRadius.circular(999),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.wifi_tethering_rounded,
-                  size: 16,
-                  color: AppTheme.primaryColor,
+              child: Ink(
+                padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(999),
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  profile.displayName!,
-                  style: TextStyle(fontFamily: 'Nunito',
-                    fontSize: 13,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.primaryColor,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PlayerAvatar(
+                    displayName: profile.displayName!,
+                    avatarUrl: profile.avatarUrl,
+                    size: 28,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Text(
+                    profile.displayName!,
+                    style: TextStyle(fontFamily: 'Nunito',
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.primaryColor,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.edit_rounded,
+                    size: 14,
+                    color: AppTheme.primaryColor.withValues(alpha: 0.6),
+                  ),
+                ],
+              ),
             ),
+          ),
           ),
           const SizedBox(height: 18),
           Text(

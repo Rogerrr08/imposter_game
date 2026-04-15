@@ -135,6 +135,7 @@ class OnlineRoomPlayer {
   final String roomId;
   final String userId;
   final String displayName;
+  final String? avatarUrl;
   final int seatOrder;
   final bool isHost;
   final bool isReady;
@@ -147,6 +148,7 @@ class OnlineRoomPlayer {
     required this.roomId,
     required this.userId,
     required this.displayName,
+    this.avatarUrl,
     required this.seatOrder,
     required this.isHost,
     required this.isReady,
@@ -161,6 +163,7 @@ class OnlineRoomPlayer {
       roomId: map['room_id'] as String,
       userId: map['user_id'] as String,
       displayName: map['display_name'] as String,
+      avatarUrl: map['avatar_url'] as String?,
       seatOrder: map['seat_order'] as int? ?? 0,
       isHost: map['is_host'] as bool? ?? false,
       isReady: map['is_ready'] as bool? ?? false,

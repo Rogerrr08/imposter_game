@@ -90,9 +90,10 @@ begin
     is_impostor := (i - 1) = any(input_impostor_indices);
 
     insert into public.match_players (
-      match_id, user_id, display_name, role, seat_order, hint
+      match_id, user_id, display_name, avatar_url, role, seat_order, hint
     ) values (
       new_match_id, player_row.user_id, player_row.display_name,
+      player_row.avatar_url,
       case when is_impostor then 'impostor' else 'civil' end,
       player_row.seat_order,
       case

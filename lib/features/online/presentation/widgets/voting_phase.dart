@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../theme/app_theme.dart';
 import '../../application/online_match_provider.dart';
 import '../../domain/online_match.dart';
+import 'player_avatar.dart';
 
 class VotingPhase extends ConsumerStatefulWidget {
   final String matchId;
@@ -201,17 +202,10 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
               final player =
                   players.where((p) => p.id == clue.playerId).firstOrNull;
               return Chip(
-                avatar: CircleAvatar(
-                  backgroundColor:
-                      AppTheme.primaryColor.withValues(alpha: 0.12),
-                  child: Text(
-                    (player?.displayName ?? '?').characters.first.toUpperCase(),
-                    style: TextStyle(fontFamily: 'Nunito',
-                      fontSize: 11,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
+                avatar: PlayerAvatar(
+                  displayName: player?.displayName ?? '?',
+                  avatarUrl: player?.avatarUrl,
+                  size: 24,
                 ),
                 label: Text(
                   clue.clue,
@@ -255,28 +249,17 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
             ),
             child: Row(
               children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: (isSelected
-                            ? AppTheme.secondaryColor
-                            : AppTheme.primaryColor)
-                        .withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      player.displayName.characters.first.toUpperCase(),
-                      style: TextStyle(fontFamily: 'Nunito',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        color: isSelected
-                            ? AppTheme.secondaryColor
-                            : AppTheme.primaryColor,
-                      ),
-                    ),
-                  ),
+                PlayerAvatar(
+                  displayName: player.displayName,
+                  avatarUrl: player.avatarUrl,
+                  size: 40,
+                  backgroundColor: (isSelected
+                          ? AppTheme.secondaryColor
+                          : AppTheme.primaryColor)
+                      .withValues(alpha: 0.12),
+                  textColor: isSelected
+                      ? AppTheme.secondaryColor
+                      : AppTheme.primaryColor,
                 ),
                 const SizedBox(width: 12),
                 Expanded(

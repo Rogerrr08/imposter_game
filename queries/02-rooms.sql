@@ -17,7 +17,8 @@ create or replace function public.create_private_room(
   input_impostor_count integer,
   input_duration_seconds integer,
   input_min_players integer,
-  input_max_players integer
+  input_max_players integer,
+  input_avatar_url text default null
 )
 returns uuid
 language plpgsql security definer set search_path = public
@@ -40,11 +41,11 @@ begin
   ) returning id, expires_at into new_room_id, new_room_expires_at;
 
   insert into public.room_players (
-    room_id, user_id, display_name, seat_order,
+    room_id, user_id, display_name, avatar_url, seat_order,
     is_host, is_ready, is_connected, expires_at
   ) values (
     new_room_id, current_user_id, trim(input_display_name),
-    1, true, true, true, new_room_expires_at
+    input_avatar_url, 1, true, true, true, new_room_expires_at
   );
 
   return new_room_id;
@@ -57,7 +58,8 @@ $$;
 
 create or replace function public.join_private_room(
   input_code text,
-  input_display_name text
+  input_display_name text,
+  input_avatar_url text default null
 )
 returns uuid
 language plpgsql security definer set search_path = public
@@ -83,6 +85,7 @@ begin
   if existing_membership.id is not null then
     update public.room_players
     set display_name = trim(input_display_name),
+        avatar_url = input_avatar_url,
         is_connected = true,
         last_seen_at = timezone('utc', now())
     where id = existing_membership.id;
@@ -97,11 +100,11 @@ begin
   from public.room_players where room_id = target_room.id;
 
   insert into public.room_players (
-    room_id, user_id, display_name, seat_order,
+    room_id, user_id, display_name, avatar_url, seat_order,
     is_host, is_ready, is_connected, expires_at
   ) values (
     target_room.id, current_user_id, trim(input_display_name),
-    next_seat_order, false, false, true, target_room.expires_at
+    input_avatar_url, next_seat_order, false, false, true, target_room.expires_at
   );
 
   return target_room.id;
@@ -305,8 +308,8 @@ $$;
 -- Grants
 -- --------------------------------------------------------------------------
 
-grant execute on function public.create_private_room(text, text, text, text[], boolean, integer, integer, integer, integer) to authenticated;
-grant execute on function public.join_private_room(text, text) to authenticated;
+grant execute on function public.create_private_room(text, text, text, text[], boolean, integer, integer, integer, integer, text) to authenticated;
+grant execute on function public.join_private_room(text, text, text) to authenticated;
 grant execute on function public.set_room_ready(uuid, boolean) to authenticated;
 grant execute on function public.update_room_config(uuid, text[], boolean, integer, integer) to authenticated;
 grant execute on function public.leave_room(uuid) to authenticated;
