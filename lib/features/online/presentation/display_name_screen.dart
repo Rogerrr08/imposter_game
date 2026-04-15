@@ -19,6 +19,7 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
   final _focusNode = FocusNode();
   bool _saving = false;
   bool _uploadingAvatar = false;
+  bool _avatarPressed = false;
   String? _error;
   String? _currentAvatarUrl;
 
@@ -262,10 +263,18 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                     ),
                     const Spacer(flex: 2),
                     // Avatar
-                    InkWell(
+                    GestureDetector(
                       onTap: (_saving || _uploadingAvatar) ? null : _pickAvatar,
-                      customBorder: const CircleBorder(),
-                      child: SizedBox(
+                      onTapDown: (_) => setState(() => _avatarPressed = true),
+                      onTapUp: (_) => setState(() => _avatarPressed = false),
+                      onTapCancel: () => setState(() => _avatarPressed = false),
+                      child: AnimatedScale(
+                        scale: _avatarPressed ? 0.93 : 1.0,
+                        duration: const Duration(milliseconds: 120),
+                        child: AnimatedOpacity(
+                          opacity: _avatarPressed ? 0.7 : 1.0,
+                          duration: const Duration(milliseconds: 120),
+                          child: SizedBox(
                         width: 100,
                         height: 100,
                         child: Stack(
@@ -319,6 +328,8 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                           ],
                         ),
                       ),
+                    ),
+                    ),
                     ),
                     const SizedBox(height: 20),
                     Text(

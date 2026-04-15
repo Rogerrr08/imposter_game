@@ -21,6 +21,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
   bool _redirectingToDisplayName = false;
   bool _redirectingToActiveRoom = false;
   bool _activeRoomHandled = false;
+  bool _chipPressed = false;
   String? _authError;
 
   Future<void> _ensureAnonymousAuth() async {
@@ -262,44 +263,47 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () => context.go('/online/display-name'),
-              borderRadius: BorderRadius.circular(999),
-              child: Ink(
+          GestureDetector(
+            onTap: () => context.go('/online/display-name'),
+            onTapDown: (_) => setState(() => _chipPressed = true),
+            onTapUp: (_) => setState(() => _chipPressed = false),
+            onTapCancel: () => setState(() => _chipPressed = false),
+            child: AnimatedOpacity(
+              opacity: _chipPressed ? 0.6 : 1.0,
+              duration: const Duration(milliseconds: 120),
+              child: Container(
                 padding: const EdgeInsets.fromLTRB(4, 4, 12, 4),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(999),
                 ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  PlayerAvatar(
-                    displayName: profile.displayName!,
-                    avatarUrl: profile.avatarUrl,
-                    size: 28,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    profile.displayName!,
-                    style: TextStyle(fontFamily: 'Nunito',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.primaryColor,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    PlayerAvatar(
+                      displayName: profile.displayName!,
+                      avatarUrl: profile.avatarUrl,
+                      size: 28,
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Icon(
-                    Icons.edit_rounded,
-                    size: 14,
-                    color: AppTheme.primaryColor.withValues(alpha: 0.6),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Text(
+                      profile.displayName!,
+                      style: TextStyle(fontFamily: 'Nunito',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.primaryColor,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(
+                      Icons.edit_rounded,
+                      size: 14,
+                      color: AppTheme.primaryColor.withValues(alpha: 0.6),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
           ),
           const SizedBox(height: 18),
           Text(
