@@ -8,6 +8,7 @@ import '../../application/online_rooms_provider.dart';
 import '../../data/supabase_config.dart';
 import '../../domain/online_match.dart';
 import '../../domain/online_room.dart';
+import 'player_avatar.dart';
 
 class MatchResultsPhase extends ConsumerStatefulWidget {
   final String matchId;
@@ -586,24 +587,12 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Row(
                   children: [
-                    Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: AppTheme.secondaryColor.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          a.displayName.characters.first.toUpperCase(),
-                          style: TextStyle(
-                            fontFamily: 'Nunito',
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: AppTheme.secondaryColor,
-                          ),
-                        ),
-                      ),
+                    PlayerAvatar(
+                      displayName: a.displayName,
+                      avatarUrl: a.avatarUrl,
+                      size: 30,
+                      backgroundColor: AppTheme.secondaryColor.withValues(alpha: 0.15),
+                      textColor: AppTheme.secondaryColor,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
@@ -702,23 +691,12 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
           ),
           const SizedBox(width: 12),
           // Avatar
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: roleColor.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                player.displayName.characters.first.toUpperCase(),
-                style: TextStyle(fontFamily: 'Nunito',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: roleColor,
-                ),
-              ),
-            ),
+          PlayerAvatar(
+            displayName: player.displayName,
+            avatarUrl: player.avatarUrl,
+            size: 36,
+            backgroundColor: roleColor.withValues(alpha: 0.15),
+            textColor: roleColor,
           ),
           const SizedBox(width: 12),
           // Name + role
@@ -855,24 +833,12 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
             ),
             const SizedBox(width: 12),
             // Avatar
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: AppTheme.textSecondary.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: Text(
-                  player.displayName.characters.first.toUpperCase(),
-                  style: TextStyle(
-                    fontFamily: 'Nunito',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
-              ),
+            PlayerAvatar(
+              displayName: player.displayName,
+              avatarUrl: player.avatarUrl,
+              size: 36,
+              backgroundColor: AppTheme.textSecondary.withValues(alpha: 0.12),
+              textColor: AppTheme.textSecondary,
             ),
             const SizedBox(width: 12),
             // Name + "Se unió" badge

@@ -26,7 +26,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
     super.dispose();
   }
 
-  Future<void> _joinRoom(String displayName) async {
+  Future<void> _joinRoom(String displayName, String? avatarUrl) async {
     final code = _codeController.text.trim().toUpperCase();
     if (code.isEmpty) {
       setState(() => _error = 'Escribe el código de la sala.');
@@ -48,6 +48,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
       final roomId = await repository.joinPrivateRoom(
         code: code,
         displayName: displayName,
+        avatarUrl: avatarUrl,
       );
 
       if (mounted) {
@@ -67,7 +68,12 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(onlineProfileProvider);
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !_joining) context.go('/online');
+      },
+      child: Scaffold(
       appBar: AppBar(
         leading: IconButton(
           onPressed: _joining ? null : () => context.go('/online'),
@@ -173,13 +179,13 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
                         );
                       }
                     },
-                    onSubmitted: (_) => _joinRoom(profile.displayName!),
+                    onSubmitted: (_) => _joinRoom(profile.displayName!, profile.avatarUrl),
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: _joining ? null : () => _joinRoom(profile.displayName!),
+                      onPressed: _joining ? null : () => _joinRoom(profile.displayName!, profile.avatarUrl),
                       icon: _joining
                           ? const SizedBox(
                               height: 18,
@@ -199,6 +205,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
           );
         },
       ),
+    ),
     );
   }
 }

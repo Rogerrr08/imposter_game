@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../screens/game_setup/widgets/section_header.dart';
 import '../../../../theme/app_theme.dart';
 import '../../domain/online_room.dart';
+import 'player_avatar.dart';
 
 class LobbyPlayersSection extends StatelessWidget {
   final List<OnlineRoomPlayer> players;
@@ -89,23 +90,12 @@ class _PlayerTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: avatarColor.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                player.displayName.characters.first.toUpperCase(),
-                style: TextStyle(fontFamily: 'Nunito',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: avatarColor,
-                ),
-              ),
-            ),
+          PlayerAvatar(
+            displayName: player.displayName,
+            avatarUrl: player.avatarUrl,
+            size: 48,
+            backgroundColor: avatarColor.withValues(alpha: 0.12),
+            textColor: avatarColor,
           ),
           const SizedBox(width: 12),
           Expanded(

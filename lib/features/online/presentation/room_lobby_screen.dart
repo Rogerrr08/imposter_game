@@ -43,7 +43,7 @@ class RoomLobbyScreen extends ConsumerWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _handleLeave(context, ref);
       },
       child: Scaffold(

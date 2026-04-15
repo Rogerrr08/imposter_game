@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../theme/app_theme.dart';
 import '../../application/online_match_provider.dart';
 import '../../domain/online_match.dart';
+import 'player_avatar.dart';
 
 class ImpostorChoicePhase extends ConsumerStatefulWidget {
   final String matchId;
@@ -281,23 +282,12 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
               ),
               child: Row(
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: AppTheme.secondaryColor.withValues(alpha: 0.12),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        impostorName.characters.first.toUpperCase(),
-                        style: TextStyle(fontFamily: 'Nunito',
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.secondaryColor,
-                        ),
-                      ),
-                    ),
+                  PlayerAvatar(
+                    displayName: impostorName,
+                    avatarUrl: eliminatedImpostor?.avatarUrl,
+                    size: 44,
+                    backgroundColor: AppTheme.secondaryColor.withValues(alpha: 0.12),
+                    textColor: AppTheme.secondaryColor,
                   ),
                   const SizedBox(width: 14),
                   Expanded(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../theme/app_theme.dart';
+import 'player_avatar.dart';
 
 /// Intermediate screen shown after the impostor makes a decision.
 ///
@@ -11,6 +12,7 @@ import '../../../../theme/app_theme.dart';
 class ImpostorResultHold extends StatefulWidget {
   final String type; // 'risk', 'no_risk', 'wrong_guess'
   final String impostorName;
+  final String? impostorAvatarUrl;
   final String? guessWord;
   final int durationSeconds;
 
@@ -18,6 +20,7 @@ class ImpostorResultHold extends StatefulWidget {
     super.key,
     required this.type,
     required this.impostorName,
+    this.impostorAvatarUrl,
     this.guessWord,
     required this.durationSeconds,
   });
@@ -133,25 +136,12 @@ class _ImpostorResultHoldState extends State<ImpostorResultHold>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Text(
-                              widget.impostorName.characters.first
-                                  .toUpperCase(),
-                              style: TextStyle(
-                                fontFamily: 'Nunito',
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: color,
-                              ),
-                            ),
-                          ),
+                        PlayerAvatar(
+                          displayName: widget.impostorName,
+                          avatarUrl: widget.impostorAvatarUrl,
+                          size: 36,
+                          backgroundColor: color.withValues(alpha: 0.15),
+                          textColor: color,
                         ),
                         const SizedBox(width: 12),
                         Text(

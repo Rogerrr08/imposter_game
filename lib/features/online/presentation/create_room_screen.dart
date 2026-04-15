@@ -17,7 +17,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
   bool _creating = false;
   String? _error;
 
-  Future<void> _createRoom(String displayName) async {
+  Future<void> _createRoom(String displayName, String? avatarUrl) async {
     if (_creating) return;
 
     setState(() {
@@ -29,6 +29,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
       final repository = ref.read(onlineRoomsRepositoryProvider);
       final roomId = await repository.createPrivateRoom(
         displayName: displayName,
+        avatarUrl: avatarUrl,
       );
 
       if (mounted) {
@@ -48,7 +49,12 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(onlineProfileProvider);
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !_creating) context.go('/online');
+      },
+      child: Scaffold(
       appBar: AppBar(
         leading: IconButton(
           onPressed: _creating ? null : () => context.go('/online'),
@@ -95,7 +101,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: _creating ? null : () => _createRoom(profile.displayName!),
+                      onPressed: _creating ? null : () => _createRoom(profile.displayName!, profile.avatarUrl),
                       icon: _creating
                           ? const SizedBox(
                               height: 18,
@@ -115,6 +121,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
           );
         },
       ),
+    ),
     );
   }
 
