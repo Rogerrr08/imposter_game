@@ -36,10 +36,9 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
     final selectedImpostor = _resolveSelectedImpostor();
     if (guess.isEmpty || selectedImpostor == null) return;
 
-    final correct = ref.read(gameProvider.notifier).impostorGuess(
-          guess,
-          guessedBy: selectedImpostor,
-        );
+    final correct = ref
+        .read(gameProvider.notifier)
+        .impostorGuess(guess, guessedBy: selectedImpostor);
 
     context.go(
       '/action-reveal',
@@ -62,7 +61,8 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
           child: SingleChildScrollView(
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: MediaQuery.sizeOf(context).height -
+                minHeight:
+                    MediaQuery.sizeOf(context).height -
                     MediaQuery.paddingOf(context).top -
                     MediaQuery.paddingOf(context).bottom,
               ),
@@ -111,8 +111,10 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
             alignment: Alignment.centerLeft,
             child: IconButton(
               onPressed: () => context.pop(),
-              icon:
-                  Icon(Icons.arrow_back_rounded, color: AppTheme.textSecondary),
+              icon: Icon(
+                Icons.arrow_back_rounded,
+                color: AppTheme.textSecondary,
+              ),
             ),
           ),
           const Spacer(flex: 1),
@@ -128,7 +130,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
             isClassicMode
                 ? 'El impostor eliminado intenta adivinar'
                 : 'El impostor intenta adivinar',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
@@ -138,10 +140,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
           const SizedBox(height: 8),
           Text(
             'Escribe la palabra secreta que crees que es',
-            style: TextStyle(fontFamily: 'Nunito',
-              fontSize: 14,
-              color: AppTheme.textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 28),
@@ -163,7 +162,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
                     isClassicMode
                         ? 'Impostor eliminado que est\u00E1 adivinando'
                         : 'Impostor que est\u00E1 adivinando',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 12,
                     ),
@@ -171,7 +170,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
                   const SizedBox(height: 6),
                   Text(
                     selectedImpostor ?? activeImpostors.first.name,
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -196,17 +195,14 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
                   isExpanded: true,
                   hint: Text(
                     '\u00BFQu\u00E9 impostor est\u00E1 adivinando?',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 14,
                     ),
                   ),
                   value: selectedImpostor,
                   dropdownColor: AppTheme.surfaceColor,
-                  style: TextStyle(fontFamily: 'Nunito',
-                    color: AppTheme.textPrimary,
-                    fontSize: 14,
-                  ),
+                  style: TextStyle(color: AppTheme.textPrimary, fontSize: 14),
                   items: activeImpostors.map((player) {
                     return DropdownMenuItem<String>(
                       value: player.name,
@@ -233,7 +229,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
             ),
             child: TextField(
               controller: _guessController,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
@@ -242,7 +238,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
               textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
                 hintText: 'Escribe tu respuesta...',
-                hintStyle: TextStyle(fontFamily: 'Nunito',
+                hintStyle: TextStyle(
                   fontSize: 16,
                   color: AppTheme.textSecondary.withValues(alpha: 0.5),
                 ),
@@ -290,7 +286,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
                     isClassicMode
                         ? 'Si fallas, pierdes tu oportunidad y el juego contin\u00FAa.'
                         : 'Si fallas, el juego contin\u00FAa y los civiles sabr\u00E1n que eres impostor.',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppTheme.warningColor.withValues(alpha: 0.8),
                     ),
@@ -303,16 +299,18 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: _guessController.text.trim().isNotEmpty &&
+              onPressed:
+                  _guessController.text.trim().isNotEmpty &&
                       selectedImpostor != null
                   ? _submitGuess
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.secondaryColor,
-                disabledBackgroundColor:
-                    AppTheme.secondaryColor.withValues(alpha: 0.3),
+                disabledBackgroundColor: AppTheme.secondaryColor.withValues(
+                  alpha: 0.3,
+                ),
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                textStyle: const TextStyle(fontFamily: 'Nunito',
+                textStyle: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),

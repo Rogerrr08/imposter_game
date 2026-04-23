@@ -10,10 +10,7 @@ import '../../theme/app_theme.dart';
 class ActionRevealScreen extends ConsumerStatefulWidget {
   final ActionRevealData reveal;
 
-  const ActionRevealScreen({
-    super.key,
-    required this.reveal,
-  });
+  const ActionRevealScreen({super.key, required this.reveal});
 
   @override
   ConsumerState<ActionRevealScreen> createState() => _ActionRevealScreenState();
@@ -136,7 +133,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           const SizedBox(height: 28),
           Text(
             'Revelando resultado...',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
@@ -146,10 +143,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           Text(
             'Un poco de suspenso antes de mostrar lo que pasó',
             textAlign: TextAlign.center,
-            style: TextStyle(fontFamily: 'Nunito',
-              fontSize: 14,
-              color: AppTheme.textSecondary,
-            ),
+            style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
           ),
           const SizedBox(height: 28),
           SizedBox(
@@ -173,7 +167,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                     const SizedBox(height: 10),
                     Text(
                       '${(_controller.value * 100).round()}%',
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textSecondary,
@@ -225,7 +219,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         const SizedBox(height: 32),
         Text(
           widget.reveal.subjectText,
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w700,
             color: AppTheme.textPrimary,
@@ -235,7 +229,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         const SizedBox(height: 8),
         Text(
           config.title,
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 30,
             fontWeight: FontWeight.w900,
             color: config.color,
@@ -245,10 +239,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         const SizedBox(height: 12),
         Text(
           config.subtitle,
-          style: TextStyle(fontFamily: 'Nunito',
-            fontSize: 15,
-            color: AppTheme.textSecondary,
-          ),
+          style: TextStyle(fontSize: 15, color: AppTheme.textSecondary),
           textAlign: TextAlign.center,
         ),
         if (widget.reveal.type == ActionRevealType.vote &&
@@ -289,7 +280,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: config.color,
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                textStyle: const TextStyle(fontFamily: 'Nunito',
+                textStyle: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
@@ -323,7 +314,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         children: [
           Text(
             'Resultados de la votaci\u00F3n',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: AppTheme.textSecondary,
@@ -340,10 +331,11 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                     width: 100,
                     child: Text(
                       entry.key,
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 13,
-                        fontWeight:
-                            isEliminated ? FontWeight.w700 : FontWeight.w500,
+                        fontWeight: isEliminated
+                            ? FontWeight.w700
+                            : FontWeight.w500,
                         color: isEliminated
                             ? accentColor
                             : AppTheme.textPrimary,
@@ -361,8 +353,9 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                             Container(
                               height: 22,
                               decoration: BoxDecoration(
-                                color: AppTheme.textSecondary
-                                    .withValues(alpha: 0.08),
+                                color: AppTheme.textSecondary.withValues(
+                                  alpha: 0.08,
+                                ),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                             ),
@@ -372,8 +365,9 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                               decoration: BoxDecoration(
                                 color: isEliminated
                                     ? accentColor.withValues(alpha: 0.7)
-                                    : AppTheme.primaryColor
-                                        .withValues(alpha: 0.4),
+                                    : AppTheme.primaryColor.withValues(
+                                        alpha: 0.4,
+                                      ),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                             ),
@@ -385,12 +379,10 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
                   const SizedBox(width: 10),
                   Text(
                     '${entry.value}',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: isEliminated
-                          ? accentColor
-                          : AppTheme.textPrimary,
+                      color: isEliminated ? accentColor : AppTheme.textPrimary,
                     ),
                   ),
                 ],
@@ -411,43 +403,43 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
             GestureDetector(
               onTap: _continue,
               child: SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: Stack(
-                children: [
-                  // Background
-                  Container(
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  // Depleting fill
-                  FractionallySizedBox(
-                    widthFactor: 1.0 - _autoAdvanceController!.value,
-                    child: Container(
+                width: double.infinity,
+                height: 52,
+                child: Stack(
+                  children: [
+                    // Background
+                    Container(
                       decoration: BoxDecoration(
-                        color: color,
+                        color: color.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                  ),
-                  // Text
-                  Center(
-                    child: Text(
-                      'Siguiente...',
-                      style: TextStyle(fontFamily: 'Nunito',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: _autoAdvanceController!.value < 0.5
-                            ? Colors.white
-                            : color,
+                    // Depleting fill
+                    FractionallySizedBox(
+                      widthFactor: 1.0 - _autoAdvanceController!.value,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    // Text
+                    Center(
+                      child: Text(
+                        'Siguiente...',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: _autoAdvanceController!.value < 0.5
+                              ? Colors.white
+                              : color,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
             ),
           ],
         );

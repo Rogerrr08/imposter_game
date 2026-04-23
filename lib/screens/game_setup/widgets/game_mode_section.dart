@@ -19,10 +19,7 @@ class GameModeSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SectionHeader(
-          icon: Icons.tune_rounded,
-          title: 'Modo de juego',
-        ),
+        const SectionHeader(icon: Icons.tune_rounded, title: 'Modo de juego'),
         const SizedBox(height: 12),
         ...GameMode.values.map((mode) {
           final isSelected = selectedMode == mode;
@@ -63,7 +60,7 @@ class GameModeSection extends StatelessWidget {
                         children: [
                           Text(
                             mode.displayName,
-                            style: TextStyle(fontFamily: 'Nunito',
+                            style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textPrimary,
@@ -72,7 +69,7 @@ class GameModeSection extends StatelessWidget {
                           const SizedBox(height: 2),
                           Text(
                             mode.subtitle,
-                            style: TextStyle(fontFamily: 'Nunito',
+                            style: TextStyle(
                               fontSize: 12,
                               color: AppTheme.textSecondary,
                               height: 1.3,

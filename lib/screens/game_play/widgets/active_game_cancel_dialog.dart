@@ -9,24 +9,25 @@ Future<bool> showActiveGameCancelDialog(
   BuildContext context,
   WidgetRef ref,
 ) async {
-  final confirmed = await showDialog<bool>(
+  final confirmed =
+      await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text(
             'Cancelar partida',
-            style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+            style: TextStyle(fontWeight: FontWeight.w700),
           ),
           content: Text(
             '¿Seguro que quieres cancelar la partida? '
             'Se perderá el progreso actual.',
-            style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+            style: TextStyle(color: AppTheme.textSecondary),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
               child: Text(
                 'Seguir jugando',
-                style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+                style: TextStyle(color: AppTheme.textSecondary),
               ),
             ),
             ElevatedButton(
@@ -36,7 +37,7 @@ Future<bool> showActiveGameCancelDialog(
               ),
               child: const Text(
                 'Cancelar partida',
-                style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
           ],

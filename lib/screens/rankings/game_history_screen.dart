@@ -29,13 +29,11 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
       final selectedCategory = ref.read(historyCategoryFilterProvider);
       final selectedMode = ref.read(historyGameModeFilterProvider);
       ref.invalidate(
-        gameHistoryProvider(
-          (
-            groupId: widget.groupId,
-            category: selectedCategory,
-            mode: selectedMode,
-          ),
-        ),
+        gameHistoryProvider((
+          groupId: widget.groupId,
+          category: selectedCategory,
+          mode: selectedMode,
+        )),
       );
     });
   }
@@ -74,7 +72,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
           ),
           title: const Text(
             'Historial',
-            style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+            style: TextStyle(fontWeight: FontWeight.w700),
           ),
           actions: [
             IconButton(
@@ -107,8 +105,9 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
             Expanded(
               child: historyAsync.when(
                 loading: () => Center(
-                  child:
-                      CircularProgressIndicator(color: AppTheme.primaryColor),
+                  child: CircularProgressIndicator(
+                    color: AppTheme.primaryColor,
+                  ),
                 ),
                 error: (error, _) => Center(
                   child: Padding(
@@ -124,7 +123,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
                         const SizedBox(height: 16),
                         Text(
                           'Error al cargar el historial',
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textPrimary,
@@ -152,13 +151,14 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
                             Icon(
                               Icons.history_rounded,
                               size: 80,
-                              color:
-                                  AppTheme.successColor.withValues(alpha: 0.3),
+                              color: AppTheme.successColor.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                             const SizedBox(height: 24),
                             Text(
                               'No hay partidas registradas',
-                              style: TextStyle(fontFamily: 'Nunito',
+                              style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.textPrimary,
@@ -168,7 +168,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
                             Text(
                               'Las partidas jugadas con este grupo\naparecer\u00E1n aqu\u00ED.',
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontFamily: 'Nunito',
+                              style: TextStyle(
                                 fontSize: 14,
                                 color: AppTheme.textSecondary,
                               ),
@@ -201,18 +201,18 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
       builder: (dialogContext) => AlertDialog(
         title: const Text(
           'Borrar historial',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Esto borrara el historial guardado de este grupo. El ranking no se vera afectado.',
-          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -222,7 +222,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
             ),
             child: const Text(
               'Borrar',
-              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -270,10 +270,10 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
 
     final impostors = players.where((p) => p.wasImpostor == true).toList();
     final resultText = civilsWon ? 'Civiles ganaron' : 'Impostores ganaron';
-    final resultColor =
-        civilsWon ? AppTheme.successColor : AppTheme.secondaryColor;
-    final resultIcon =
-        civilsWon ? Icons.shield_rounded : Icons.psychology_alt;
+    final resultColor = civilsWon
+        ? AppTheme.successColor
+        : AppTheme.secondaryColor;
+    final resultIcon = civilsWon ? Icons.shield_rounded : Icons.psychology_alt;
     final categoryDisplay = categoryLabels[game.category] ?? game.category;
     final modeDisplay = _modeDisplay(game.mode as String);
 
@@ -289,10 +289,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: BorderSide(
-            color: resultColor.withValues(alpha: 0.3),
-            width: 1,
-          ),
+          side: BorderSide(color: resultColor.withValues(alpha: 0.3), width: 1),
         ),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
@@ -316,7 +313,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     const SizedBox(width: 6),
                     Text(
                       dateFormat.format(game.playedAt),
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 12,
                         color: AppTheme.textSecondary,
                       ),
@@ -330,7 +327,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     const SizedBox(width: 4),
                     Text(
                       durationText,
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 12,
                         color: AppTheme.textSecondary,
                       ),
@@ -365,7 +362,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                       ),
                       child: Text(
                         modeDisplay,
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: AppTheme.textPrimary,
@@ -383,7 +380,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                       ),
                       child: Text(
                         categoryDisplay,
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: AppTheme.primaryColor,
@@ -392,7 +389,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     ),
                     Text(
                       'Palabra: ${game.word}',
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.textPrimary,
@@ -413,15 +410,17 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                     Expanded(
                       child: RichText(
                         text: TextSpan(
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             fontSize: 13,
                             color: AppTheme.textSecondary,
                           ),
                           children: [
                             const TextSpan(text: 'Impostor: '),
                             TextSpan(
-                              text: impostors.map((p) => p.playerName).join(', '),
-                              style: TextStyle(fontFamily: 'Nunito',
+                              text: impostors
+                                  .map((p) => p.playerName)
+                                  .join(', '),
+                              style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.secondaryColor,
@@ -450,7 +449,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                       const SizedBox(width: 8),
                       Text(
                         resultText,
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                           color: resultColor,
@@ -464,12 +463,14 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            color: AppTheme.warningColor.withValues(alpha: 0.15),
+                            color: AppTheme.warningColor.withValues(
+                              alpha: 0.15,
+                            ),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             'Adivino la palabra',
-                            style: TextStyle(fontFamily: 'Nunito',
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               color: AppTheme.warningColor,
@@ -489,7 +490,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                   const SizedBox(height: 16),
                   Text(
                     'Puntuaci\u00F3n',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
@@ -520,7 +521,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                               children: [
                                 Text(
                                   player.playerName,
-                                  style: TextStyle(fontFamily: 'Nunito',
+                                  style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                     color: isImpostor
@@ -545,11 +546,10 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                                     ),
                                     child: Text(
                                       'eliminado',
-                                      style: TextStyle(fontFamily: 'Nunito',
+                                      style: TextStyle(
                                         fontSize: 10,
-                                        color: AppTheme.textSecondary.withValues(
-                                          alpha: 0.6,
-                                        ),
+                                        color: AppTheme.textSecondary
+                                            .withValues(alpha: 0.6),
                                       ),
                                     ),
                                   ),
@@ -564,7 +564,9 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                             ),
                             decoration: BoxDecoration(
                               color: points > 0
-                                  ? AppTheme.successColor.withValues(alpha: 0.12)
+                                  ? AppTheme.successColor.withValues(
+                                      alpha: 0.12,
+                                    )
                                   : AppTheme.textSecondary.withValues(
                                       alpha: 0.07,
                                     ),
@@ -572,7 +574,7 @@ class _GameHistoryCardState extends State<_GameHistoryCard>
                             ),
                             child: Text(
                               points > 0 ? '+$points pts' : '0 pts',
-                              style: TextStyle(fontFamily: 'Nunito',
+                              style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                                 color: points > 0

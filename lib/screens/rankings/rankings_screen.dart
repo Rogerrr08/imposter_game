@@ -32,13 +32,11 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
       final selectedCategory = ref.read(rankingCategoryFilterProvider);
       final selectedMode = ref.read(rankingGameModeFilterProvider);
       ref.invalidate(
-        rankingsProvider(
-          (
-            groupId: widget.groupId,
-            category: selectedCategory,
-            mode: selectedMode,
-          ),
-        ),
+        rankingsProvider((
+          groupId: widget.groupId,
+          category: selectedCategory,
+          mode: selectedMode,
+        )),
       );
     });
   }
@@ -61,9 +59,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
       category: selectedCategory,
       mode: selectedMode,
     );
-    final rankingsAsync = ref.watch(
-      rankingsProvider(request),
-    );
+    final rankingsAsync = ref.watch(rankingsProvider(request));
 
     return PopScope(
       canPop: false,
@@ -80,7 +76,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
           ),
           title: const Text(
             'Rankings',
-            style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+            style: TextStyle(fontWeight: FontWeight.w700),
           ),
           actions: [
             IconButton(
@@ -114,7 +110,9 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
             Expanded(
               child: rankingsAsync.when(
                 loading: () => Center(
-                  child: CircularProgressIndicator(color: AppTheme.primaryColor),
+                  child: CircularProgressIndicator(
+                    color: AppTheme.primaryColor,
+                  ),
                 ),
                 error: (error, _) => Center(
                   child: Padding(
@@ -130,7 +128,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                         const SizedBox(height: 16),
                         Text(
                           'Error al cargar rankings',
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textPrimary,
@@ -138,7 +136,8 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                         ),
                         const SizedBox(height: 12),
                         ElevatedButton.icon(
-                          onPressed: () => ref.invalidate(rankingsProvider(request)),
+                          onPressed: () =>
+                              ref.invalidate(rankingsProvider(request)),
                           icon: const Icon(Icons.refresh_rounded),
                           label: const Text('Reintentar'),
                         ),
@@ -157,12 +156,14 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                             Icon(
                               Icons.leaderboard_rounded,
                               size: 80,
-                              color: AppTheme.warningColor.withValues(alpha: 0.3),
+                              color: AppTheme.warningColor.withValues(
+                                alpha: 0.3,
+                              ),
                             ),
                             const SizedBox(height: 24),
                             Text(
                               'No hay rankings aún',
-                              style: TextStyle(fontFamily: 'Nunito',
+                              style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.textPrimary,
@@ -172,7 +173,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                             Text(
                               'Juega partidas con este grupo\npara ver las clasificaciones.',
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontFamily: 'Nunito',
+                              style: TextStyle(
                                 fontSize: 14,
                                 color: AppTheme.textSecondary,
                               ),
@@ -264,7 +265,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                       )
                     : Text(
                         positionDisplay,
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: fontSize,
                           fontWeight: FontWeight.w700,
                           color: positionColor,
@@ -281,7 +282,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                   children: [
                     Text(
                       ranking.playerName,
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: isTop3 ? 17 : 15,
                         fontWeight: isTop3 ? FontWeight.w700 : FontWeight.w500,
                         color: isTop3
@@ -292,7 +293,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                     if (ranking.gamesPlayed > 0)
                       Text(
                         'Partidas jugadas: ${ranking.gamesPlayed}  |  Victorias como civil: ${ranking.civilWins}  |  Victorias como impostor: ${ranking.impostorWins}',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 12,
                           color: AppTheme.textSecondary,
                         ),
@@ -317,7 +318,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                   children: [
                     Text(
                       '${ranking.totalPoints}',
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: isTop3 ? 20 : 16,
                         fontWeight: FontWeight.w800,
                         color: isTop3 ? positionColor : AppTheme.textPrimary,
@@ -325,7 +326,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
                     ),
                     Text(
                       'pts',
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
                         color: isTop3
@@ -349,18 +350,18 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
       builder: (dialogContext) => AlertDialog(
         title: const Text(
           'Borrar ranking',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Esto borrará el ranking acumulado de este grupo. Esta acción no se puede deshacer.',
-          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -370,7 +371,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
             ),
             child: const Text(
               'Borrar',
-              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],

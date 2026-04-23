@@ -19,13 +19,15 @@ class HintsToggle extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
+        border: Border.all(
+          color: AppTheme.textSecondary.withValues(alpha: 0.1),
+        ),
       ),
       child: SwitchListTile(
         contentPadding: EdgeInsets.zero,
         title: Text(
           'Pistas para impostores',
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w500,
             color: AppTheme.textPrimary,
@@ -35,14 +37,16 @@ class HintsToggle extends StatelessWidget {
           hintsEnabled
               ? 'Los impostores reciben una pista m\u00E1s sutil'
               : 'Sin pistas, mayor dificultad',
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 12,
             color: AppTheme.textSecondary.withValues(alpha: 0.8),
           ),
         ),
         secondary: Icon(
           hintsEnabled ? Icons.lightbulb_rounded : Icons.lightbulb_outline,
-          color: hintsEnabled ? AppTheme.warningColor : AppTheme.textSecondary.withValues(alpha: 0.5),
+          color: hintsEnabled
+              ? AppTheme.warningColor
+              : AppTheme.textSecondary.withValues(alpha: 0.5),
           size: 26,
         ),
         value: hintsEnabled,

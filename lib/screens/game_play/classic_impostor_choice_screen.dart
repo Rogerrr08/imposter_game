@@ -21,9 +21,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
           context.go('/play');
         }
       });
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -44,7 +42,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
               Text(
                 '$guesserName fue eliminado',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -54,10 +52,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
               Text(
                 'Como era impostor, ahora puede intentar adivinar la palabra secreta.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Nunito',
-                  fontSize: 15,
-                  color: AppTheme.textSecondary,
-                ),
+                style: TextStyle(fontSize: 15, color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 32),
               SizedBox(
@@ -67,7 +62,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.secondaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: const TextStyle(fontFamily: 'Nunito',
+                    textStyle: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -95,7 +90,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
                     foregroundColor: AppTheme.primaryColor,
                     side: BorderSide(color: AppTheme.primaryColor),
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: const TextStyle(fontFamily: 'Nunito',
+                    textStyle: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),

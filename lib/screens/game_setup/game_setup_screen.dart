@@ -57,12 +57,9 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       ? _activeGroupPlayers.map((player) => player.name).toList()
       : List<String>.from(_manualPlayers);
 
-
-
   int get _playerCount => _currentPlayers.length;
 
-  int get _maxImpostors =>
-      (_playerCount / 3).floor().clamp(1, _maxPlayers);
+  int get _maxImpostors => (_playerCount / 3).floor().clamp(1, _maxPlayers);
 
   @override
   void initState() {
@@ -118,7 +115,9 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       return;
     }
 
-    if (_manualPlayers.any((player) => player.toLowerCase() == name.toLowerCase())) {
+    if (_manualPlayers.any(
+      (player) => player.toLowerCase() == name.toLowerCase(),
+    )) {
       _showSnackBar('Ya existe un jugador con ese nombre');
       return;
     }
@@ -208,9 +207,9 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message, style: const TextStyle(fontFamily: 'Nunito',))),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message, style: const TextStyle())));
   }
 
   void _handleBackNavigation() {
@@ -294,7 +293,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
         appBar: AppBar(
           title: const Text(
             'Nueva Partida',
-            style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+            style: TextStyle(fontWeight: FontWeight.w700),
           ),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
@@ -443,10 +442,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
             ),
             child: Text(
               'Error cargando jugadores del grupo',
-              style: TextStyle(fontFamily: 'Nunito',
-                color: AppTheme.secondaryColor,
-                fontSize: 13,
-              ),
+              style: TextStyle(color: AppTheme.secondaryColor, fontSize: 13),
             ),
           ),
         ],
@@ -470,14 +466,12 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                   color: AppTheme.surfaceColor.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                      color: AppTheme.textSecondary.withValues(alpha: 0.1)),
+                    color: AppTheme.textSecondary.withValues(alpha: 0.1),
+                  ),
                 ),
                 child: Text(
                   'Este grupo no tiene jugadores todav\u00EDa.',
-                  style: TextStyle(fontFamily: 'Nunito',
-                    fontSize: 13,
-                    color: AppTheme.textSecondary,
-                  ),
+                  style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
                 ),
               ),
             ],
@@ -489,13 +483,16 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           children: [
             Row(
               children: [
-                Icon(Icons.people_alt_rounded,
-                    size: 20, color: AppTheme.primaryColor),
+                Icon(
+                  Icons.people_alt_rounded,
+                  size: 20,
+                  color: AppTheme.primaryColor,
+                ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     'Jugadores: $_playerCount/${_groupPlayers.length}',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
@@ -504,19 +501,24 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                 ),
                 TextButton.icon(
                   onPressed: _showReorderSheet,
-                  icon: Icon(Icons.swap_vert_rounded,
-                      size: 18, color: AppTheme.primaryColor),
+                  icon: Icon(
+                    Icons.swap_vert_rounded,
+                    size: 18,
+                    color: AppTheme.primaryColor,
+                  ),
                   label: Text(
                     'Orden',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.primaryColor,
                     ),
                   ),
                   style: TextButton.styleFrom(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -526,7 +528,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
             const SizedBox(height: 12),
             Text(
               'Toca para excluir o incluir',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 12,
                 color: AppTheme.textSecondary.withValues(alpha: 0.6),
               ),
@@ -536,14 +538,15 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
               spacing: 8,
               runSpacing: 8,
               children: _groupPlayers.map((player) {
-                final isExcluded =
-                    _excludedGroupPlayerIds.contains(player.id);
+                final isExcluded = _excludedGroupPlayerIds.contains(player.id);
                 return GestureDetector(
                   onTap: () => _toggleGroupPlayer(player, isExcluded),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 8),
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
                       color: isExcluded
                           ? AppTheme.surfaceColor
@@ -565,12 +568,13 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                               : AppTheme.primaryColor.withValues(alpha: 0.2),
                           child: Text(
                             player.name[0].toUpperCase(),
-                            style: TextStyle(fontFamily: 'Nunito',
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: isExcluded
-                                  ? AppTheme.textSecondary
-                                      .withValues(alpha: 0.4)
+                                  ? AppTheme.textSecondary.withValues(
+                                      alpha: 0.4,
+                                    )
                                   : AppTheme.primaryColor,
                             ),
                           ),
@@ -578,20 +582,20 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                         const SizedBox(width: 8),
                         Text(
                           player.name,
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: isExcluded
                                 ? FontWeight.w400
                                 : FontWeight.w600,
                             color: isExcluded
-                                ? AppTheme.textSecondary
-                                    .withValues(alpha: 0.4)
+                                ? AppTheme.textSecondary.withValues(alpha: 0.4)
                                 : AppTheme.textPrimary,
                             decoration: isExcluded
                                 ? TextDecoration.lineThrough
                                 : null,
-                            decorationColor:
-                                AppTheme.textSecondary.withValues(alpha: 0.3),
+                            decorationColor: AppTheme.textSecondary.withValues(
+                              alpha: 0.3,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -646,12 +650,15 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Row(
                         children: [
-                          Icon(Icons.swap_vert_rounded,
-                              color: AppTheme.primaryColor, size: 22),
+                          Icon(
+                            Icons.swap_vert_rounded,
+                            color: AppTheme.primaryColor,
+                            size: 22,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Reordenar jugadores',
-                            style: TextStyle(fontFamily: 'Nunito',
+                            style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textPrimary,
@@ -662,7 +669,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                             onPressed: () => Navigator.pop(sheetContext),
                             child: Text(
                               'Listo',
-                              style: TextStyle(fontFamily: 'Nunito',
+                              style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 color: AppTheme.primaryColor,
                               ),
@@ -688,43 +695,52 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                         },
                         itemBuilder: (context, index) {
                           final player = _groupPlayers[index];
-                          final isExcluded =
-                              _excludedGroupPlayerIds.contains(player.id);
+                          final isExcluded = _excludedGroupPlayerIds.contains(
+                            player.id,
+                          );
                           return Container(
                             key: ValueKey(player.id),
                             margin: const EdgeInsets.symmetric(
-                                vertical: 3, horizontal: 8),
+                              vertical: 3,
+                              horizontal: 8,
+                            ),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 12),
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
                             decoration: BoxDecoration(
                               color: isExcluded
                                   ? AppTheme.surfaceColor
                                   : AppTheme.cardColor,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppTheme.textSecondary
-                                    .withValues(alpha: 0.1),
+                                color: AppTheme.textSecondary.withValues(
+                                  alpha: 0.1,
+                                ),
                               ),
                             ),
                             child: Row(
                               children: [
                                 Icon(
                                   Icons.drag_handle_rounded,
-                                  color: AppTheme.textSecondary
-                                      .withValues(alpha: 0.4),
+                                  color: AppTheme.textSecondary.withValues(
+                                    alpha: 0.4,
+                                  ),
                                   size: 20,
                                 ),
                                 const SizedBox(width: 12),
                                 CircleAvatar(
                                   radius: 14,
                                   backgroundColor: isExcluded
-                                      ? AppTheme.textSecondary
-                                          .withValues(alpha: 0.15)
-                                      : AppTheme.primaryColor
-                                          .withValues(alpha: 0.15),
+                                      ? AppTheme.textSecondary.withValues(
+                                          alpha: 0.15,
+                                        )
+                                      : AppTheme.primaryColor.withValues(
+                                          alpha: 0.15,
+                                        ),
                                   child: Text(
                                     player.name[0].toUpperCase(),
-                                    style: TextStyle(fontFamily: 'Nunito',
+                                    style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
                                       color: isExcluded
@@ -737,12 +753,13 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                                 Expanded(
                                   child: Text(
                                     player.name,
-                                    style: TextStyle(fontFamily: 'Nunito',
+                                    style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: isExcluded
-                                          ? AppTheme.textSecondary
-                                              .withValues(alpha: 0.5)
+                                          ? AppTheme.textSecondary.withValues(
+                                              alpha: 0.5,
+                                            )
                                           : AppTheme.textPrimary,
                                       decoration: isExcluded
                                           ? TextDecoration.lineThrough
@@ -752,11 +769,12 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                                 ),
                                 Text(
                                   '${index + 1}',
-                                  style: TextStyle(fontFamily: 'Nunito',
+                                  style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
-                                    color: AppTheme.textSecondary
-                                        .withValues(alpha: 0.4),
+                                    color: AppTheme.textSecondary.withValues(
+                                      alpha: 0.4,
+                                    ),
                                   ),
                                 ),
                               ],
@@ -782,11 +800,13 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
           child: TextField(
             controller: _playerController,
             focusNode: _playerFocusNode,
-            style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textPrimary),
+            style: TextStyle(color: AppTheme.textPrimary),
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del jugador',
-              hintStyle: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary.withValues(alpha: 0.5)),
+              hintStyle: TextStyle(
+                color: AppTheme.textSecondary.withValues(alpha: 0.5),
+              ),
               prefixIcon: Icon(
                 Icons.person_add_alt_1_rounded,
                 color: AppTheme.textSecondary.withValues(alpha: 0.5),

@@ -28,15 +28,16 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
   @override
   void initState() {
     super.initState();
-    _snapBackController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 350),
-    )..addListener(() {
-        final curved = Curves.easeOut.transform(_snapBackController.value);
-        setState(() {
-          _dragOffset = lerpDouble(_snapFrom, 0, curved) ?? 0;
+    _snapBackController =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 350),
+        )..addListener(() {
+          final curved = Curves.easeOut.transform(_snapBackController.value);
+          setState(() {
+            _dragOffset = lerpDouble(_snapFrom, 0, curved) ?? 0;
+          });
         });
-      });
   }
 
   @override
@@ -99,9 +100,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     final gameState = ref.watch(gameProvider);
 
     if (gameState == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final currentPlayer = gameState.players[gameState.currentRevealIndex];
@@ -110,8 +109,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     final isLastPlayer = gameState.currentRevealIndex >= totalPlayers - 1;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = AppTheme.panelColors(isDark);
-    final panelColor =
-        colors[gameState.currentRevealIndex % colors.length];
+    final panelColor = colors[gameState.currentRevealIndex % colors.length];
 
     return Scaffold(
       body: SafeArea(
@@ -124,10 +122,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
               const SizedBox(height: 8),
               Text(
                 'Jugador $playerNumber de $totalPlayers',
-                style: TextStyle(fontFamily: 'Nunito',
-                  fontSize: 14,
-                  color: AppTheme.textSecondary,
-                ),
+                style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 12),
               Expanded(
@@ -138,8 +133,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                     children: [
                       // Background: Role info, aligned to bottom
                       Positioned.fill(
-                        child:
-                            _buildRoleInfo(currentPlayer, gameState),
+                        child: _buildRoleInfo(currentPlayer, gameState),
                       ),
                       // Foreground: Draggable cover panel
                       Positioned.fill(
@@ -148,8 +142,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                           onVerticalDragEnd: _onDragEnd,
                           child: Transform.translate(
                             offset: Offset(0, _dragOffset),
-                            child: _buildCoverPanel(
-                                currentPlayer, panelColor),
+                            child: _buildCoverPanel(currentPlayer, panelColor),
                           ),
                         ),
                       ),
@@ -167,12 +160,12 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                       backgroundColor: isLastPlayer
                           ? AppTheme.successColor
                           : AppTheme.primaryColor,
-                      disabledBackgroundColor:
-                          AppTheme.textSecondary.withValues(alpha: 0.18),
-                      disabledForegroundColor:
-                          AppTheme.textSecondary.withValues(alpha: 0.55),
+                      disabledBackgroundColor: AppTheme.textSecondary
+                          .withValues(alpha: 0.18),
+                      disabledForegroundColor: AppTheme.textSecondary
+                          .withValues(alpha: 0.55),
                       padding: const EdgeInsets.symmetric(vertical: 18),
-                      textStyle: const TextStyle(fontFamily: 'Nunito',
+                      textStyle: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
@@ -212,10 +205,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
             end: Alignment.bottomCenter,
             colors: [
               color,
-              Color.alphaBlend(
-                Colors.black.withValues(alpha: 0.15),
-                color,
-              ),
+              Color.alphaBlend(Colors.black.withValues(alpha: 0.15), color),
             ],
           ),
           borderRadius: BorderRadius.circular(24),
@@ -235,7 +225,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
               // Player name - main focus
               Text(
                 player.name,
-                style: const TextStyle(fontFamily: 'Nunito',
+                style: const TextStyle(
                   fontSize: 38,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
@@ -270,7 +260,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
               const SizedBox(height: 6),
               Text(
                 'Desliza hacia arriba para\nrevelar tu rol',
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 14,
                   color: Colors.white.withValues(alpha: 0.85),
                 ),
@@ -279,7 +269,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
               const SizedBox(height: 8),
               Text(
                 '\u00A1Que nadie m\u00E1s vea la pantalla!',
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
                   color: Colors.white.withValues(alpha: 0.6),
@@ -295,8 +285,9 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
 
   Widget _buildRoleInfo(GamePlayer player, ActiveGame gameState) {
     final isImpostor = player.role == PlayerRole.impostor;
-    final roleColor =
-        isImpostor ? AppTheme.secondaryColor : AppTheme.successColor;
+    final roleColor = isImpostor
+        ? AppTheme.secondaryColor
+        : AppTheme.successColor;
 
     return Column(
       children: [
@@ -316,7 +307,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
         // Role text
         Text(
           isImpostor ? 'IMPOSTOR' : 'CIVIL',
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 32,
             fontWeight: FontWeight.w900,
             letterSpacing: 4,
@@ -344,7 +335,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                 if (!isImpostor) ...[
                   Text(
                     'La palabra secreta es:',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 13,
                       color: AppTheme.textSecondary,
                     ),
@@ -352,7 +343,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                   const SizedBox(height: 6),
                   Text(
                     gameState.secretWord,
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.w800,
                       color: AppTheme.textPrimary,
@@ -363,7 +354,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                   if (player.hint != null) ...[
                     Text(
                       'Tu pista:',
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 13,
                         color: AppTheme.textSecondary,
                       ),
@@ -371,7 +362,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                     const SizedBox(height: 6),
                     Text(
                       player.hint!,
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.warningColor,
@@ -387,7 +378,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                     const SizedBox(height: 6),
                     Text(
                       'No tienes pistas',
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.textSecondary.withValues(alpha: 0.5),
@@ -396,7 +387,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                     const SizedBox(height: 2),
                     Text(
                       'Descubre la palabra escuchando a los dem\u00E1s',
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 12,
                         color: AppTheme.textSecondary.withValues(alpha: 0.3),
                       ),
@@ -411,10 +402,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
         const SizedBox(height: 12),
         Text(
           'Pasa al siguiente jugador.',
-          style: TextStyle(fontFamily: 'Nunito',
-            fontSize: 13,
-            color: AppTheme.textSecondary,
-          ),
+          style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
         ),
         const SizedBox(height: 8),
       ],
