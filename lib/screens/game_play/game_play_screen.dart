@@ -18,26 +18,17 @@ class GamePlayScreen extends ConsumerStatefulWidget {
   ConsumerState<GamePlayScreen> createState() => _GamePlayScreenState();
 }
 
-class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
-    with SingleTickerProviderStateMixin {
+class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   Timer? _timer;
-  late final AnimationController _pulseController;
-  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
     _startTimer();
   }
 
   void _startTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       final gameState = ref.read(gameProvider);
       if (gameState == null || gameState.phase != GamePhase.playing) {
@@ -86,7 +77,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
               24,
               24,
               24,
-              MediaQuery.of(context).viewInsets.bottom + 24,
+              MediaQuery.viewInsetsOf(context).bottom + 24,
             ),
             child: Center(
               child: Material(
@@ -181,7 +172,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                                     backgroundColor: AppTheme.secondaryColor,
                                     padding: const EdgeInsets.symmetric(vertical: 14),
                                   ),
-                                  child: Text(
+                                  child: const Text(
                                     'Confirmar',
                                     style: TextStyle(fontFamily: 'Nunito',
                                       fontWeight: FontWeight.w600,
@@ -239,53 +230,52 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
   @override
   void dispose() {
     _timer?.cancel();
-    _pulseController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final gameState = ref.watch(gameProvider);
+    // Side effects on phase transitions (out of build).
+    ref.listen<GamePhase?>(
+      gameProvider.select((g) => g?.phase),
+      (prev, next) {
+        if (next == GamePhase.playing &&
+            (_timer == null || !(_timer?.isActive ?? false))) {
+          _startTimer();
+        }
+        if (next == GamePhase.results && mounted) {
+          context.go('/results');
+        }
+      },
+    );
 
-    if (gameState == null) {
+    // Null-state guard.
+    final isNull = ref.watch(gameProvider.select((g) => g == null));
+    if (isNull) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (gameState.phase == GamePhase.playing &&
-        (_timer == null || !(_timer?.isActive ?? false))) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && (_timer == null || !(_timer?.isActive ?? false))) {
-          _startTimer();
-        }
-      });
-    }
-
-    // If state already moved to results (e.g. from elimination), navigate
-    if (gameState.phase == GamePhase.results) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.go('/results');
-      });
-    }
-
-    final minutes = gameState.timeRemainingSeconds ~/ 60;
-    final seconds = gameState.timeRemainingSeconds % 60;
-    final timeString =
-        '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    final progress =
-        gameState.timeRemainingSeconds / gameState.config.durationSeconds;
-    final isLowTime = gameState.timeRemainingSeconds <= 30;
-    final isClassicMode = gameState.config.mode == GameMode.classic;
-    final eliminatedCount =
-        gameState.players.where((p) => p.isEliminated).length;
-    final activeCount = gameState.activePlayers.length;
-
-    // Manage pulse animation
-    if (isLowTime && !_pulseController.isAnimating) {
-      _pulseController.repeat(reverse: true);
-    } else if (!isLowTime && _pulseController.isAnimating) {
-      _pulseController.stop();
-      _pulseController.reset();
-    }
+    // Granular selects so the screen does NOT rebuild on every timer tick.
+    final isClassicMode = ref.watch(
+      gameProvider.select((g) => g?.config.mode == GameMode.classic),
+    );
+    final durationSeconds = ref.watch(
+      gameProvider.select((g) => g?.config.durationSeconds ?? 0),
+    );
+    final eliminatedCount = ref.watch(
+      gameProvider.select(
+        (g) => g?.players.where((p) => p.isEliminated).length ?? 0,
+      ),
+    );
+    final activeCount = ref.watch(
+      gameProvider.select((g) => g?.activePlayers.length ?? 0),
+    );
+    final showStartingPlayer = ref.watch(
+      gameProvider.select((g) => g?.shouldShowStartingPlayer ?? false),
+    );
+    final startingPlayerName = ref.watch(
+      gameProvider.select((g) => g?.startingPlayerName),
+    );
 
     return PopScope(
       canPop: false,
@@ -351,25 +341,17 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                   ),
                 ),
               ],
-              if (gameState.shouldShowStartingPlayer) ...[
+              if (showStartingPlayer && startingPlayerName != null) ...[
                 const SizedBox(height: 8),
-                _buildStartingPlayerBanner(gameState.startingPlayerName!),
+                _buildStartingPlayerBanner(startingPlayerName),
               ],
               // Center everything vertically
               const Spacer(flex: 2),
-              // Circular timer (with pulse when low time)
-              AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _pulseAnimation.value,
-                    child: _buildCircularTimer(timeString, progress, isLowTime),
-                  );
-                },
-              ),
+              // Circular timer (isolated widget — rebuilds only on seconds change)
+              _CircularTimer(durationSeconds: durationSeconds),
               const SizedBox(height: 12),
-              // Eliminated players (compact chips)
-              _buildEliminatedChips(gameState),
+              // Eliminated players (compact chips) — listens with its own select
+              const _EliminatedChips(),
               const Spacer(flex: 3),
               // Action buttons — clean, no repetitive text
               SizedBox(
@@ -390,7 +372,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.primaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    textStyle: TextStyle(fontFamily: 'Nunito',
+                    textStyle: const TextStyle(fontFamily: 'Nunito',
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -409,7 +391,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                       foregroundColor: AppTheme.secondaryColor,
                       side: BorderSide(color: AppTheme.secondaryColor),
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      textStyle: TextStyle(fontFamily: 'Nunito',
+                      textStyle: const TextStyle(fontFamily: 'Nunito',
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                       ),
@@ -422,79 +404,6 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildCircularTimer(
-    String timeString,
-    double progress,
-    bool isLowTime,
-  ) {
-    final timerColor = isLowTime
-        ? AppTheme.secondaryColor
-        : AppTheme.primaryColor;
-
-    return SizedBox(
-      width: 180,
-      height: 180,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Background circle
-          SizedBox(
-            width: 180,
-            height: 180,
-            child: CircularProgressIndicator(
-              value: 1.0,
-              strokeWidth: 10,
-              color: AppTheme.surfaceColor,
-            ),
-          ),
-          // Progress circle
-          SizedBox(
-            width: 180,
-            height: 180,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: progress, end: progress),
-              duration: const Duration(milliseconds: 300),
-              builder: (context, value, _) {
-                return Transform.rotate(
-                  angle: -math.pi / 2,
-                  child: CustomPaint(
-                    size: const Size(180, 180),
-                    painter: _CircularTimerPainter(
-                      progress: value,
-                      color: timerColor,
-                      strokeWidth: 10,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          // Inner content
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.timer_rounded,
-                size: 24,
-                color: timerColor.withValues(alpha: 0.7),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                timeString,
-                style: TextStyle(fontFamily: 'Nunito',
-                  fontSize: 36,
-                  fontWeight: FontWeight.w800,
-                  color: timerColor,
-                  letterSpacing: 2,
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -533,9 +442,155 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
       ),
     );
   }
+}
 
-  Widget _buildEliminatedChips(ActiveGame gameState) {
-    final eliminated = gameState.players.where((p) => p.isEliminated).toList();
+/// Circular timer widget. Rebuilds only when `timeRemainingSeconds` changes
+/// (via Riverpod `select`). Owns its own pulse animation controller, which
+/// is driven by `ref.listen` to avoid side effects in `build()`.
+class _CircularTimer extends ConsumerStatefulWidget {
+  final int durationSeconds;
+  const _CircularTimer({required this.durationSeconds});
+
+  @override
+  ConsumerState<_CircularTimer> createState() => _CircularTimerState();
+}
+
+class _CircularTimerState extends ConsumerState<_CircularTimer>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Drive pulse animation reactively — outside build side effects.
+    ref.listen<bool>(
+      gameProvider.select(
+        (g) => g != null && g.timeRemainingSeconds <= 30,
+      ),
+      (_, isLowTime) {
+        if (isLowTime && !_pulseController.isAnimating) {
+          _pulseController.repeat(reverse: true);
+        } else if (!isLowTime && _pulseController.isAnimating) {
+          _pulseController.stop();
+          _pulseController.reset();
+        }
+      },
+    );
+
+    final seconds = ref.watch(
+      gameProvider.select((g) => g?.timeRemainingSeconds ?? 0),
+    );
+    final isLowTime = seconds <= 30;
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    final timeString =
+        '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+    final progress = widget.durationSeconds == 0
+        ? 0.0
+        : seconds / widget.durationSeconds;
+    final timerColor =
+        isLowTime ? AppTheme.secondaryColor : AppTheme.primaryColor;
+
+    return AnimatedBuilder(
+      animation: _pulseAnimation,
+      builder: (context, _) {
+        return Transform.scale(
+          scale: _pulseAnimation.value,
+          child: SizedBox(
+            width: 180,
+            height: 180,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 180,
+                  height: 180,
+                  child: CircularProgressIndicator(
+                    value: 1.0,
+                    strokeWidth: 10,
+                    color: AppTheme.surfaceColor,
+                  ),
+                ),
+                SizedBox(
+                  width: 180,
+                  height: 180,
+                  child: Transform.rotate(
+                    angle: -math.pi / 2,
+                    child: CustomPaint(
+                      size: const Size(180, 180),
+                      painter: _CircularTimerPainter(
+                        progress: progress,
+                        color: timerColor,
+                        strokeWidth: 10,
+                      ),
+                    ),
+                  ),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.timer_rounded,
+                      size: 24,
+                      color: timerColor.withValues(alpha: 0.7),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      timeString,
+                      style: TextStyle(
+                        fontFamily: 'Nunito',
+                        fontSize: 36,
+                        fontWeight: FontWeight.w800,
+                        color: timerColor,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Eliminated-players chip list. Rebuilds only when the eliminated set
+/// changes (via `select` on the filtered list).
+class _EliminatedChips extends ConsumerWidget {
+  const _EliminatedChips();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final eliminated = ref.watch(
+      gameProvider.select(
+        (g) => g == null
+            ? const <String>[]
+            : g.players
+                .where((p) => p.isEliminated)
+                .map((p) => p.name)
+                .toList(),
+      ),
+    );
 
     if (eliminated.isEmpty) return const SizedBox.shrink();
 
@@ -554,7 +609,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
           spacing: 8,
           runSpacing: 6,
           alignment: WrapAlignment.center,
-          children: eliminated.map((player) {
+          children: eliminated.map((name) {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -565,7 +620,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                 ),
               ),
               child: Text(
-                player.name,
+                name,
                 style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -621,4 +676,3 @@ class _CircularTimerPainter extends CustomPainter {
     return oldDelegate.progress != progress || oldDelegate.color != color;
   }
 }
-

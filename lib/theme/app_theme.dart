@@ -188,7 +188,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: TextStyle(fontFamily: 'Nunito',
+          textStyle: const TextStyle(fontFamily: 'Nunito',
             fontSize: 16,
             fontWeight: FontWeight.w700,
           ),
@@ -202,7 +202,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          textStyle: TextStyle(fontFamily: 'Nunito',
+          textStyle: const TextStyle(fontFamily: 'Nunito',
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),

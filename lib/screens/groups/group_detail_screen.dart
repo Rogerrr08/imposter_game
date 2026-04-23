@@ -165,7 +165,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                     child: ElevatedButton.icon(
                       onPressed: _openGroupGameSetup,
                       icon: const Icon(Icons.play_arrow_rounded, size: 26),
-                      label: Text(
+                      label: const Text(
                         'Jugar con este grupo',
                         style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 17,
@@ -311,7 +311,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Agregar Jugador',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -364,7 +364,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
               }
             },
-            child: Text(
+            child: const Text(
               'Agregar',
               style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
@@ -383,7 +383,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Editar Nombre',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -436,7 +436,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                 Navigator.pop(dialogContext);
               }
             },
-            child: Text(
+            child: const Text(
               'Guardar',
               style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
@@ -452,7 +452,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Eliminar grupo',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -473,7 +473,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
             ),
-            child: Text(
+            child: const Text(
               'Eliminar',
               style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
@@ -666,7 +666,7 @@ class _PlayerChip extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Editar Jugador',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -719,7 +719,7 @@ class _PlayerChip extends ConsumerWidget {
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
               }
             },
-            child: Text(
+            child: const Text(
               'Guardar',
               style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
@@ -733,7 +733,7 @@ class _PlayerChip extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Eliminar jugador',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -754,7 +754,7 @@ class _PlayerChip extends ConsumerWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
             ),
-            child: Text(
+            child: const Text(
               'Eliminar',
               style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),

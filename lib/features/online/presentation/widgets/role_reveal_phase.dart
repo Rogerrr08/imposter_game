@@ -183,6 +183,8 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
                             : 'assets/images/player_civil.webp',
                         width: 150,
                         height: 150,
+                        cacheWidth: 300,
+                        cacheHeight: 300,
                       ),
                     ),
                   ),
@@ -246,7 +248,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
           },
           child: Text(
             text,
-            style: TextStyle(fontFamily: 'Nunito',
+            style: const TextStyle(fontFamily: 'Nunito',
               fontSize: 22,
               fontWeight: FontWeight.w800,
               color: Colors.white,
@@ -282,6 +284,8 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
                         : 'assets/images/player_civil.webp',
                     width: 150,
                     height: 150,
+                    cacheWidth: 300,
+                    cacheHeight: 300,
                   ),
                   const SizedBox(height: 28),
                   // Role text
@@ -426,7 +430,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
                   strokeWidth: 2,
                 ),
               )
-            : Text(
+            : const Text(
                 'Entendido',
                 style: TextStyle(fontFamily: 'Nunito',
                   fontSize: 17,

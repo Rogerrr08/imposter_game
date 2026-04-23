@@ -125,7 +125,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
                         _currentPage < _totalPages - 1
                             ? 'Siguiente'
                             : '\u00A1A jugar!',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: const TextStyle(fontFamily: 'Nunito',
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
@@ -148,6 +148,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
       image: Image.asset(
         'assets/images/app_logo_no_bg.webp',
         height: 200,
+        cacheHeight: 400,
         fit: BoxFit.contain,
       ),
       title: '\u00BFQu\u00E9 es Impostor?',
@@ -424,7 +425,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
             child: Center(
               child: Text(
                 number,
-                style: TextStyle(fontFamily: 'Nunito',
+                style: const TextStyle(fontFamily: 'Nunito',
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,

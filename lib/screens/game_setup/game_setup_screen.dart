@@ -209,7 +209,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message, style: TextStyle(fontFamily: 'Nunito',))),
+      SnackBar(content: Text(message, style: const TextStyle(fontFamily: 'Nunito',))),
     );
   }
 
@@ -292,7 +292,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
+          title: const Text(
             'Nueva Partida',
             style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
           ),
@@ -674,7 +674,7 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
                     const SizedBox(height: 8),
                     ConstrainedBox(
                       constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.5,
+                        maxHeight: MediaQuery.sizeOf(context).height * 0.5,
                       ),
                       child: ReorderableListView.builder(
                         shrinkWrap: true,

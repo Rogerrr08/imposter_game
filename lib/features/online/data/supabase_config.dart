@@ -13,9 +13,17 @@ class SupabaseConfig {
     defaultValue: 'sb_publishable_za43G7VIarX-gV8bWyEEqQ_eODBdShj',
   );
 
-  /// Initialize Supabase. Call once in main() before runApp.
-  static Future<void> initialize() async {
-    await Supabase.initialize(
+  static Future<void>? _initFuture;
+
+  /// Inicializa Supabase de forma **idempotente** y lazy. Se puede llamar
+  /// varias veces; solo la primera invocación dispara la inicialización real,
+  /// las siguientes esperan (o devuelven) el mismo `Future`.
+  ///
+  /// Pensado para arrancar Supabase solo cuando el usuario entra al modo
+  /// online (no en `main()`), para no penalizar el cold-start de usuarios
+  /// que solo juegan localmente.
+  static Future<void> ensureInitialized() {
+    return _initFuture ??= Supabase.initialize(
       url: supabaseUrl,
       anonKey: supabaseAnonKey,
     );

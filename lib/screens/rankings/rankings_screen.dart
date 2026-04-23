@@ -78,7 +78,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
             icon: const Icon(Icons.arrow_back_rounded),
             onPressed: _handleBackNavigation,
           ),
-          title: Text(
+          title: const Text(
             'Rankings',
             style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
           ),
@@ -347,7 +347,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Borrar ranking',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -368,7 +368,7 @@ class _RankingsScreenState extends ConsumerState<RankingsScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
             ),
-            child: Text(
+            child: const Text(
               'Borrar',
               style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),

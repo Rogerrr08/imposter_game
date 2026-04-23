@@ -121,7 +121,7 @@ class PlayerList extends StatelessWidget {
                         : AppTheme.primaryColor.withValues(alpha: 0.6),
                 child: Text(
                   player.name[0].toUpperCase(),
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: const TextStyle(fontFamily: 'Nunito',
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,

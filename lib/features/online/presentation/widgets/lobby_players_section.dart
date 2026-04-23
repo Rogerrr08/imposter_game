@@ -245,7 +245,7 @@ class _KickButton extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Expulsar jugador',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),

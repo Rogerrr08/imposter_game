@@ -209,7 +209,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                 ),
                 label: Text(
                   clue.clue,
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: const TextStyle(fontFamily: 'Nunito',
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -491,7 +491,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                   _selectedTargetId != null
                       ? 'Confirmar voto'
                       : 'Selecciona un jugador',
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: const TextStyle(fontFamily: 'Nunito',
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),

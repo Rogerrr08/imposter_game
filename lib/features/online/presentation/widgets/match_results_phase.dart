@@ -317,6 +317,8 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                               : 'assets/images/player_impostor.webp',
                           width: 120,
                           height: 120,
+                          cacheWidth: 240,
+                          cacheHeight: 240,
                         ),
                         const SizedBox(height: 16),
                         Text(
@@ -470,10 +472,10 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
           padding: const EdgeInsets.symmetric(vertical: 16),
         ),
         child: starting
-            ? Row(
+            ? const Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(
+                  SizedBox(
                     width: 18,
                     height: 18,
                     child: CircularProgressIndicator(
@@ -481,7 +483,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                       strokeWidth: 2,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Text(
                     'Iniciando partida...',
                     style: TextStyle(fontFamily: 'Nunito',
@@ -499,7 +501,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                       Icon(Icons.group_off_rounded, size: 20,
                           color: AppTheme.textSecondary),
                       const SizedBox(width: 10),
-                      Text(
+                      const Text(
                         'No hay suficientes jugadores',
                         style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 15,
@@ -523,18 +525,18 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                           const SizedBox(width: 12),
                           Text(
                             'Esperando jugadores... ($readyCount/$totalCount)',
-                            style: TextStyle(fontFamily: 'Nunito',
+                            style: const TextStyle(fontFamily: 'Nunito',
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                         ],
                       )
-                    : Row(
+                    : const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.replay_rounded, size: 20),
-                          const SizedBox(width: 8),
+                          Icon(Icons.replay_rounded, size: 20),
+                          SizedBox(width: 8),
                           Text(
                             'Volver a jugar',
                             style: TextStyle(fontFamily: 'Nunito',
@@ -927,7 +929,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
           ),
           padding: const EdgeInsets.symmetric(vertical: 10),
         ),
-        label: Text(
+        label: const Text(
           'Darle la victoria al impostor',
           style: TextStyle(fontFamily: 'Nunito',
             fontSize: 13,
@@ -952,7 +954,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Que impostor adivino?',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -975,7 +977,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                   ),
                   child: Text(
                     impostor.displayName,
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: const TextStyle(fontFamily: 'Nunito',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1002,7 +1004,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Confirmar cambio',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -1010,7 +1012,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
           'Se cambiara el resultado a victoria de impostores. '
           '$impostorName recibira 3 pts y los demas impostores 1 pt. '
           'Los civiles no recibiran puntos.',
-          style: TextStyle(fontFamily: 'Nunito',fontSize: 14),
+          style: const TextStyle(fontFamily: 'Nunito',fontSize: 14),
         ),
         actions: [
           TextButton(
@@ -1047,7 +1049,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
             ),
-            child: Text(
+            child: const Text(
               'Confirmar',
               style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),

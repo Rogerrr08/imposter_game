@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 
@@ -103,7 +105,10 @@ class AppDatabase extends _$AppDatabase {
           await _createAuxiliaryIndexes();
           await _ensurePlayerStatsInitialized();
 
-          await _trimAllGroupsHistory();
+          // Trimming de historial: mantenimiento no-crítico. Se difiere al
+          // event loop para no bloquear la primera apertura de la DB (cold
+          // start más rápido). Corre en background una vez la UI ya pintó.
+          unawaited(Future(_trimAllGroupsHistory));
         },
       );
 
@@ -357,30 +362,23 @@ class GroupDao extends DatabaseAccessor<AppDatabase> with _$GroupDaoMixin {
 
   /// Delete a group and all of its players (cascade manually).
   Future<void> deleteGroup(int id) async {
-    final gameIds = await db.customSelect(
-      'SELECT id FROM games WHERE group_id = ?',
-      variables: [Variable.withInt(id)],
-      readsFrom: {db.games},
-    ).get();
-
-    for (final row in gameIds) {
-      final gameId = row.read<int>('id');
+    await transaction(() async {
       await db.customStatement(
-        'DELETE FROM ${db.gamePlayersTable.actualTableName} WHERE game_id = ?',
-        [gameId],
+        'DELETE FROM ${db.gamePlayersTable.actualTableName} '
+        'WHERE game_id IN (SELECT id FROM games WHERE group_id = ?)',
+        [id],
       );
-    }
-
-    await db.customStatement(
-      'DELETE FROM games WHERE group_id = ?',
-      [id],
-    );
-    await db.customStatement(
-      'DELETE FROM player_stats WHERE group_id = ?',
-      [id],
-    );
-    await (delete(groupPlayers)..where((p) => p.groupId.equals(id))).go();
-    await (delete(groups)..where((g) => g.id.equals(id))).go();
+      await db.customStatement(
+        'DELETE FROM games WHERE group_id = ?',
+        [id],
+      );
+      await db.customStatement(
+        'DELETE FROM player_stats WHERE group_id = ?',
+        [id],
+      );
+      await (delete(groupPlayers)..where((p) => p.groupId.equals(id))).go();
+      await (delete(groups)..where((g) => g.id.equals(id))).go();
+    });
   }
 
   // ---- Group players ----
@@ -545,60 +543,7 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
     required bool civilsWon,
     required List<GamePlayerEntry> playerResults,
   }) async {
-    for (final player in playerResults) {
-      final civilWins =
-          !player.wasImpostor && civilsWon ? 1 : 0;
-      final impostorWins =
-          player.wasImpostor && !civilsWon ? 1 : 0;
-
-      await _upsertPlayerStatsRow(
-        groupId: groupId,
-        scope: _overallStatsScope,
-        playerName: player.playerName,
-        points: player.points,
-        civilWins: civilWins,
-        impostorWins: impostorWins,
-      );
-
-      await _upsertPlayerStatsRow(
-        groupId: groupId,
-        scope: _categoryScope(category),
-        playerName: player.playerName,
-        points: player.points,
-        civilWins: civilWins,
-        impostorWins: impostorWins,
-      );
-
-      await _upsertPlayerStatsRow(
-        groupId: groupId,
-        scope: _modeScope(mode),
-        playerName: player.playerName,
-        points: player.points,
-        civilWins: civilWins,
-        impostorWins: impostorWins,
-      );
-
-      await _upsertPlayerStatsRow(
-        groupId: groupId,
-        scope: _modeCategoryScope(mode, category),
-        playerName: player.playerName,
-        points: player.points,
-        civilWins: civilWins,
-        impostorWins: impostorWins,
-      );
-    }
-  }
-
-  Future<void> _upsertPlayerStatsRow({
-    required int groupId,
-    required String scope,
-    required String playerName,
-    required int points,
-    required int civilWins,
-    required int impostorWins,
-  }) {
-    return customStatement(
-      '''
+    const upsertSql = '''
       INSERT INTO player_stats (
         group_id,
         scope,
@@ -613,16 +558,32 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
         civil_wins = civil_wins + excluded.civil_wins,
         impostor_wins = impostor_wins + excluded.impostor_wins,
         total_points = total_points + excluded.total_points
-      ''',
-      [
-        groupId,
-        scope,
-        playerName,
-        civilWins,
-        impostorWins,
-        points,
-      ],
-    );
+      ''';
+
+    await batch((b) {
+      for (final player in playerResults) {
+        final civilWins = !player.wasImpostor && civilsWon ? 1 : 0;
+        final impostorWins = player.wasImpostor && !civilsWon ? 1 : 0;
+
+        final scopes = <String>[
+          _overallStatsScope,
+          _categoryScope(category),
+          _modeScope(mode),
+          _modeCategoryScope(mode, category),
+        ];
+
+        for (final scope in scopes) {
+          b.customStatement(upsertSql, [
+            groupId,
+            scope,
+            player.playerName,
+            civilWins,
+            impostorWins,
+            player.points,
+          ]);
+        }
+      }
+    });
   }
 
   /// Replace an existing game's result: reverse old stats, delete old records,
@@ -720,53 +681,38 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
   }
 
   Future<void> trimGameHistory(int groupId) async {
-    final rows = await customSelect(
-      '''
-      SELECT id
-      FROM games
+    const trimSubquery = '''
+      SELECT id FROM games
       WHERE group_id = ?
       ORDER BY played_at DESC, id DESC
       LIMIT -1 OFFSET 20
-      ''',
-      variables: [Variable.withInt(groupId)],
-      readsFrom: {games},
-    ).get();
+    ''';
 
-    if (rows.isEmpty) return;
-
-    final gameIds = rows.map((row) => _readInt(row, 'id')).toList();
-
-    for (final gameId in gameIds) {
+    await transaction(() async {
       await customStatement(
-        'DELETE FROM ${gamePlayersTable.actualTableName} WHERE game_id = ?',
-        [gameId],
+        'DELETE FROM ${gamePlayersTable.actualTableName} '
+        'WHERE game_id IN ($trimSubquery)',
+        [groupId],
       );
       await customStatement(
-        'DELETE FROM games WHERE id = ?',
-        [gameId],
+        'DELETE FROM games WHERE id IN ($trimSubquery)',
+        [groupId],
       );
-    }
+    });
   }
 
   Future<void> clearHistoryForGroup(int groupId) async {
-    final rows = await customSelect(
-      'SELECT id FROM games WHERE group_id = ?',
-      variables: [Variable.withInt(groupId)],
-      readsFrom: {games},
-    ).get();
-
-    for (final row in rows) {
-      final gameId = _readInt(row, 'id');
+    await transaction(() async {
       await customStatement(
-        'DELETE FROM ${gamePlayersTable.actualTableName} WHERE game_id = ?',
-        [gameId],
+        'DELETE FROM ${gamePlayersTable.actualTableName} '
+        'WHERE game_id IN (SELECT id FROM games WHERE group_id = ?)',
+        [groupId],
       );
-    }
-
-    await customStatement(
-      'DELETE FROM games WHERE group_id = ?',
-      [groupId],
-    );
+      await customStatement(
+        'DELETE FROM games WHERE group_id = ?',
+        [groupId],
+      );
+    });
   }
 
   Future<void> clearRankingForGroup(int groupId) {
@@ -830,18 +776,27 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
   }
 
   /// Stream of game details for reactive UI updates.
+  ///
+  /// Emite cuando cambia la partida o sus jugadores usando un único JOIN
+  /// reactivo — evita re-ejecutar un SELECT extra en cada evento y mantiene
+  /// game+players sincronizados en una sola emisión.
   Stream<GameDetails> watchGameDetails(int gameId) {
-    final gameStream =
-        (select(games)..where((g) => g.id.equals(gameId))).watchSingle();
-    final playersStream = (select(gamePlayersTable)
-          ..where((p) => p.gameId.equals(gameId)))
-        .watch();
+    final query = select(games).join([
+      leftOuterJoin(
+        gamePlayersTable,
+        gamePlayersTable.gameId.equalsExp(games.id),
+      ),
+    ])..where(games.id.equals(gameId));
 
-    return gameStream.asyncMap((game) async {
-      final players = await (select(gamePlayersTable)
-            ..where((p) => p.gameId.equals(gameId)))
-          .get();
-      return GameDetails(game: game, players: players);
+    return query.watch().map((rows) {
+      Game? game;
+      final players = <GamePlayersTableData>[];
+      for (final row in rows) {
+        game ??= row.readTable(games);
+        final player = row.readTableOrNull(gamePlayersTable);
+        if (player != null) players.add(player);
+      }
+      return GameDetails(game: game!, players: players);
     });
   }
 }

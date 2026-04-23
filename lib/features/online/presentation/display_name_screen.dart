@@ -134,7 +134,7 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
       if (mounted) {
         setState(() => _uploadingAvatar = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Error al eliminar imagen'),
           ),
         );
@@ -178,7 +178,7 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
               ListTile(
                 leading: Icon(Icons.photo_library_rounded,
                     color: AppTheme.primaryColor),
-                title: Text(
+                title: const Text(
                   'Elegir de galer\u00eda',
                   style: TextStyle(
                     fontFamily: 'Nunito',
@@ -190,7 +190,7 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
               ListTile(
                 leading: Icon(Icons.camera_alt_rounded,
                     color: AppTheme.primaryColor),
-                title: Text(
+                title: const Text(
                   'Tomar foto',
                   style: TextStyle(
                     fontFamily: 'Nunito',
@@ -292,7 +292,7 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                                   color: Colors.black.withValues(alpha: 0.45),
                                   shape: BoxShape.circle,
                                 ),
-                                child: Center(
+                                child: const Center(
                                   child: SizedBox(
                                     width: 32,
                                     height: 32,
@@ -318,7 +318,7 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                                       width: 3,
                                     ),
                                   ),
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.camera_alt_rounded,
                                     size: 16,
                                     color: Colors.white,
@@ -397,7 +397,7 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                               )
                             : Text(
                                 _isFirstTime ? 'Continuar' : 'Guardar',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontFamily: 'Nunito',
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,

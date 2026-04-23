@@ -72,7 +72,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
             icon: const Icon(Icons.arrow_back_rounded),
             onPressed: _handleBackNavigation,
           ),
-          title: Text(
+          title: const Text(
             'Historial',
             style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
           ),
@@ -199,7 +199,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Borrar historial',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -220,7 +220,7 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
             ),
-            child: Text(
+            child: const Text(
               'Borrar',
               style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),

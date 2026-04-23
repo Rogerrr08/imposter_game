@@ -60,7 +60,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
           onPressed: _creating ? null : () => context.go('/online'),
           icon: const Icon(Icons.arrow_back_rounded),
         ),
-        title: Text(
+        title: const Text(
           'Crear sala privada',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),

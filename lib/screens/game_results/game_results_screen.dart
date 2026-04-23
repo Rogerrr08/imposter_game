@@ -127,6 +127,8 @@ class GameResultsScreen extends ConsumerWidget {
               : 'assets/images/player_impostor.webp',
           width: 188,
           height: 188,
+          cacheWidth: 376,
+          cacheHeight: 376,
         ),
         const SizedBox(height: 12),
         Text(
@@ -595,7 +597,7 @@ class GameResultsScreen extends ConsumerWidget {
           ),
           padding: const EdgeInsets.symmetric(vertical: 14),
         ),
-        label: Text(
+        label: const Text(
           'Darle la victoria al impostor',
           style: TextStyle(fontFamily: 'Nunito',
             fontSize: 14,
@@ -621,7 +623,7 @@ class GameResultsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           '¿Qué impostor adivinó?',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -643,7 +645,7 @@ class GameResultsScreen extends ConsumerWidget {
                   ),
                   child: Text(
                     impostor.name,
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: const TextStyle(fontFamily: 'Nunito',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -674,7 +676,7 @@ class GameResultsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Confirmar cambio',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -682,7 +684,7 @@ class GameResultsScreen extends ConsumerWidget {
           'Se cambiará el resultado a victoria de impostores. '
           '$impostorName recibirá 3 pts y los demás impostores 1 pt. '
           'Los civiles no recibirán puntos.',
-          style: TextStyle(fontFamily: 'Nunito',fontSize: 14),
+          style: const TextStyle(fontFamily: 'Nunito',fontSize: 14),
         ),
         actions: [
           TextButton(
@@ -702,7 +704,7 @@ class GameResultsScreen extends ConsumerWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
             ),
-            child: Text(
+            child: const Text(
               'Confirmar',
               style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),

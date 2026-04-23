@@ -201,6 +201,8 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
             config.imagePath!,
             width: 180,
             height: 180,
+            cacheWidth: 360,
+            cacheHeight: 360,
           )
         else
           Container(
@@ -287,7 +289,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: config.color,
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                textStyle: TextStyle(fontFamily: 'Nunito',
+                textStyle: const TextStyle(fontFamily: 'Nunito',
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),

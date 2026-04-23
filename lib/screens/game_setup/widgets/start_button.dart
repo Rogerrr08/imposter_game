@@ -59,7 +59,7 @@ class StartButton extends StatelessWidget {
               canStart
                   ? 'Comenzar Partida'
                   : 'Faltan $missingPlayers jugador${missingPlayers == 1 ? '' : 'es'}',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: const TextStyle(fontFamily: 'Nunito',
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
               ),

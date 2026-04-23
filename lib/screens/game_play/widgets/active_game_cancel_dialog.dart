@@ -12,7 +12,7 @@ Future<bool> showActiveGameCancelDialog(
   final confirmed = await showDialog<bool>(
         context: context,
         builder: (dialogContext) => AlertDialog(
-          title: Text(
+          title: const Text(
             'Cancelar partida',
             style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
           ),
@@ -34,7 +34,7 @@ Future<bool> showActiveGameCancelDialog(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.secondaryColor,
               ),
-              child: Text(
+              child: const Text(
                 'Cancelar partida',
                 style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
               ),

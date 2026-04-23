@@ -111,7 +111,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           onPressed: () => context.go('/'),
           icon: const Icon(Icons.arrow_back_rounded),
         ),
-        title: Text(
+        title: const Text(
           'Jugar en linea',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),

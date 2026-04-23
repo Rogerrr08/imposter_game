@@ -148,7 +148,7 @@ class LobbyStartBar extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     buttonText,
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: const TextStyle(fontFamily: 'Nunito',
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),

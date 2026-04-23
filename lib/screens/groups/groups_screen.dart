@@ -30,7 +30,7 @@ class GroupsScreen extends ConsumerWidget {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(
+          title: const Text(
             'Mis Grupos',
             style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
           ),
@@ -43,7 +43,7 @@ class GroupsScreen extends ConsumerWidget {
           onPressed: () => _showCreateGroupDialog(context, ref),
           backgroundColor: AppTheme.primaryColor,
           icon: const Icon(Icons.add_rounded, color: Colors.white),
-          label: Text(
+          label: const Text(
             'Nuevo Grupo',
             style: TextStyle(fontFamily: 'Nunito',
               fontWeight: FontWeight.w600,
@@ -145,7 +145,7 @@ class GroupsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Nuevo Grupo',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -194,7 +194,7 @@ class GroupsScreen extends ConsumerWidget {
               formKey: formKey,
               controller: controller,
             ),
-            child: Text(
+            child: const Text(
               'Crear',
               style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
@@ -278,7 +278,7 @@ class _GroupCard extends ConsumerWidget {
             SnackBar(
               content: Text(
                 'Grupo "${group.name}" eliminado',
-                style: TextStyle(fontFamily: 'Nunito',),
+                style: const TextStyle(fontFamily: 'Nunito',),
               ),
               action: SnackBarAction(
                 label: 'OK',
@@ -416,7 +416,7 @@ class _GroupCard extends ConsumerWidget {
     return showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Eliminar grupo',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -437,7 +437,7 @@ class _GroupCard extends ConsumerWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
             ),
-            child: Text(
+            child: const Text(
               'Eliminar',
               style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),

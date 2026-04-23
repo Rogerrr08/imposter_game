@@ -62,9 +62,9 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
           child: SingleChildScrollView(
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.top -
-                    MediaQuery.of(context).padding.bottom,
+                minHeight: MediaQuery.sizeOf(context).height -
+                    MediaQuery.paddingOf(context).top -
+                    MediaQuery.paddingOf(context).bottom,
               ),
               child: _buildGuessForm(),
             ),
@@ -120,6 +120,8 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
             'assets/images/player_impostor.webp',
             width: 130,
             height: 130,
+            cacheWidth: 260,
+            cacheHeight: 260,
           ),
           const SizedBox(height: 24),
           Text(
@@ -310,7 +312,7 @@ class _ImpostorGuessScreenState extends ConsumerState<ImpostorGuessScreen> {
                 disabledBackgroundColor:
                     AppTheme.secondaryColor.withValues(alpha: 0.3),
                 padding: const EdgeInsets.symmetric(vertical: 18),
-                textStyle: TextStyle(fontFamily: 'Nunito',
+                textStyle: const TextStyle(fontFamily: 'Nunito',
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),

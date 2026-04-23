@@ -1,9 +1,9 @@
-import 'package:flutter/foundation.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import 'features/online/data/supabase_config.dart';
 import 'providers/theme_provider.dart';
 import 'router/app_router.dart';
 import 'theme/app_theme.dart';
@@ -11,15 +11,27 @@ import 'theme/app_theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // On Android physical devices, Dart can start before native plugin
-  // registration completes — a small delay prevents MissingPluginException.
-  if (!kIsWeb) {
-    await Future<void>.delayed(const Duration(milliseconds: 100));
-  }
+  // Cargar la preferencia de tema antes del primer frame para evitar
+  // el flash light→dark al arrancar.
+  final initialIsDark = await loadInitialDarkMode();
+  AppTheme.applyBrightness(initialIsDark);
 
-  await initializeDateFormatting('es');
-  await SupabaseConfig.initialize();
-  runApp(const ProviderScope(child: ImpostorApp()));
+  // Los símbolos de fechas en 'es' solo se usan en pantallas secundarias
+  // (historial, grupos). Dejamos que se cargue en background para no
+  // bloquear el primer frame.
+  unawaited(initializeDateFormatting('es'));
+
+  // Supabase se inicializa lazy al entrar al modo online
+  // (ver SupabaseConfig.ensureInitialized). Los usuarios que solo juegan
+  // local no pagan esa inicialización en cold-start.
+  runApp(
+    ProviderScope(
+      overrides: [
+        initialDarkModeProvider.overrideWithValue(initialIsDark),
+      ],
+      child: const ImpostorApp(),
+    ),
+  );
 }
 
 class ImpostorApp extends ConsumerWidget {

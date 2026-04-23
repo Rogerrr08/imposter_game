@@ -165,7 +165,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Voto no v\u00E1lido',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
@@ -176,7 +176,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
+            child: const Text(
               'Entendido',
               style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
             ),
@@ -391,7 +391,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                     disabledBackgroundColor:
                         AppTheme.secondaryColor.withValues(alpha: 0.3),
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: TextStyle(fontFamily: 'Nunito',
+                    textStyle: const TextStyle(fontFamily: 'Nunito',
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -706,7 +706,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
               padding: const EdgeInsets.symmetric(vertical: 18),
-              textStyle: TextStyle(fontFamily: 'Nunito',
+              textStyle: const TextStyle(fontFamily: 'Nunito',
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),

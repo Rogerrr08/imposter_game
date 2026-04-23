@@ -11,10 +11,11 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final game = ref.watch(gameProvider);
-    final guesserName = game?.pendingClassicGuesserName;
+    final guesserName = ref.watch(
+      gameProvider.select((g) => g?.pendingClassicGuesserName),
+    );
 
-    if (game == null || guesserName == null) {
+    if (guesserName == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) {
           context.go('/play');
@@ -36,6 +37,8 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
                 'assets/images/player_impostor.webp',
                 width: 150,
                 height: 150,
+                cacheWidth: 300,
+                cacheHeight: 300,
               ),
               const SizedBox(height: 24),
               Text(
@@ -64,7 +67,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.secondaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: TextStyle(fontFamily: 'Nunito',
+                    textStyle: const TextStyle(fontFamily: 'Nunito',
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -92,7 +95,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
                     foregroundColor: AppTheme.primaryColor,
                     side: BorderSide(color: AppTheme.primaryColor),
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: TextStyle(fontFamily: 'Nunito',
+                    textStyle: const TextStyle(fontFamily: 'Nunito',
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),

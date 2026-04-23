@@ -36,16 +36,18 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final gameState = ref.watch(gameProvider);
+    final startingPlayerName = ref.watch(
+      gameProvider.select((g) {
+        if (g == null) return null;
+        return g.startingPlayerName ?? g.players.first.name;
+      }),
+    );
 
-    if (gameState == null) {
+    if (startingPlayerName == null) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
-
-    final startingPlayerName =
-        gameState.startingPlayerName ?? gameState.players.first.name;
 
     return Scaffold(
       body: SafeArea(

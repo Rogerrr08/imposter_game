@@ -27,7 +27,7 @@ class RoomLobbyScreen extends ConsumerWidget {
         final error = next.value?.error;
         if (error != null && error != prev?.value?.error) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error, style: TextStyle(fontFamily: 'Nunito',))),
+            SnackBar(content: Text(error, style: const TextStyle(fontFamily: 'Nunito',))),
           );
         }
 
@@ -52,7 +52,7 @@ class RoomLobbyScreen extends ConsumerWidget {
             onPressed: () => _handleLeave(context, ref),
             icon: const Icon(Icons.arrow_back_rounded),
           ),
-          title: Text(
+          title: const Text(
             'Lobby privado',
             style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
           ),
@@ -408,7 +408,7 @@ class RoomLobbyScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Salir de la sala',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),

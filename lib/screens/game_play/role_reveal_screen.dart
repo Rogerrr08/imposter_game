@@ -50,7 +50,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
       _snapBackController.stop();
     }
 
-    final maxDrag = -MediaQuery.of(context).size.height * 0.85;
+    final maxDrag = -MediaQuery.sizeOf(context).height * 0.85;
     setState(() {
       _dragOffset = (_dragOffset + details.delta.dy).clamp(maxDrag, 0.0);
 
@@ -172,7 +172,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                       disabledForegroundColor:
                           AppTheme.textSecondary.withValues(alpha: 0.55),
                       padding: const EdgeInsets.symmetric(vertical: 18),
-                      textStyle: TextStyle(fontFamily: 'Nunito',
+                      textStyle: const TextStyle(fontFamily: 'Nunito',
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
@@ -235,7 +235,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
               // Player name - main focus
               Text(
                 player.name,
-                style: TextStyle(fontFamily: 'Nunito',
+                style: const TextStyle(fontFamily: 'Nunito',
                   fontSize: 38,
                   fontWeight: FontWeight.w900,
                   color: Colors.white,
@@ -254,6 +254,8 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
                       'assets/images/app_logo_no_bg.webp',
                       width: 200,
                       height: 200,
+                      cacheWidth: 400,
+                      cacheHeight: 400,
                     ),
                   ),
                 ),
@@ -307,6 +309,8 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
               : 'assets/images/player_civil.webp',
           width: 110,
           height: 110,
+          cacheWidth: 220,
+          cacheHeight: 220,
         ),
         const SizedBox(height: 8),
         // Role text
