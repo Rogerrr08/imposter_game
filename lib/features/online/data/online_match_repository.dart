@@ -63,37 +63,6 @@ class OnlineMatchRepository {
     }
   }
 
-  /// Watch match state changes via Realtime stream.
-  Stream<OnlineMatch?> watchMatch(String matchId) {
-    return _client
-        .from('matches')
-        .stream(primaryKey: ['id'])
-        .eq('id', matchId)
-        .map((rows) {
-          if (rows.isEmpty) return null;
-          return OnlineMatch.fromMap(rows.first);
-        });
-  }
-
-  /// Watch match players via Realtime stream.
-  Stream<List<OnlineMatchPlayer>> watchMatchPlayers(String matchId) {
-    return _client
-        .from('match_players')
-        .stream(primaryKey: ['id'])
-        .eq('match_id', matchId)
-        .map((rows) {
-      // Deduplicate by userId — keep latest entry (highest seat_order) if
-      // Realtime delivers phantom duplicates after rapid state changes.
-      final byUserId = <String, OnlineMatchPlayer>{};
-      for (final row in rows) {
-        final player = OnlineMatchPlayer.fromMap(row);
-        byUserId[player.userId] = player;
-      }
-      return byUserId.values.toList()
-        ..sort((a, b) => a.seatOrder.compareTo(b.seatOrder));
-    });
-  }
-
   /// Abandon match: marks player as eliminated, may cancel the match.
   /// Returns true if the match was cancelled.
   Future<bool> abandonMatch(String matchId) async {
@@ -156,20 +125,6 @@ class OnlineMatchRepository {
     } on PostgrestException catch (error) {
       throw Exception(_friendlyMessage(error));
     }
-  }
-
-  /// Watch match clues via Realtime stream.
-  Stream<List<OnlineMatchClue>> watchMatchClues(String matchId) {
-    return _client
-        .from('match_clues')
-        .stream(primaryKey: ['id'])
-        .eq('match_id', matchId)
-        .map(
-          (rows) => rows
-              .map((row) => OnlineMatchClue.fromMap(row))
-              .toList()
-            ..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
-        );
   }
 
   /// Submit a vote for a target player.
@@ -285,20 +240,6 @@ class OnlineMatchRepository {
     } on PostgrestException catch (error) {
       throw Exception(_friendlyMessage(error));
     }
-  }
-
-  /// Watch match votes via Realtime stream.
-  Stream<List<OnlineMatchVote>> watchMatchVotes(String matchId) {
-    return _client
-        .from('match_votes')
-        .stream(primaryKey: ['id'])
-        .eq('match_id', matchId)
-        .map(
-          (rows) => rows
-              .map((row) => OnlineMatchVote.fromMap(row))
-              .toList()
-            ..sort((a, b) => a.createdAt.compareTo(b.createdAt)),
-        );
   }
 
   /// Find the active match for a room (if any).
