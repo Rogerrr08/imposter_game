@@ -51,6 +51,20 @@ El plan incluye:
 
 ---
 
+## 2026-04-27 — Refactor Realtime: Fase 0 implementada
+
+Rama `refactor/online_mode`. Versión bumpeada a `2.2.0+5` ([pubspec.yaml](../pubspec.yaml), [app_info_provider.dart](../lib/providers/app_info_provider.dart)). Cambios sin tocar la arquitectura realtime — son los "wins" del audit que resuelven ~80% de los síntomas reportados:
+
+- **0.1** — `queries/10-realtime-refactor-indexes.sql` creado con 4 índices compuestos: `match_clues(match_id, round_number)`, `match_votes(match_id, round_number, is_tiebreak)`, `match_players(match_id, seat_order)` y `matches(room_id, status) WHERE status = 'active'`. Reduce latencia de `submit_clue`, `resolve_votes` y `getActiveMatchForRoom`. **Pendiente ejecutar en Supabase.**
+- **0.2.a** — `online_match_screen.dart`: eliminado `ref.invalidate(onlineMatchPlayersProvider(...))` que se disparaba en cada cambio de fase. El stream ya refleja los cambios; invalidar reabría la suscripción WebSocket y dejaba "0/0" momentáneo.
+- **0.2.b** — `online_lobby_sync_provider.dart`: eliminados los `_invalidatePlayers()` de los callbacks `onPresenceSync/Join/Leave`. Con N jugadores, un solo join amplificaba a O(N²) refetches. Los `invalidate` en los `onBroadcast` (`config-updated`, `ready-updated`) se mantienen — esos son cambios reales que sí ameritan refetch.
+- **0.2.c** — `clue_writing_phase.dart`: eliminado el `Future.microtask(() => invalidate(...))` que corría en cada rebuild mientras todas las pistas estuvieran enviadas. Causaba reabrir streams y latencia adicional al transicionar a voting.
+- **0.3** — `player_avatar.dart`: agregados `memCacheWidth`/`memCacheHeight` en el `CachedNetworkImage`, escalados por `MediaQuery.devicePixelRatioOf(context)`. Antes se decodificaba la imagen 256×256 incluso para slots de 24-48px. Ahorro estimado: 4-6 MB RAM con 8 jugadores visibles.
+
+Verificación: `flutter analyze` → 27 issues (mismos que baseline; 0 nuevos). Pendiente smoke test multi-cliente.
+
+---
+
 ## Histórico anterior
 
 El historial previo (Fase 1 a Fase 7 del plan original: auth anónima, salas,

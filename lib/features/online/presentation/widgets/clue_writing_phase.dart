@@ -188,19 +188,12 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
       });
     }
 
-    // Detect when all clues for this round are in — force phase refresh
-    final currentRound = match?.currentRound ?? widget.myState.currentRound;
-    final roundClues =
-        clues.where((c) => c.roundNumber == currentRound).toList();
-    if (activePlayers.isNotEmpty &&
-        roundClues.length >= activePlayers.length) {
-      // All clues submitted — server already advanced to voting
-      // Force immediate refresh instead of waiting for Realtime delay
-      Future.microtask(() {
-        ref.invalidate(myMatchStateProvider(widget.matchId));
-        ref.invalidate(onlineMatchProvider(widget.matchId));
-      });
-    }
+    // Antes había un Future.microtask(invalidate(...)) cuando se detectaba
+    // que todas las pistas estaban en. Se eliminó porque (a) corría en cada
+    // rebuild mientras la condición se mantenía, (b) cerraba/reabría los
+    // streams añadiendo latencia y dejando "0/0" momentáneo, y (c) el
+    // servidor ya avanza la fase y el Realtime propaga el cambio.
+    // Ver docs/online-realtime-refactor-plan.md §0.2.
 
     final isImpostor = widget.myState.isImpostor;
     final accentColor =
