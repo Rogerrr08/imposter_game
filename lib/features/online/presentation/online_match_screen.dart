@@ -267,9 +267,6 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
           if (!_isLateJoinSpectator) {
             ref.invalidate(myMatchStateProvider(widget.matchId));
           }
-          // Force-refresh match players on phase change to avoid stale
-          // Realtime data (e.g. abandoned player still showing as active)
-          ref.invalidate(onlineMatchPlayersProvider(widget.matchId));
         }
       },
     );

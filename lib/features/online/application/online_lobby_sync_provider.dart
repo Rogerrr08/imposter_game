@@ -70,10 +70,12 @@ class OnlineLobbySyncController {
       ),
     );
 
+    // Presence callbacks NO invalidan los providers de la sala. El Realtime
+    // sobre `room_players` ya emite los cambios de conexión (is_connected),
+    // y `_setConnected` actualiza la fila al subscribirse. Invalidar aquí
+    // amplificaba a O(N²) refetches en cada join/leave (causa raíz de los
+    // momentáneos 0/0 jugadores). Ver docs/online-realtime-refactor-plan.md §0.2.
     channel
-        .onPresenceSync((_) => _invalidatePlayers())
-        .onPresenceJoin((_) => _invalidatePlayers())
-        .onPresenceLeave((_) => _invalidatePlayers())
         .onBroadcast(
           event: 'config-updated',
           callback: (_) => _invalidateRoom(),

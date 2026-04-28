@@ -28,6 +28,10 @@ class PlayerAvatar extends StatelessWidget {
     final fontSize = size * 0.38;
 
     if (avatarUrl != null && avatarUrl!.isNotEmpty) {
+      // Decode al tamaño del slot (en píxeles físicos), no a la resolución
+      // original 256x256. Con 8 jugadores visibles ahorra 4-6 MB de RAM.
+      final dpr = MediaQuery.devicePixelRatioOf(context);
+      final cacheSide = (size * dpr).round();
       return SizedBox(
         width: size,
         height: size,
@@ -36,6 +40,8 @@ class PlayerAvatar extends StatelessWidget {
             imageUrl: avatarUrl!,
             width: size,
             height: size,
+            memCacheWidth: cacheSide,
+            memCacheHeight: cacheSide,
             fit: BoxFit.cover,
             placeholder: (_, __) => _InitialCircle(
               initial: initial,

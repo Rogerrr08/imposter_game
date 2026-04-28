@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../data/word_bank.dart';
 import '../../../models/game_state.dart';
-import '../domain/online_room.dart';
 
 class OnlineRoomsRepository {
   OnlineRoomsRepository(this._client);
@@ -166,30 +165,6 @@ class OnlineRoomsRepository {
     } on PostgrestException {
       return null;
     }
-  }
-
-  Stream<OnlineRoom?> watchRoom(String roomId) {
-    return _client
-        .from('rooms')
-        .stream(primaryKey: ['id'])
-        .eq('id', roomId)
-        .map((rows) {
-          if (rows.isEmpty) return null;
-          return OnlineRoom.fromMap(rows.first);
-        });
-  }
-
-  Stream<List<OnlineRoomPlayer>> watchRoomPlayers(String roomId) {
-    return _client
-        .from('room_players')
-        .stream(primaryKey: ['id'])
-        .eq('room_id', roomId)
-        .map(
-          (rows) => rows
-              .map((row) => OnlineRoomPlayer.fromMap(row))
-              .toList()
-            ..sort((a, b) => a.seatOrder.compareTo(b.seatOrder)),
-        );
   }
 
   String _generateRoomCode() {
