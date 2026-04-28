@@ -18,8 +18,7 @@ class CategorySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final allSelected =
-        selectedCategories.length == WordCategory.values.length;
+    final allSelected = selectedCategories.length == WordCategory.values.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,11 +44,12 @@ class CategorySection extends StatelessWidget {
                   Text(category.displayName),
                 ],
               ),
-              labelStyle: TextStyle(fontFamily: 'Nunito',
+              labelStyle: TextStyle(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                color:
-                    isSelected ? AppTheme.textPrimary : AppTheme.textSecondary,
+                color: isSelected
+                    ? AppTheme.textPrimary
+                    : AppTheme.textSecondary,
               ),
               backgroundColor: AppTheme.cardColor,
               selectedColor: AppTheme.primaryColor.withValues(alpha: 0.25),
@@ -71,10 +71,11 @@ class CategorySection extends StatelessWidget {
           onTap: allSelected ? null : onSelectAll,
           child: Text(
             allSelected ? 'Todas seleccionadas' : 'Seleccionar todas',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 12,
-              color:
-                  allSelected ? AppTheme.textSecondary : AppTheme.primaryColor,
+              color: allSelected
+                  ? AppTheme.textSecondary
+                  : AppTheme.primaryColor,
               fontWeight: FontWeight.w500,
             ),
           ),

@@ -65,6 +65,8 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
               'assets/images/player_impostor.webp',
               width: 150,
               height: 150,
+              cacheWidth: 300,
+              cacheHeight: 300,
             ),
             const SizedBox(height: 24),
             Text(
@@ -159,7 +161,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                           strokeWidth: 2,
                         ),
                       )
-                    : Text(
+                    : const Text(
                         'Arriesgar e intentar adivinar',
                         style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 17,
@@ -183,7 +185,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   'No arriesgar',
                   style: TextStyle(fontFamily: 'Nunito',
                     fontSize: 17,

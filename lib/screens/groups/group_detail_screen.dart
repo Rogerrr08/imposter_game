@@ -60,11 +60,15 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.error_outline, size: 48, color: AppTheme.secondaryColor),
+                Icon(
+                  Icons.error_outline,
+                  size: 48,
+                  color: AppTheme.secondaryColor,
+                ),
                 const SizedBox(height: 16),
                 Text(
                   'Error al cargar el grupo',
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary,
@@ -101,8 +105,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                         tooltip: 'Editar nombre',
                       ),
                       IconButton(
-                        onPressed: () =>
-                            _confirmDeleteGroup(group?.name ?? ''),
+                        onPressed: () => _confirmDeleteGroup(group?.name ?? ''),
                         icon: Icon(
                           Icons.delete_outline_rounded,
                           size: 20,
@@ -122,7 +125,9 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                           width: 72,
                           height: 72,
                           decoration: BoxDecoration(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                            color: AppTheme.primaryColor.withValues(
+                              alpha: 0.12,
+                            ),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -134,7 +139,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                         const SizedBox(height: 14),
                         Text(
                           group?.name ?? 'Grupo',
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             fontSize: 28,
                             fontWeight: FontWeight.w800,
                             color: AppTheme.textPrimary,
@@ -145,7 +150,7 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                         playersAsync.when(
                           data: (players) => Text(
                             '${players.length} jugador${players.length == 1 ? '' : 'es'}',
-                            style: TextStyle(fontFamily: 'Nunito',
+                            style: TextStyle(
                               fontSize: 14,
                               color: AppTheme.textSecondary,
                               fontWeight: FontWeight.w600,
@@ -165,9 +170,9 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                     child: ElevatedButton.icon(
                       onPressed: _openGroupGameSetup,
                       icon: const Icon(Icons.play_arrow_rounded, size: 26),
-                      label: Text(
+                      label: const Text(
                         'Jugar con este grupo',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w800,
                         ),
@@ -193,12 +198,16 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                           color: AppTheme.warningColor,
                           onTap: () {
                             final cat = ref.read(rankingCategoryFilterProvider);
-                            final mode = ref.read(rankingGameModeFilterProvider);
-                            ref.invalidate(rankingsProvider((
-                              groupId: widget.groupId,
-                              category: cat,
-                              mode: mode,
-                            )));
+                            final mode = ref.read(
+                              rankingGameModeFilterProvider,
+                            );
+                            ref.invalidate(
+                              rankingsProvider((
+                                groupId: widget.groupId,
+                                category: cat,
+                                mode: mode,
+                              )),
+                            );
                             context.push('/rankings/${widget.groupId}');
                           },
                         ),
@@ -211,12 +220,16 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                           color: AppTheme.successColor,
                           onTap: () {
                             final cat = ref.read(historyCategoryFilterProvider);
-                            final mode = ref.read(historyGameModeFilterProvider);
-                            ref.invalidate(gameHistoryProvider((
-                              groupId: widget.groupId,
-                              category: cat,
-                              mode: mode,
-                            )));
+                            final mode = ref.read(
+                              historyGameModeFilterProvider,
+                            );
+                            ref.invalidate(
+                              gameHistoryProvider((
+                                groupId: widget.groupId,
+                                category: cat,
+                                mode: mode,
+                              )),
+                            );
                             context.push('/history/${widget.groupId}');
                           },
                         ),
@@ -228,12 +241,15 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
                   const SizedBox(height: 32),
                   Row(
                     children: [
-                      Icon(Icons.people_rounded,
-                          size: 20, color: AppTheme.primaryColor),
+                      Icon(
+                        Icons.people_rounded,
+                        size: 20,
+                        color: AppTheme.primaryColor,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         'Jugadores',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
@@ -264,24 +280,26 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
       ),
       error: (_, __) => Text(
         'Error al cargar jugadores',
-        style: TextStyle(fontFamily: 'Nunito',color: AppTheme.secondaryColor),
+        style: TextStyle(color: AppTheme.secondaryColor),
       ),
       data: (players) {
         return Wrap(
           spacing: 8,
           runSpacing: 8,
           children: [
-            ...players.map((player) => _PlayerChip(
-                  player: player,
-                  groupId: widget.groupId,
-                )),
+            ...players.map(
+              (player) => _PlayerChip(player: player, groupId: widget.groupId),
+            ),
             // Add player chip
             ActionChip(
-              avatar: Icon(Icons.add_rounded,
-                  size: 18, color: AppTheme.primaryColor),
+              avatar: Icon(
+                Icons.add_rounded,
+                size: 18,
+                color: AppTheme.primaryColor,
+              ),
               label: Text(
                 'Agregar',
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.primaryColor,
@@ -311,9 +329,9 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Agregar Jugador',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Form(
           key: formKey,
@@ -323,12 +341,15 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del jugador',
-              hintStyle: TextStyle(fontFamily: 'Nunito',
-                  color: AppTheme.textSecondary.withValues(alpha: 0.5)),
-              prefixIcon:
-                  Icon(Icons.person_rounded, color: AppTheme.primaryColor),
+              hintStyle: TextStyle(
+                color: AppTheme.textSecondary.withValues(alpha: 0.5),
+              ),
+              prefixIcon: Icon(
+                Icons.person_rounded,
+                color: AppTheme.primaryColor,
+              ),
             ),
-            style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textPrimary),
+            style: TextStyle(color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'El nombre no puede estar vac\u00edo';
@@ -338,8 +359,9 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             onFieldSubmitted: (_) async {
               if (formKey.currentState!.validate()) {
                 final db = ref.read(databaseProvider);
-                await GroupPlayersService(db)
-                    .addPlayer(widget.groupId, controller.text.trim());
+                await GroupPlayersService(
+                  db,
+                ).addPlayer(widget.groupId, controller.text.trim());
                 ref.invalidate(groupPlayersProvider(widget.groupId));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
               }
@@ -351,22 +373,23 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
             onPressed: () async {
               if (formKey.currentState!.validate()) {
                 final db = ref.read(databaseProvider);
-                await GroupPlayersService(db)
-                    .addPlayer(widget.groupId, controller.text.trim());
+                await GroupPlayersService(
+                  db,
+                ).addPlayer(widget.groupId, controller.text.trim());
                 ref.invalidate(groupPlayersProvider(widget.groupId));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
               }
             },
-            child: Text(
+            child: const Text(
               'Agregar',
-              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -383,9 +406,9 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Editar Nombre',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Form(
           key: formKey,
@@ -395,12 +418,15 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del grupo',
-              hintStyle: TextStyle(fontFamily: 'Nunito',
-                  color: AppTheme.textSecondary.withValues(alpha: 0.5)),
-              prefixIcon:
-                  Icon(Icons.group_rounded, color: AppTheme.primaryColor),
+              hintStyle: TextStyle(
+                color: AppTheme.textSecondary.withValues(alpha: 0.5),
+              ),
+              prefixIcon: Icon(
+                Icons.group_rounded,
+                color: AppTheme.primaryColor,
+              ),
             ),
-            style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textPrimary),
+            style: TextStyle(color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'El nombre no puede estar vac\u00edo';
@@ -409,10 +435,9 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             },
             onFieldSubmitted: (_) {
               if (formKey.currentState!.validate()) {
-                ref.read(groupsProvider.notifier).updateGroupName(
-                      widget.groupId,
-                      controller.text.trim(),
-                    );
+                ref
+                    .read(groupsProvider.notifier)
+                    .updateGroupName(widget.groupId, controller.text.trim());
                 Navigator.pop(dialogContext);
               }
             },
@@ -423,22 +448,21 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
             onPressed: () {
               if (formKey.currentState!.validate()) {
-                ref.read(groupsProvider.notifier).updateGroupName(
-                      widget.groupId,
-                      controller.text.trim(),
-                    );
+                ref
+                    .read(groupsProvider.notifier)
+                    .updateGroupName(widget.groupId, controller.text.trim());
                 Navigator.pop(dialogContext);
               }
             },
-            child: Text(
+            child: const Text(
               'Guardar',
-              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -452,20 +476,20 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Eliminar grupo',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Se eliminar\u00E1n el grupo "$groupName", sus jugadores, su historial y su ranking. Esta acci\u00F3n no se puede deshacer.',
-          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -473,9 +497,9 @@ class _GroupDetailScreenState extends ConsumerState<GroupDetailScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
             ),
-            child: Text(
+            child: const Text(
               'Eliminar',
-              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -524,7 +548,7 @@ class _ActionTile extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 label,
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
                   color: color,
@@ -544,10 +568,7 @@ class _PlayerChip extends ConsumerWidget {
   final GroupPlayer player;
   final int groupId;
 
-  const _PlayerChip({
-    required this.player,
-    required this.groupId,
-  });
+  const _PlayerChip({required this.player, required this.groupId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -559,7 +580,7 @@ class _PlayerChip extends ConsumerWidget {
           backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.15),
           child: Text(
             player.name[0].toUpperCase(),
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               color: AppTheme.primaryColor,
@@ -568,19 +589,15 @@ class _PlayerChip extends ConsumerWidget {
         ),
         label: Text(
           player.name,
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: AppTheme.textPrimary,
           ),
         ),
         backgroundColor: AppTheme.cardColor,
-        side: BorderSide(
-          color: AppTheme.textSecondary.withValues(alpha: 0.12),
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        side: BorderSide(color: AppTheme.textSecondary.withValues(alpha: 0.12)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );
   }
@@ -609,11 +626,13 @@ class _PlayerChip extends ConsumerWidget {
                   ),
                 ),
                 Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   child: Text(
                     player.name,
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
@@ -621,11 +640,13 @@ class _PlayerChip extends ConsumerWidget {
                   ),
                 ),
                 ListTile(
-                  leading: Icon(Icons.edit_rounded,
-                      color: AppTheme.primaryColor),
+                  leading: Icon(
+                    Icons.edit_rounded,
+                    color: AppTheme.primaryColor,
+                  ),
                   title: Text(
                     'Editar nombre',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textPrimary,
                     ),
@@ -636,11 +657,13 @@ class _PlayerChip extends ConsumerWidget {
                   },
                 ),
                 ListTile(
-                  leading: Icon(Icons.delete_rounded,
-                      color: AppTheme.secondaryColor),
+                  leading: Icon(
+                    Icons.delete_rounded,
+                    color: AppTheme.secondaryColor,
+                  ),
                   title: Text(
                     'Eliminar del grupo',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
                       color: AppTheme.secondaryColor,
                     ),
@@ -666,9 +689,9 @@ class _PlayerChip extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Editar Jugador',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Form(
           key: formKey,
@@ -678,12 +701,15 @@ class _PlayerChip extends ConsumerWidget {
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
               hintText: 'Nombre del jugador',
-              hintStyle: TextStyle(fontFamily: 'Nunito',
-                  color: AppTheme.textSecondary.withValues(alpha: 0.5)),
-              prefixIcon:
-                  Icon(Icons.person_rounded, color: AppTheme.primaryColor),
+              hintStyle: TextStyle(
+                color: AppTheme.textSecondary.withValues(alpha: 0.5),
+              ),
+              prefixIcon: Icon(
+                Icons.person_rounded,
+                color: AppTheme.primaryColor,
+              ),
             ),
-            style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textPrimary),
+            style: TextStyle(color: AppTheme.textPrimary),
             validator: (value) {
               if (value == null || value.trim().isEmpty) {
                 return 'El nombre no puede estar vac\u00edo';
@@ -693,8 +719,9 @@ class _PlayerChip extends ConsumerWidget {
             onFieldSubmitted: (_) async {
               if (formKey.currentState!.validate()) {
                 final db = ref.read(databaseProvider);
-                await GroupPlayersService(db)
-                    .updatePlayerName(player.id, controller.text.trim());
+                await GroupPlayersService(
+                  db,
+                ).updatePlayerName(player.id, controller.text.trim());
                 ref.invalidate(groupPlayersProvider(groupId));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
               }
@@ -706,22 +733,23 @@ class _PlayerChip extends ConsumerWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
             onPressed: () async {
               if (formKey.currentState!.validate()) {
                 final db = ref.read(databaseProvider);
-                await GroupPlayersService(db)
-                    .updatePlayerName(player.id, controller.text.trim());
+                await GroupPlayersService(
+                  db,
+                ).updatePlayerName(player.id, controller.text.trim());
                 ref.invalidate(groupPlayersProvider(groupId));
                 if (dialogContext.mounted) Navigator.pop(dialogContext);
               }
             },
-            child: Text(
+            child: const Text(
               'Guardar',
-              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -733,20 +761,20 @@ class _PlayerChip extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Eliminar jugador',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Text(
           '\u00BFEliminar a "${player.name}" del grupo?',
-          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
               'Cancelar',
-              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -754,9 +782,9 @@ class _PlayerChip extends ConsumerWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
             ),
-            child: Text(
+            child: const Text(
               'Eliminar',
-              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],

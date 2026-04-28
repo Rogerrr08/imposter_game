@@ -74,7 +74,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
         setState(() {
           _resolved = true;
           _resolving = false;
-          _resolution = VoteResolutionResult(result: 'tie');
+          _resolution = const VoteResolutionResult(result: 'tie');
         });
         _timerController.forward();
         return;
@@ -383,6 +383,8 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
               'assets/images/tie_after_voting.webp',
               width: 140,
               height: 140,
+              cacheWidth: 280,
+              cacheHeight: 280,
             ),
             const SizedBox(height: 16),
             Text(
@@ -443,6 +445,8 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
                     : 'assets/images/civil_lose_life.webp'),
             width: 140,
             height: 140,
+            cacheWidth: 280,
+            cacheHeight: 280,
           ),
           const SizedBox(height: 16),
           Text(

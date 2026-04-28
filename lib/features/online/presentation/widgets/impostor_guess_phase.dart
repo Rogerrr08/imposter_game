@@ -313,7 +313,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                                 strokeWidth: 2,
                               ),
                             )
-                          : Text(
+                          : const Text(
                               'Confirmar',
                               style: TextStyle(fontFamily: 'Nunito',
                                 fontSize: 17,
@@ -335,7 +335,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                       ),
-                      child: Text(
+                      child: const Text(
                         'Pasar',
                         style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 15,

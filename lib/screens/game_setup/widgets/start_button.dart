@@ -35,11 +35,16 @@ class StartButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: canStart ? onStart : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor:
-              canStart ? AppTheme.primaryColor : AppTheme.surfaceColor,
-          foregroundColor: canStart ? Colors.white : AppTheme.textSecondary.withValues(alpha: 0.4),
+          backgroundColor: canStart
+              ? AppTheme.primaryColor
+              : AppTheme.surfaceColor,
+          foregroundColor: canStart
+              ? Colors.white
+              : AppTheme.textSecondary.withValues(alpha: 0.4),
           disabledBackgroundColor: AppTheme.surfaceColor,
-          disabledForegroundColor: AppTheme.textSecondary.withValues(alpha: 0.4),
+          disabledForegroundColor: AppTheme.textSecondary.withValues(
+            alpha: 0.4,
+          ),
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -59,10 +64,7 @@ class StartButton extends StatelessWidget {
               canStart
                   ? 'Comenzar Partida'
                   : 'Faltan $missingPlayers jugador${missingPlayers == 1 ? '' : 'es'}',
-              style: TextStyle(fontFamily: 'Nunito',
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-              ),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
             ),
           ],
         ),

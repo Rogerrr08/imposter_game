@@ -36,16 +36,16 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final gameState = ref.watch(gameProvider);
+    final startingPlayerName = ref.watch(
+      gameProvider.select((g) {
+        if (g == null) return null;
+        return g.startingPlayerName ?? g.players.first.name;
+      }),
+    );
 
-    if (gameState == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+    if (startingPlayerName == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-
-    final startingPlayerName =
-        gameState.startingPlayerName ?? gameState.players.first.name;
 
     return Scaffold(
       body: SafeArea(
@@ -71,7 +71,7 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
               const SizedBox(height: 28),
               Text(
                 'Empieza la ronda',
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 18,
                   color: AppTheme.textSecondary,
                   fontWeight: FontWeight.w500,
@@ -80,7 +80,7 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
               const SizedBox(height: 10),
               Text(
                 startingPlayerName,
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 34,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -90,7 +90,7 @@ class _RoundStartScreenState extends ConsumerState<RoundStartScreen> {
               const SizedBox(height: 16),
               Text(
                 'La ronda comienza en un momento.',
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 14,
                   color: AppTheme.textSecondary.withValues(alpha: 0.7),
                 ),

@@ -43,7 +43,9 @@ class PlayerList extends StatelessWidget {
         decoration: BoxDecoration(
           color: AppTheme.surfaceColor.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.textSecondary.withValues(alpha: 0.1)),
+          border: Border.all(
+            color: AppTheme.textSecondary.withValues(alpha: 0.1),
+          ),
         ),
         child: Column(
           children: [
@@ -55,10 +57,7 @@ class PlayerList extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               'Agrega al menos $minPlayers jugadores',
-              style: TextStyle(fontFamily: 'Nunito',
-                fontSize: 13,
-                color: AppTheme.textSecondary,
-              ),
+              style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
             ),
           ],
         ),
@@ -88,15 +87,15 @@ class PlayerList extends StatelessWidget {
             color: isExcluded
                 ? AppTheme.surfaceColor.withValues(alpha: 0.5)
                 : isDragging
-                    ? AppTheme.primaryColor.withValues(alpha: 0.1)
-                    : AppTheme.cardColor,
+                ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                : AppTheme.cardColor,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isExcluded
                   ? AppTheme.textSecondary.withValues(alpha: 0.1)
                   : isDragging
-                      ? AppTheme.secondaryColor
-                      : AppTheme.textSecondary.withValues(alpha: 0.15),
+                  ? AppTheme.secondaryColor
+                  : AppTheme.textSecondary.withValues(alpha: 0.15),
               width: isDragging ? 2 : 1,
             ),
           ),
@@ -107,8 +106,8 @@ class PlayerList extends StatelessWidget {
                 color: isExcluded
                     ? AppTheme.textSecondary.withValues(alpha: 0.2)
                     : isDragging
-                        ? AppTheme.secondaryColor
-                        : AppTheme.textSecondary.withValues(alpha: 0.4),
+                    ? AppTheme.secondaryColor
+                    : AppTheme.textSecondary.withValues(alpha: 0.4),
                 size: 20,
               ),
               const SizedBox(width: 10),
@@ -117,11 +116,11 @@ class PlayerList extends StatelessWidget {
                 backgroundColor: isExcluded
                     ? AppTheme.textSecondary.withValues(alpha: 0.2)
                     : isDragging
-                        ? AppTheme.secondaryColor.withValues(alpha: 0.6)
-                        : AppTheme.primaryColor.withValues(alpha: 0.6),
+                    ? AppTheme.secondaryColor.withValues(alpha: 0.6)
+                    : AppTheme.primaryColor.withValues(alpha: 0.6),
                 child: Text(
                   player.name[0].toUpperCase(),
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: const TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -132,16 +131,18 @@ class PlayerList extends StatelessWidget {
               Expanded(
                 child: Text(
                   player.name,
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: isExcluded ? FontWeight.w400 : FontWeight.w600,
                     color: isExcluded
                         ? AppTheme.textSecondary.withValues(alpha: 0.5)
                         : isDragging
-                            ? AppTheme.secondaryColor
-                            : AppTheme.textPrimary,
+                        ? AppTheme.secondaryColor
+                        : AppTheme.textPrimary,
                     decoration: isExcluded ? TextDecoration.lineThrough : null,
-                    decorationColor: AppTheme.textSecondary.withValues(alpha: 0.4),
+                    decorationColor: AppTheme.textSecondary.withValues(
+                      alpha: 0.4,
+                    ),
                   ),
                 ),
               ),

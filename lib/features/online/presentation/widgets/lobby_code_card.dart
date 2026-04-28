@@ -134,7 +134,7 @@ class LobbyCodeCard extends StatelessWidget {
   void _copyCode(BuildContext context, String code) {
     Clipboard.setData(ClipboardData(text: code));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Código copiado: $code', style: TextStyle(fontFamily: 'Nunito',))),
+      SnackBar(content: Text('Código copiado: $code', style: const TextStyle(fontFamily: 'Nunito',))),
     );
   }
 

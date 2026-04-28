@@ -36,7 +36,7 @@ class CategoryFilterBar extends StatelessWidget {
               selected: isSelected,
               label: Text(
                 entry.value,
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                   color: isSelected ? Colors.white : AppTheme.textPrimary,

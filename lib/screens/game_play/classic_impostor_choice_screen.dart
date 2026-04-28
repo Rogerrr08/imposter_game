@@ -11,18 +11,17 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final game = ref.watch(gameProvider);
-    final guesserName = game?.pendingClassicGuesserName;
+    final guesserName = ref.watch(
+      gameProvider.select((g) => g?.pendingClassicGuesserName),
+    );
 
-    if (game == null || guesserName == null) {
+    if (guesserName == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (context.mounted) {
           context.go('/play');
         }
       });
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -36,12 +35,14 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
                 'assets/images/player_impostor.webp',
                 width: 150,
                 height: 150,
+                cacheWidth: 300,
+                cacheHeight: 300,
               ),
               const SizedBox(height: 24),
               Text(
                 '$guesserName fue eliminado',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -51,10 +52,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
               Text(
                 'Como era impostor, ahora puede intentar adivinar la palabra secreta.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Nunito',
-                  fontSize: 15,
-                  color: AppTheme.textSecondary,
-                ),
+                style: TextStyle(fontSize: 15, color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 32),
               SizedBox(
@@ -64,7 +62,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.secondaryColor,
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: TextStyle(fontFamily: 'Nunito',
+                    textStyle: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
@@ -92,7 +90,7 @@ class ClassicImpostorChoiceScreen extends ConsumerWidget {
                     foregroundColor: AppTheme.primaryColor,
                     side: BorderSide(color: AppTheme.primaryColor),
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: TextStyle(fontFamily: 'Nunito',
+                    textStyle: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),

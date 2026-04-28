@@ -13,9 +13,7 @@ class GameResultsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final game = ref.watch(gameProvider);
     if (game == null) {
-      return const Scaffold(
-        body: Center(child: Text('No hay partida activa')),
-      );
+      return const Scaffold(body: Center(child: Text('No hay partida activa')));
     }
 
     final civilsWon = game.civilsWon;
@@ -66,7 +64,7 @@ class GameResultsScreen extends ConsumerWidget {
                   },
                   child: Text(
                     groupId != null ? 'Volver al grupo' : 'Ir al inicio',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textSecondary,
@@ -116,8 +114,8 @@ class GameResultsScreen extends ConsumerWidget {
     final subtitle = civilsWon
         ? 'Todos los impostores fueron descubiertos'
         : impostorGuessed
-            ? 'El impostor adivinó la palabra secreta'
-            : 'Los civiles se quedaron sin vidas o ya solo quedaban dos jugadores';
+        ? 'El impostor adivinó la palabra secreta'
+        : 'Los civiles se quedaron sin vidas o ya solo quedaban dos jugadores';
 
     return Column(
       children: [
@@ -127,12 +125,14 @@ class GameResultsScreen extends ConsumerWidget {
               : 'assets/images/player_impostor.webp',
           width: 188,
           height: 188,
+          cacheWidth: 376,
+          cacheHeight: 376,
         ),
         const SizedBox(height: 12),
         Text(
           title,
           textAlign: TextAlign.center,
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 36,
             fontWeight: FontWeight.w900,
             color: color,
@@ -145,7 +145,7 @@ class GameResultsScreen extends ConsumerWidget {
           child: Text(
             subtitle,
             textAlign: TextAlign.center,
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w500,
               color: AppTheme.textSecondary,
@@ -173,7 +173,7 @@ class GameResultsScreen extends ConsumerWidget {
         children: [
           Text(
             'La Palabra Secreta',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
               color: AppTheme.textSecondary,
@@ -184,7 +184,7 @@ class GameResultsScreen extends ConsumerWidget {
           Text(
             word,
             textAlign: TextAlign.center,
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 38,
               fontWeight: FontWeight.w800,
               color: AppTheme.warningColor,
@@ -200,7 +200,7 @@ class GameResultsScreen extends ConsumerWidget {
             ),
             child: Text(
               category,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.primaryColor,
@@ -213,8 +213,9 @@ class GameResultsScreen extends ConsumerWidget {
   }
 
   Widget _buildImpostorHints(ActiveGame game) {
-    final impostorsWithHints =
-        game.impostors.where((player) => player.hint != null).toList();
+    final impostorsWithHints = game.impostors
+        .where((player) => player.hint != null)
+        .toList();
 
     if (impostorsWithHints.isEmpty) return const SizedBox.shrink();
 
@@ -241,7 +242,7 @@ class GameResultsScreen extends ConsumerWidget {
               const SizedBox(width: 8),
               Text(
                 'Pistas de los impostores',
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.secondaryColor,
@@ -255,8 +256,10 @@ class GameResultsScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: 10),
               child: Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: AppTheme.cardColor.withValues(alpha: 0.82),
                   borderRadius: BorderRadius.circular(14),
@@ -269,7 +272,7 @@ class GameResultsScreen extends ConsumerWidget {
                     Expanded(
                       child: Text(
                         player.name,
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
@@ -283,13 +286,12 @@ class GameResultsScreen extends ConsumerWidget {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color:
-                            AppTheme.secondaryColor.withValues(alpha: 0.12),
+                        color: AppTheme.secondaryColor.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Text(
                         player.hint!,
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.secondaryColor,
@@ -315,7 +317,7 @@ class GameResultsScreen extends ConsumerWidget {
       children: [
         Text(
           'Ranking',
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: AppTheme.textPrimary,
@@ -335,8 +337,9 @@ class GameResultsScreen extends ConsumerWidget {
 
   Widget _buildMvpCard(GamePlayer player) {
     final isImpostor = player.role == PlayerRole.impostor;
-    final roleColor =
-        isImpostor ? AppTheme.secondaryColor : AppTheme.successColor;
+    final roleColor = isImpostor
+        ? AppTheme.secondaryColor
+        : AppTheme.successColor;
     final roleText = isImpostor ? 'IMPOSTOR' : 'CIVIL';
 
     return Container(
@@ -366,7 +369,7 @@ class GameResultsScreen extends ConsumerWidget {
               const SizedBox(height: 2),
               Text(
                 '1\u00BA',
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.warningColor,
@@ -381,7 +384,7 @@ class GameResultsScreen extends ConsumerWidget {
               children: [
                 Text(
                   player.name,
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,
@@ -392,14 +395,16 @@ class GameResultsScreen extends ConsumerWidget {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: roleColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         roleText,
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           color: roleColor,
@@ -411,10 +416,9 @@ class GameResultsScreen extends ConsumerWidget {
                       const SizedBox(width: 6),
                       Text(
                         'Eliminado',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 10,
-                          color:
-                              AppTheme.textSecondary.withValues(alpha: 0.6),
+                          color: AppTheme.textSecondary.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -426,15 +430,16 @@ class GameResultsScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: (player.points >= 0
-                      ? AppTheme.successColor
-                      : AppTheme.errorColor)
-                  .withValues(alpha: 0.18),
+              color:
+                  (player.points >= 0
+                          ? AppTheme.successColor
+                          : AppTheme.errorColor)
+                      .withValues(alpha: 0.18),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
               '${player.points >= 0 ? '+' : ''}${player.points}',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: player.points >= 0
@@ -450,8 +455,9 @@ class GameResultsScreen extends ConsumerWidget {
 
   Widget _buildRankedPlayerCard(GamePlayer player, int position) {
     final isImpostor = player.role == PlayerRole.impostor;
-    final roleColor =
-        isImpostor ? AppTheme.secondaryColor : AppTheme.successColor;
+    final roleColor = isImpostor
+        ? AppTheme.secondaryColor
+        : AppTheme.successColor;
     final roleText = isImpostor ? 'IMPOSTOR' : 'CIVIL';
 
     return Container(
@@ -473,7 +479,7 @@ class GameResultsScreen extends ConsumerWidget {
             width: 32,
             child: Text(
               '$position\u00BA',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textSecondary,
@@ -487,19 +493,20 @@ class GameResultsScreen extends ConsumerWidget {
               children: [
                 Text(
                   player.name,
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: AppTheme.textPrimary,
-                    decoration:
-                        player.isEliminated ? TextDecoration.lineThrough : null,
+                    decoration: player.isEliminated
+                        ? TextDecoration.lineThrough
+                        : null,
                   ),
                 ),
                 Row(
                   children: [
                     Text(
                       roleText,
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w700,
                         color: roleColor,
@@ -510,10 +517,9 @@ class GameResultsScreen extends ConsumerWidget {
                       const SizedBox(width: 6),
                       Text(
                         'Eliminado',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 10,
-                          color:
-                              AppTheme.textSecondary.withValues(alpha: 0.6),
+                          color: AppTheme.textSecondary.withValues(alpha: 0.6),
                         ),
                       ),
                     ],
@@ -525,15 +531,16 @@ class GameResultsScreen extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: (player.points >= 0
-                      ? AppTheme.successColor
-                      : AppTheme.errorColor)
-                  .withValues(alpha: 0.15),
+              color:
+                  (player.points >= 0
+                          ? AppTheme.successColor
+                          : AppTheme.errorColor)
+                      .withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               '${player.points >= 0 ? '+' : ''}${player.points}',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: player.points >= 0
@@ -595,12 +602,9 @@ class GameResultsScreen extends ConsumerWidget {
           ),
           padding: const EdgeInsets.symmetric(vertical: 14),
         ),
-        label: Text(
+        label: const Text(
           'Darle la victoria al impostor',
-          style: TextStyle(fontFamily: 'Nunito',
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
         ),
       ),
     );
@@ -621,9 +625,9 @@ class GameResultsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           '¿Qué impostor adivinó?',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -643,7 +647,7 @@ class GameResultsScreen extends ConsumerWidget {
                   ),
                   child: Text(
                     impostor.name,
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -658,7 +662,7 @@ class GameResultsScreen extends ConsumerWidget {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ),
         ],
@@ -674,22 +678,22 @@ class GameResultsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Confirmar cambio',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Se cambiará el resultado a victoria de impostores. '
           '$impostorName recibirá 3 pts y los demás impostores 1 pt. '
           'Los civiles no recibirán puntos.',
-          style: TextStyle(fontFamily: 'Nunito',fontSize: 14),
+          style: const TextStyle(fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -702,9 +706,9 @@ class GameResultsScreen extends ConsumerWidget {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
             ),
-            child: Text(
+            child: const Text(
               'Confirmar',
-              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -717,7 +721,7 @@ class GameResultsScreen extends ConsumerWidget {
       children: [
         Text(
           '$points pts',
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
             color: color,
@@ -725,10 +729,7 @@ class GameResultsScreen extends ConsumerWidget {
         ),
         Text(
           label,
-          style: TextStyle(fontFamily: 'Nunito',
-            fontSize: 12,
-            color: AppTheme.textSecondary,
-          ),
+          style: TextStyle(fontSize: 12, color: AppTheme.textSecondary),
         ),
       ],
     );

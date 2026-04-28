@@ -25,7 +25,8 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final game = ref.read(gameProvider);
-      if (game?.config.mode == GameMode.classic && game?.phase != GamePhase.voting) {
+      if (game?.config.mode == GameMode.classic &&
+          game?.phase != GamePhase.voting) {
         ref.read(gameProvider.notifier).startVotingRound();
       }
     });
@@ -87,10 +88,9 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
       return;
     }
 
-    final wasImpostor = ref.read(gameProvider.notifier).eliminatePlayer(
-          _selectedPlayer!,
-          votedBy: _votedBy,
-        );
+    final wasImpostor = ref
+        .read(gameProvider.notifier)
+        .eliminatePlayer(_selectedPlayer!, votedBy: _votedBy);
     final updatedGameState = ref.read(gameProvider);
 
     context.go(
@@ -108,7 +108,9 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
   void _submitClassicVote(String voterName) {
     if (_classicSelectedTarget == null) return;
 
-    final submitted = ref.read(gameProvider.notifier).submitClassicVote(
+    final submitted = ref
+        .read(gameProvider.notifier)
+        .submitClassicVote(
           voterName: voterName,
           targetName: _classicSelectedTarget!,
         );
@@ -165,20 +167,17 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Voto no v\u00E1lido',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
-        content: Text(
-          message,
-          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
-        ),
+        content: Text(message, style: TextStyle(color: AppTheme.textSecondary)),
         actions: [
           ElevatedButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(
+            child: const Text(
               'Entendido',
-              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -191,9 +190,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
     final gameState = ref.watch(gameProvider);
 
     if (gameState == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     if (gameState.config.mode == GameMode.classic) {
@@ -224,9 +221,9 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
     final optionNames = tieCandidates.isNotEmpty
         ? tieCandidates
         : gameState.activePlayers
-            .where((player) => player.name != currentVoter)
-            .map((player) => player.name)
-            .toList();
+              .where((player) => player.name != currentVoter)
+              .map((player) => player.name)
+              .toList();
 
     return Scaffold(
       body: SafeArea(
@@ -253,7 +250,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                     ? 'Empate en la votaci\u00F3n'
                     : 'Votaci\u00F3n an\u00F3nima',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -265,10 +262,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                     ? 'Entre todos decidan cual de los empatados sera eliminado.'
                     : 'Participante $progress de $totalVoters',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontFamily: 'Nunito',
-                  fontSize: 14,
-                  color: AppTheme.textSecondary,
-                ),
+                style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
               ),
               const SizedBox(height: 24),
               if (tieCandidates.isEmpty)
@@ -286,7 +280,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                     children: [
                       Text(
                         'Ahora vota',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 13,
                           color: AppTheme.textSecondary,
                         ),
@@ -294,7 +288,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                       const SizedBox(height: 6),
                       Text(
                         currentVoter ?? '-',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.w800,
                           color: AppTheme.primaryColor,
@@ -310,7 +304,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                   tieCandidates.isNotEmpty
                       ? 'Seleccionen al eliminado:'
                       : 'Selecciona a quien eliminar:',
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
@@ -345,7 +339,9 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                           border: Border.all(
                             color: selected
                                 ? AppTheme.primaryColor
-                                : AppTheme.textSecondary.withValues(alpha: 0.15),
+                                : AppTheme.textSecondary.withValues(
+                                    alpha: 0.15,
+                                  ),
                             width: selected ? 2 : 1,
                           ),
                         ),
@@ -354,7 +350,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                             Expanded(
                               child: Text(
                                 name,
-                                style: TextStyle(fontFamily: 'Nunito',
+                                style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                   color: AppTheme.textPrimary,
@@ -388,16 +384,19 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                         },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.secondaryColor,
-                    disabledBackgroundColor:
-                        AppTheme.secondaryColor.withValues(alpha: 0.3),
+                    disabledBackgroundColor: AppTheme.secondaryColor.withValues(
+                      alpha: 0.3,
+                    ),
                     padding: const EdgeInsets.symmetric(vertical: 18),
-                    textStyle: TextStyle(fontFamily: 'Nunito',
+                    textStyle: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   child: Text(
-                    tieCandidates.isNotEmpty ? 'Elegir eliminado' : 'Confirmar voto',
+                    tieCandidates.isNotEmpty
+                        ? 'Elegir eliminado'
+                        : 'Confirmar voto',
                   ),
                 ),
               ),
@@ -412,10 +411,12 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
   Widget _buildStepView(ActiveGame gameState) {
     final playerNames = gameState.activePlayers.map((p) => p.name).toList();
     final isFirstStep = _step == 0;
-    final stepTitle =
-        isFirstStep ? 'Quien esta votando?' : 'A quien eliminamos?';
-    final stepHint =
-        isFirstStep ? 'Escribe tu nombre...' : 'Nombre del sospechoso...';
+    final stepTitle = isFirstStep
+        ? 'Quien esta votando?'
+        : 'A quien eliminamos?';
+    final stepHint = isFirstStep
+        ? 'Escribe tu nombre...'
+        : 'Nombre del sospechoso...';
     final stepSubtitle = isFirstStep
         ? 'Solo los civiles pueden votar.'
         : 'Votando: $_votedBy';
@@ -476,7 +477,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
         const SizedBox(height: 24),
         Text(
           stepTitle,
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.w800,
             color: AppTheme.textPrimary,
@@ -486,10 +487,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
         const SizedBox(height: 8),
         Text(
           stepSubtitle,
-          style: TextStyle(fontFamily: 'Nunito',
-            fontSize: 14,
-            color: AppTheme.textSecondary,
-          ),
+          style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 32),
@@ -530,8 +528,8 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
             if (textEditingValue.text.isEmpty) return playerNames;
             return playerNames.where(
               (name) => name.toLowerCase().contains(
-                    textEditingValue.text.toLowerCase(),
-                  ),
+                textEditingValue.text.toLowerCase(),
+              ),
             );
           },
           onSelected: onSelected,
@@ -552,14 +550,11 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                   onSelected(match);
                 }
               },
-              style: TextStyle(fontFamily: 'Nunito',
-                color: AppTheme.textPrimary,
-                fontSize: 18,
-              ),
+              style: TextStyle(color: AppTheme.textPrimary, fontSize: 18),
               textCapitalization: TextCapitalization.words,
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: TextStyle(fontFamily: 'Nunito',
+                hintStyle: TextStyle(
                   color: AppTheme.textSecondary.withValues(alpha: 0.5),
                   fontSize: 16,
                 ),
@@ -621,7 +616,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                         dense: true,
                         title: Text(
                           option,
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             color: AppTheme.textPrimary,
                             fontSize: 15,
                             fontWeight: FontWeight.w500,
@@ -671,7 +666,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
             children: [
               Text(
                 'Confirmar voto',
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -706,7 +701,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.secondaryColor,
               padding: const EdgeInsets.symmetric(vertical: 18),
-              textStyle: TextStyle(fontFamily: 'Nunito',
+              textStyle: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
@@ -719,10 +714,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
           onPressed: _stepBack,
           child: Text(
             'Cambiar',
-            style: TextStyle(fontFamily: 'Nunito',
-              color: AppTheme.textSecondary,
-              fontSize: 15,
-            ),
+            style: TextStyle(color: AppTheme.textSecondary, fontSize: 15),
           ),
         ),
         const Spacer(flex: 1),
@@ -739,15 +731,12 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
       children: [
         Text(
           label,
-          style: TextStyle(fontFamily: 'Nunito',
-            fontSize: 13,
-            color: AppTheme.textSecondary,
-          ),
+          style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
         ),
         const SizedBox(height: 4),
         Text(
           name,
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.w800,
             color: color,

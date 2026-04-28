@@ -350,7 +350,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             onPressed: _confirmLeave,
             icon: const Icon(Icons.arrow_back_rounded),
           ),
-          title: Text(
+          title: const Text(
             'Partida online',
             style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
           ),
@@ -401,7 +401,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(
+        title: const Text(
           'Salir de la partida',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),

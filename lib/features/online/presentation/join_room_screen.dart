@@ -79,7 +79,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
           onPressed: _joining ? null : () => context.go('/online'),
           icon: const Icon(Icons.arrow_back_rounded),
         ),
-        title: Text(
+        title: const Text(
           'Unirse por código',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),

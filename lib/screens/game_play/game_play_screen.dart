@@ -18,26 +18,17 @@ class GamePlayScreen extends ConsumerStatefulWidget {
   ConsumerState<GamePlayScreen> createState() => _GamePlayScreenState();
 }
 
-class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
-    with SingleTickerProviderStateMixin {
+class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   Timer? _timer;
-  late final AnimationController _pulseController;
-  late final Animation<double> _pulseAnimation;
 
   @override
   void initState() {
     super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
     _startTimer();
   }
 
   void _startTimer() {
+    _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       final gameState = ref.read(gameProvider);
       if (gameState == null || gameState.phase != GamePhase.playing) {
@@ -86,7 +77,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
               24,
               24,
               24,
-              MediaQuery.of(context).viewInsets.bottom + 24,
+              MediaQuery.viewInsetsOf(context).bottom + 24,
             ),
             child: Center(
               child: Material(
@@ -106,7 +97,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                         children: [
                           Text(
                             '\u{1F6A8} Verificaci\u00f3n de impostor',
-                            style: TextStyle(fontFamily: 'Nunito',
+                            style: TextStyle(
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
                               color: AppTheme.textPrimary,
@@ -116,22 +107,29 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
-                              color: AppTheme.warningColor.withValues(alpha: 0.12),
+                              color: AppTheme.warningColor.withValues(
+                                alpha: 0.12,
+                              ),
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: AppTheme.warningColor.withValues(alpha: 0.3),
+                                color: AppTheme.warningColor.withValues(
+                                  alpha: 0.3,
+                                ),
                               ),
                             ),
                             child: Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('\u{26A0}\u{FE0F}', style: TextStyle(fontSize: 18)),
+                                const Text(
+                                  '\u{26A0}\u{FE0F}',
+                                  style: TextStyle(fontSize: 18),
+                                ),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     'OJO: Escribe tu PISTA, NO la palabra que intentas adivinar. '
                                     'Esto es solo para verificar que eres impostor.',
-                                    style: TextStyle(fontFamily: 'Nunito',
+                                    style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                       color: AppTheme.textPrimary,
@@ -145,12 +143,14 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                           TextField(
                             controller: hintController,
                             autofocus: false,
-                            style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textPrimary),
+                            style: TextStyle(color: AppTheme.textPrimary),
                             textCapitalization: TextCapitalization.words,
                             decoration: InputDecoration(
                               hintText: 'Escribe tu pista aquí...',
-                              hintStyle: TextStyle(fontFamily: 'Nunito',
-                                color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                              hintStyle: TextStyle(
+                                color: AppTheme.textSecondary.withValues(
+                                  alpha: 0.5,
+                                ),
                               ),
                               errorText: errorText,
                             ),
@@ -159,7 +159,9 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                               if (impostorHints.contains(input)) {
                                 Navigator.pop(dialogContext, true);
                               } else {
-                                setDialogState(() => errorText = 'Pista incorrecta');
+                                setDialogState(
+                                  () => errorText = 'Pista incorrecta',
+                                );
                               }
                             },
                           ),
@@ -170,20 +172,26 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                                 width: double.infinity,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    final input = normalizeText(hintController.text);
+                                    final input = normalizeText(
+                                      hintController.text,
+                                    );
                                     if (impostorHints.contains(input)) {
                                       Navigator.pop(dialogContext, true);
                                     } else {
-                                      setDialogState(() => errorText = 'Pista incorrecta');
+                                      setDialogState(
+                                        () => errorText = 'Pista incorrecta',
+                                      );
                                     }
                                   },
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: AppTheme.secondaryColor,
-                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
                                   ),
-                                  child: Text(
+                                  child: const Text(
                                     'Confirmar',
-                                    style: TextStyle(fontFamily: 'Nunito',
+                                    style: TextStyle(
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -193,13 +201,16 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                               SizedBox(
                                 width: double.infinity,
                                 child: TextButton(
-                                  onPressed: () => Navigator.pop(dialogContext, false),
+                                  onPressed: () =>
+                                      Navigator.pop(dialogContext, false),
                                   style: TextButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
                                   ),
                                   child: Text(
                                     'Cancelar',
-                                    style: TextStyle(fontFamily: 'Nunito',
+                                    style: TextStyle(
                                       color: AppTheme.textSecondary,
                                     ),
                                   ),
@@ -227,6 +238,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
       }
     });
   }
+
   void _confirmCancelGame() {
     _timer?.cancel();
     showActiveGameCancelDialog(context, ref).then((confirmed) {
@@ -239,53 +251,49 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
   @override
   void dispose() {
     _timer?.cancel();
-    _pulseController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final gameState = ref.watch(gameProvider);
+    // Side effects on phase transitions (out of build).
+    ref.listen<GamePhase?>(gameProvider.select((g) => g?.phase), (prev, next) {
+      if (next == GamePhase.playing &&
+          (_timer == null || !(_timer?.isActive ?? false))) {
+        _startTimer();
+      }
+      if (next == GamePhase.results && mounted) {
+        context.go('/results');
+      }
+    });
 
-    if (gameState == null) {
+    // Null-state guard.
+    final isNull = ref.watch(gameProvider.select((g) => g == null));
+    if (isNull) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    if (gameState.phase == GamePhase.playing &&
-        (_timer == null || !(_timer?.isActive ?? false))) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && (_timer == null || !(_timer?.isActive ?? false))) {
-          _startTimer();
-        }
-      });
-    }
-
-    // If state already moved to results (e.g. from elimination), navigate
-    if (gameState.phase == GamePhase.results) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) context.go('/results');
-      });
-    }
-
-    final minutes = gameState.timeRemainingSeconds ~/ 60;
-    final seconds = gameState.timeRemainingSeconds % 60;
-    final timeString =
-        '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-    final progress =
-        gameState.timeRemainingSeconds / gameState.config.durationSeconds;
-    final isLowTime = gameState.timeRemainingSeconds <= 30;
-    final isClassicMode = gameState.config.mode == GameMode.classic;
-    final eliminatedCount =
-        gameState.players.where((p) => p.isEliminated).length;
-    final activeCount = gameState.activePlayers.length;
-
-    // Manage pulse animation
-    if (isLowTime && !_pulseController.isAnimating) {
-      _pulseController.repeat(reverse: true);
-    } else if (!isLowTime && _pulseController.isAnimating) {
-      _pulseController.stop();
-      _pulseController.reset();
-    }
+    // Granular selects so the screen does NOT rebuild on every timer tick.
+    final isClassicMode = ref.watch(
+      gameProvider.select((g) => g?.config.mode == GameMode.classic),
+    );
+    final durationSeconds = ref.watch(
+      gameProvider.select((g) => g?.config.durationSeconds ?? 0),
+    );
+    final eliminatedCount = ref.watch(
+      gameProvider.select(
+        (g) => g?.players.where((p) => p.isEliminated).length ?? 0,
+      ),
+    );
+    final activeCount = ref.watch(
+      gameProvider.select((g) => g?.activePlayers.length ?? 0),
+    );
+    final showStartingPlayer = ref.watch(
+      gameProvider.select((g) => g?.shouldShowStartingPlayer ?? false),
+    );
+    final startingPlayerName = ref.watch(
+      gameProvider.select((g) => g?.startingPlayerName),
+    );
 
     return PopScope(
       canPop: false,
@@ -300,201 +308,124 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
-            children: [
-              const SizedBox(height: 16),
-              // Header with mode name + cancel button
-              Row(
-                children: [
-                  const Spacer(),
-                  Text(
-                    isClassicMode
-                        ? '\u{1F3DB}\uFE0F Cl\u00E1sico'
-                        : '\u26A1 Express',
-                    style: TextStyle(fontFamily: 'Nunito',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary,
+              children: [
+                const SizedBox(height: 16),
+                // Header with mode name + cancel button
+                Row(
+                  children: [
+                    const Spacer(),
+                    Text(
+                      isClassicMode
+                          ? '\u{1F3DB}\uFE0F Cl\u00E1sico'
+                          : '\u26A1 Express',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.textPrimary,
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: IconButton(
-                        onPressed: _confirmCancelGame,
-                        icon: Icon(
-                          Icons.close_rounded,
-                          color: AppTheme.textSecondary.withValues(alpha: 0.5),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: IconButton(
+                          onPressed: _confirmCancelGame,
+                          icon: Icon(
+                            Icons.close_rounded,
+                            color: AppTheme.textSecondary.withValues(
+                              alpha: 0.5,
+                            ),
+                          ),
+                          tooltip: 'Cancelar partida',
                         ),
-                        tooltip: 'Cancelar partida',
+                      ),
+                    ),
+                  ],
+                ),
+                // Round + active players indicator (classic mode)
+                if (isClassicMode) ...[
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Ronda ${eliminatedCount + 1}  \u00B7  $activeCount jugadores activos',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textSecondary,
                       ),
                     ),
                   ),
                 ],
-              ),
-              // Round + active players indicator (classic mode)
-              if (isClassicMode) ...[
-                const SizedBox(height: 4),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppTheme.surfaceColor,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'Ronda ${eliminatedCount + 1}  \u00B7  $activeCount jugadores activos',
-                    style: TextStyle(fontFamily: 'Nunito',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                ),
-              ],
-              if (gameState.shouldShowStartingPlayer) ...[
-                const SizedBox(height: 8),
-                _buildStartingPlayerBanner(gameState.startingPlayerName!),
-              ],
-              // Center everything vertically
-              const Spacer(flex: 2),
-              // Circular timer (with pulse when low time)
-              AnimatedBuilder(
-                animation: _pulseAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _pulseAnimation.value,
-                    child: _buildCircularTimer(timeString, progress, isLowTime),
-                  );
-                },
-              ),
-              const SizedBox(height: 12),
-              // Eliminated players (compact chips)
-              _buildEliminatedChips(gameState),
-              const Spacer(flex: 3),
-              // Action buttons — clean, no repetitive text
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    _timer?.cancel();
-                    if (isClassicMode) {
-                      ref.read(gameProvider.notifier).startVotingRound();
-                    }
-                    await context.push('/vote');
-                    if (mounted) _startTimer();
-                  },
-                  icon: const Icon(Icons.how_to_vote_rounded, size: 20),
-                  label: Text(isClassicMode
-                      ? 'Iniciar votaci\u00F3n'
-                      : 'Votar'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryColor,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    textStyle: TextStyle(fontFamily: 'Nunito',
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-              if (!isClassicMode) ...[
+                if (showStartingPlayer && startingPlayerName != null) ...[
+                  const SizedBox(height: 8),
+                  _buildStartingPlayerBanner(startingPlayerName),
+                ],
+                // Center everything vertically
+                const Spacer(flex: 2),
+                // Circular timer (isolated widget — rebuilds only on seconds change)
+                _CircularTimer(durationSeconds: durationSeconds),
                 const SizedBox(height: 12),
+                // Eliminated players (compact chips) — listens with its own select
+                const _EliminatedChips(),
+                const Spacer(flex: 3),
+                // Action buttons — clean, no repetitive text
                 SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: _verifyImpostorAndNavigate,
-                    icon: const Icon(Icons.psychology_alt_rounded, size: 20),
-                    label: const Text('Adivinar palabra'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppTheme.secondaryColor,
-                      side: BorderSide(color: AppTheme.secondaryColor),
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      _timer?.cancel();
+                      if (isClassicMode) {
+                        ref.read(gameProvider.notifier).startVotingRound();
+                      }
+                      await context.push('/vote');
+                      if (mounted) _startTimer();
+                    },
+                    icon: const Icon(Icons.how_to_vote_rounded, size: 20),
+                    label: Text(
+                      isClassicMode ? 'Iniciar votaci\u00F3n' : 'Votar',
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.primaryColor,
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      textStyle: TextStyle(fontFamily: 'Nunito',
+                      textStyle: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ),
+                if (!isClassicMode) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _verifyImpostorAndNavigate,
+                      icon: const Icon(Icons.psychology_alt_rounded, size: 20),
+                      label: const Text('Adivinar palabra'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.secondaryColor,
+                        side: BorderSide(color: AppTheme.secondaryColor),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        textStyle: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 24),
               ],
-              const SizedBox(height: 24),
-            ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildCircularTimer(
-    String timeString,
-    double progress,
-    bool isLowTime,
-  ) {
-    final timerColor = isLowTime
-        ? AppTheme.secondaryColor
-        : AppTheme.primaryColor;
-
-    return SizedBox(
-      width: 180,
-      height: 180,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Background circle
-          SizedBox(
-            width: 180,
-            height: 180,
-            child: CircularProgressIndicator(
-              value: 1.0,
-              strokeWidth: 10,
-              color: AppTheme.surfaceColor,
-            ),
-          ),
-          // Progress circle
-          SizedBox(
-            width: 180,
-            height: 180,
-            child: TweenAnimationBuilder<double>(
-              tween: Tween(begin: progress, end: progress),
-              duration: const Duration(milliseconds: 300),
-              builder: (context, value, _) {
-                return Transform.rotate(
-                  angle: -math.pi / 2,
-                  child: CustomPaint(
-                    size: const Size(180, 180),
-                    painter: _CircularTimerPainter(
-                      progress: value,
-                      color: timerColor,
-                      strokeWidth: 10,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          // Inner content
-          Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.timer_rounded,
-                size: 24,
-                color: timerColor.withValues(alpha: 0.7),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                timeString,
-                style: TextStyle(fontFamily: 'Nunito',
-                  fontSize: 36,
-                  fontWeight: FontWeight.w800,
-                  color: timerColor,
-                  letterSpacing: 2,
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
@@ -521,7 +452,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
           Flexible(
             child: Text(
               'Empieza: $playerName',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
@@ -533,9 +464,153 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
       ),
     );
   }
+}
 
-  Widget _buildEliminatedChips(ActiveGame gameState) {
-    final eliminated = gameState.players.where((p) => p.isEliminated).toList();
+/// Circular timer widget. Rebuilds only when `timeRemainingSeconds` changes
+/// (via Riverpod `select`). Owns its own pulse animation controller, which
+/// is driven by `ref.listen` to avoid side effects in `build()`.
+class _CircularTimer extends ConsumerStatefulWidget {
+  final int durationSeconds;
+  const _CircularTimer({required this.durationSeconds});
+
+  @override
+  ConsumerState<_CircularTimer> createState() => _CircularTimerState();
+}
+
+class _CircularTimerState extends ConsumerState<_CircularTimer>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.08).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Drive pulse animation reactively — outside build side effects.
+    ref.listen<bool>(
+      gameProvider.select((g) => g != null && g.timeRemainingSeconds <= 30),
+      (_, isLowTime) {
+        if (isLowTime && !_pulseController.isAnimating) {
+          _pulseController.repeat(reverse: true);
+        } else if (!isLowTime && _pulseController.isAnimating) {
+          _pulseController.stop();
+          _pulseController.reset();
+        }
+      },
+    );
+
+    final seconds = ref.watch(
+      gameProvider.select((g) => g?.timeRemainingSeconds ?? 0),
+    );
+    final isLowTime = seconds <= 30;
+    final minutes = seconds ~/ 60;
+    final secs = seconds % 60;
+    final timeString =
+        '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+    final progress = widget.durationSeconds == 0
+        ? 0.0
+        : seconds / widget.durationSeconds;
+    final timerColor = isLowTime
+        ? AppTheme.secondaryColor
+        : AppTheme.primaryColor;
+
+    return AnimatedBuilder(
+      animation: _pulseAnimation,
+      builder: (context, _) {
+        return Transform.scale(
+          scale: _pulseAnimation.value,
+          child: SizedBox(
+            width: 180,
+            height: 180,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 180,
+                  height: 180,
+                  child: CircularProgressIndicator(
+                    value: 1.0,
+                    strokeWidth: 10,
+                    color: AppTheme.surfaceColor,
+                  ),
+                ),
+                SizedBox(
+                  width: 180,
+                  height: 180,
+                  child: Transform.rotate(
+                    angle: -math.pi / 2,
+                    child: CustomPaint(
+                      size: const Size(180, 180),
+                      painter: _CircularTimerPainter(
+                        progress: progress,
+                        color: timerColor,
+                        strokeWidth: 10,
+                      ),
+                    ),
+                  ),
+                ),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.timer_rounded,
+                      size: 24,
+                      color: timerColor.withValues(alpha: 0.7),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      timeString,
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w800,
+                        color: timerColor,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// Eliminated-players chip list. Rebuilds only when the eliminated set
+/// changes (via `select` on the filtered list).
+class _EliminatedChips extends ConsumerWidget {
+  const _EliminatedChips();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final eliminated = ref.watch(
+      gameProvider.select(
+        (g) => g == null
+            ? const <String>[]
+            : g.players
+                  .where((p) => p.isEliminated)
+                  .map((p) => p.name)
+                  .toList(),
+      ),
+    );
 
     if (eliminated.isEmpty) return const SizedBox.shrink();
 
@@ -543,7 +618,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
       children: [
         Text(
           'Eliminados (${eliminated.length})',
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: AppTheme.textSecondary,
@@ -554,7 +629,7 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
           spacing: 8,
           runSpacing: 6,
           alignment: WrapAlignment.center,
-          children: eliminated.map((player) {
+          children: eliminated.map((name) {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -565,13 +640,15 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen>
                 ),
               ),
               child: Text(
-                player.name,
-                style: TextStyle(fontFamily: 'Nunito',
+                name,
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: AppTheme.textSecondary,
                   decoration: TextDecoration.lineThrough,
-                  decorationColor: AppTheme.textSecondary.withValues(alpha: 0.6),
+                  decorationColor: AppTheme.textSecondary.withValues(
+                    alpha: 0.6,
+                  ),
                 ),
               ),
             );
@@ -621,4 +698,3 @@ class _CircularTimerPainter extends CustomPainter {
     return oldDelegate.progress != progress || oldDelegate.color != color;
   }
 }
-
