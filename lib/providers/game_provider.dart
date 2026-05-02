@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -31,8 +32,42 @@ class GameNotifier extends Notifier<ActiveGame?> {
   @override
   ActiveGame? build() => null;
 
-  void startNewGame(GameConfig config) {
-    final wordEntry = WordBank.getRandomWordFromCategories(config.categories);
+  Future<void> startNewGame(GameConfig config) async {
+    // Anti-repetición: leer las últimas N palabras jugadas por este grupo
+    // (o por el bucket de "Juego rápido" si no hay grupo) y excluirlas de
+    // la elección. Si la BD falla por algún motivo, seguimos sin exclusión
+    // — degradación graciosa, peor caso es la repetición que ya teníamos.
+    final dao = ref.read(databaseProvider).gameDao;
+    final categoryNames =
+        config.categories.map((category) => category.name).toList();
+    Set<String> excluded = const <String>{};
+    try {
+      excluded = await dao.recentWordsForCategories(
+        groupId: config.groupId,
+        categories: categoryNames,
+      );
+    } catch (_) {
+      excluded = const <String>{};
+    }
+
+    final wordEntry = WordBank.getRandomWordFromCategories(
+      config.categories,
+      excludedWords: excluded,
+    );
+
+    // Registrar la elección inmediatamente para que la siguiente partida
+    // (incluso si el usuario reabre el app) ya no la considere candidata.
+    // Fire-and-forget: no bloqueamos el inicio del juego por una escritura
+    // a BD que no afecta la sesión actual.
+    unawaited(
+      dao
+          .recordWordPick(
+            groupId: config.groupId,
+            category: wordEntry.category.name,
+            word: wordEntry.word,
+          )
+          .catchError((_) {}),
+    );
 
     final shuffledNames = List<String>.from(config.playerNames)
       ..shuffle(_random);

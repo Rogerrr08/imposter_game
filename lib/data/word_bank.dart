@@ -45,17 +45,31 @@ class WordBank {
     return _pickFromWordBag(category);
   }
 
-  static WordEntry getRandomWordFromCategories(List<WordCategory> categories) {
+  /// Elige una palabra aleatoria entre `categories`, evitando las que estén
+  /// en `excludedWords` (típicamente las últimas N palabras jugadas por el
+  /// grupo, leídas de `word_history` en BD).
+  ///
+  /// El shuffle-bag de sesión sigue activo como segunda capa: si la primera
+  /// elección cae en una palabra excluida, se vuelve a sacar de la bolsa
+  /// hasta encontrar una válida. Si la categoría se queda sin candidatos
+  /// (ej. más excluidas que palabras en la bolsa actual), la bolsa se
+  /// rellena y se reintenta. Como hard fallback (no debería ocurrir con
+  /// 75 palabras / 25 excluidas), se acepta una palabra excluida.
+  static WordEntry getRandomWordFromCategories(
+    List<WordCategory> categories, {
+    Set<String> excludedWords = const <String>{},
+  }) {
     final validCategories = categories
         .where((category) => getWordsByCategory(category).isNotEmpty)
         .toList(growable: false);
 
     if (validCategories.isEmpty) {
-      throw StateError('No hay palabras disponibles para las categorías seleccionadas.');
+      throw StateError(
+          'No hay palabras disponibles para las categorías seleccionadas.');
     }
 
     final category = _pickRandomCategoryFromBag(validCategories);
-    return _pickFromWordBag(category);
+    return _pickFromWordBag(category, excludedWords: excludedWords);
   }
 
   static List<String> getHardHints(WordEntry word, {required int count}) {
@@ -104,7 +118,13 @@ class WordBank {
   }
 
   /// Shuffle-bag per category: cycles through all words before repeating.
-  static WordEntry _pickFromWordBag(WordCategory category) {
+  /// Si se proveen `excludedWords`, salta entries de la bolsa que coincidan
+  /// hasta encontrar una válida o agotar la bolsa (en cuyo caso la rellena
+  /// y reintenta una sola vez antes de aceptar una excluida).
+  static WordEntry _pickFromWordBag(
+    WordCategory category, {
+    Set<String> excludedWords = const <String>{},
+  }) {
     final words = getWordsByCategory(category);
     if (words.isEmpty) {
       throw StateError('No hay palabras disponibles en esta categoría.');
@@ -115,11 +135,35 @@ class WordBank {
       () => <WordEntry>[],
     );
 
+    WordEntry? pickFromCurrentBag() {
+      while (bag.isNotEmpty) {
+        final candidate = bag.removeLast();
+        if (!excludedWords.contains(candidate.word)) {
+          return candidate;
+        }
+      }
+      return null;
+    }
+
     if (bag.isEmpty) {
       bag.addAll(words);
       bag.shuffle(_random);
     }
 
-    return bag.removeLast();
+    final firstTry = pickFromCurrentBag();
+    if (firstTry != null) return firstTry;
+
+    // Bolsa drenada por exclusiones. Refill+reshuffle e intentar de nuevo.
+    bag
+      ..addAll(words)
+      ..shuffle(_random);
+
+    final secondTry = pickFromCurrentBag();
+    if (secondTry != null) return secondTry;
+
+    // Hard fallback: todas las palabras de la categoría están excluidas
+    // (no debería pasar con 75 - 25 = 50 candidatos). Devolver cualquier
+    // palabra de la categoría para no fallar la partida.
+    return words[_random.nextInt(words.length)];
   }
 }

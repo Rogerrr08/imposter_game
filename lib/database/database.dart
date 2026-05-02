@@ -66,19 +66,32 @@ class GamePlayersTable extends Table {
       boolean().withDefault(const Constant(false))();
 }
 
+/// Anti-repetición de palabras: registra qué palabras ha jugado cada grupo
+/// recientemente para excluirlas en la siguiente elección. `groupId == null`
+/// se usa para el modo "Juego rápido" (sin grupo asociado), tratándolo como
+/// un bucket virtual compartido. Se mantiene un trailing window de 25
+/// entradas por (group_id, category); las más viejas se podan.
+class WordHistory extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get groupId => integer().references(Groups, #id).nullable()();
+  TextColumn get category => text()();
+  TextColumn get word => text()();
+  DateTimeColumn get pickedAt => dateTime().withDefault(currentDateAndTime)();
+}
+
 // ---------------------------------------------------------------------------
 // Database
 // ---------------------------------------------------------------------------
 
 @DriftDatabase(
-  tables: [Groups, GroupPlayers, Games, GamePlayersTable],
+  tables: [Groups, GroupPlayers, Games, GamePlayersTable, WordHistory],
   daos: [GroupDao, GameDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -98,6 +111,9 @@ class AppDatabase extends _$AppDatabase {
             );
             await _rebuildPlayerStatsFromHistory();
             await _setMetaValue(_playerStatsInitializedKey, '1');
+          }
+          if (from < 5) {
+            await m.createTable(wordHistory);
           }
         },
         beforeOpen: (details) async {
@@ -159,6 +175,9 @@ class AppDatabase extends _$AppDatabase {
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_player_stats_lookup ON player_stats (group_id, scope, total_points DESC, player_name COLLATE NOCASE)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_word_history_group_category_picked ON word_history (group_id, category, picked_at DESC, id DESC)',
     );
   }
 
@@ -416,9 +435,78 @@ class GroupDao extends DatabaseAccessor<AppDatabase> with _$GroupDaoMixin {
   }
 }
 
-@DriftAccessor(tables: [Games, GamePlayersTable, Groups])
+@DriftAccessor(tables: [Games, GamePlayersTable, Groups, WordHistory])
 class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
   GameDao(super.db);
+
+  /// Cuántas palabras recientes excluir antes de volver a poderse repetir.
+  /// Empíricamente ~33% del tamaño de categoría (75) es donde los humanos
+  /// dejan de notar repetición.
+  static const int _wordHistoryWindow = 25;
+
+  /// Devuelve las palabras jugadas recientemente por este grupo en estas
+  /// categorías. La intersección entre el resultado y los candidatos del
+  /// `WordBank` es lo que se excluye en la siguiente elección.
+  ///
+  /// `groupId == null` representa el modo Juego rápido (todos los quick
+  /// games comparten un mismo bucket virtual, lo cual es lo correcto:
+  /// si juegas 5 quick games seguidos, no quieres que la 6ª te repita
+  /// la palabra de hace 2 minutos).
+  Future<Set<String>> recentWordsForCategories({
+    required int? groupId,
+    required List<String> categories,
+    int? limit,
+  }) async {
+    if (categories.isEmpty) return const <String>{};
+
+    final query = select(wordHistory)
+      ..where((tbl) => groupId == null
+          ? tbl.groupId.isNull()
+          : tbl.groupId.equals(groupId))
+      ..where((tbl) => tbl.category.isIn(categories))
+      ..orderBy([(tbl) => OrderingTerm.desc(tbl.pickedAt)])
+      ..limit(limit ?? _wordHistoryWindow * categories.length);
+
+    final rows = await query.get();
+    return rows.map((row) => row.word).toSet();
+  }
+
+  /// Registra una palabra recién elegida y poda entries viejas para que
+  /// la cola por (group_id, category) no crezca indefinidamente.
+  Future<void> recordWordPick({
+    required int? groupId,
+    required String category,
+    required String word,
+  }) async {
+    await transaction(() async {
+      await into(wordHistory).insert(
+        WordHistoryCompanion.insert(
+          groupId: Value(groupId),
+          category: category,
+          word: word,
+        ),
+      );
+      // Mantener solo las _wordHistoryWindow más recientes para este
+      // (group, category). Cola FIFO con DELETE por subselect.
+      await customStatement(
+        '''
+        DELETE FROM word_history
+        WHERE id IN (
+          SELECT id FROM word_history
+          WHERE category = ?
+            AND ${groupId == null ? 'group_id IS NULL' : 'group_id = ?'}
+          ORDER BY picked_at DESC, id DESC
+          LIMIT -1 OFFSET ?
+        )
+        ''',
+        [
+          category,
+          ?groupId,
+          _wordHistoryWindow,
+        ],
+      );
+    });
+  }
 
   /// Persist a completed game together with all its player results.
   ///

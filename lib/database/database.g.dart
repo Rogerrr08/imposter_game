@@ -1572,6 +1572,352 @@ class GamePlayersTableCompanion extends UpdateCompanion<GamePlayersTableData> {
   }
 }
 
+class $WordHistoryTable extends WordHistory
+    with TableInfo<$WordHistoryTable, WordHistoryData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $WordHistoryTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+    'id',
+    aliasedName,
+    false,
+    hasAutoIncrement: true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'PRIMARY KEY AUTOINCREMENT',
+    ),
+  );
+  static const VerificationMeta _groupIdMeta = const VerificationMeta(
+    'groupId',
+  );
+  @override
+  late final GeneratedColumn<int> groupId = GeneratedColumn<int>(
+    'group_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES "groups" (id)',
+    ),
+  );
+  static const VerificationMeta _categoryMeta = const VerificationMeta(
+    'category',
+  );
+  @override
+  late final GeneratedColumn<String> category = GeneratedColumn<String>(
+    'category',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _wordMeta = const VerificationMeta('word');
+  @override
+  late final GeneratedColumn<String> word = GeneratedColumn<String>(
+    'word',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _pickedAtMeta = const VerificationMeta(
+    'pickedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> pickedAt = GeneratedColumn<DateTime>(
+    'picked_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+    defaultValue: currentDateAndTime,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [id, groupId, category, word, pickedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'word_history';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<WordHistoryData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('group_id')) {
+      context.handle(
+        _groupIdMeta,
+        groupId.isAcceptableOrUnknown(data['group_id']!, _groupIdMeta),
+      );
+    }
+    if (data.containsKey('category')) {
+      context.handle(
+        _categoryMeta,
+        category.isAcceptableOrUnknown(data['category']!, _categoryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_categoryMeta);
+    }
+    if (data.containsKey('word')) {
+      context.handle(
+        _wordMeta,
+        word.isAcceptableOrUnknown(data['word']!, _wordMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_wordMeta);
+    }
+    if (data.containsKey('picked_at')) {
+      context.handle(
+        _pickedAtMeta,
+        pickedAt.isAcceptableOrUnknown(data['picked_at']!, _pickedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  WordHistoryData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return WordHistoryData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}id'],
+      )!,
+      groupId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}group_id'],
+      ),
+      category: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category'],
+      )!,
+      word: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}word'],
+      )!,
+      pickedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}picked_at'],
+      )!,
+    );
+  }
+
+  @override
+  $WordHistoryTable createAlias(String alias) {
+    return $WordHistoryTable(attachedDatabase, alias);
+  }
+}
+
+class WordHistoryData extends DataClass implements Insertable<WordHistoryData> {
+  final int id;
+  final int? groupId;
+  final String category;
+  final String word;
+  final DateTime pickedAt;
+  const WordHistoryData({
+    required this.id,
+    this.groupId,
+    required this.category,
+    required this.word,
+    required this.pickedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    if (!nullToAbsent || groupId != null) {
+      map['group_id'] = Variable<int>(groupId);
+    }
+    map['category'] = Variable<String>(category);
+    map['word'] = Variable<String>(word);
+    map['picked_at'] = Variable<DateTime>(pickedAt);
+    return map;
+  }
+
+  WordHistoryCompanion toCompanion(bool nullToAbsent) {
+    return WordHistoryCompanion(
+      id: Value(id),
+      groupId: groupId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(groupId),
+      category: Value(category),
+      word: Value(word),
+      pickedAt: Value(pickedAt),
+    );
+  }
+
+  factory WordHistoryData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return WordHistoryData(
+      id: serializer.fromJson<int>(json['id']),
+      groupId: serializer.fromJson<int?>(json['groupId']),
+      category: serializer.fromJson<String>(json['category']),
+      word: serializer.fromJson<String>(json['word']),
+      pickedAt: serializer.fromJson<DateTime>(json['pickedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'groupId': serializer.toJson<int?>(groupId),
+      'category': serializer.toJson<String>(category),
+      'word': serializer.toJson<String>(word),
+      'pickedAt': serializer.toJson<DateTime>(pickedAt),
+    };
+  }
+
+  WordHistoryData copyWith({
+    int? id,
+    Value<int?> groupId = const Value.absent(),
+    String? category,
+    String? word,
+    DateTime? pickedAt,
+  }) => WordHistoryData(
+    id: id ?? this.id,
+    groupId: groupId.present ? groupId.value : this.groupId,
+    category: category ?? this.category,
+    word: word ?? this.word,
+    pickedAt: pickedAt ?? this.pickedAt,
+  );
+  WordHistoryData copyWithCompanion(WordHistoryCompanion data) {
+    return WordHistoryData(
+      id: data.id.present ? data.id.value : this.id,
+      groupId: data.groupId.present ? data.groupId.value : this.groupId,
+      category: data.category.present ? data.category.value : this.category,
+      word: data.word.present ? data.word.value : this.word,
+      pickedAt: data.pickedAt.present ? data.pickedAt.value : this.pickedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WordHistoryData(')
+          ..write('id: $id, ')
+          ..write('groupId: $groupId, ')
+          ..write('category: $category, ')
+          ..write('word: $word, ')
+          ..write('pickedAt: $pickedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, groupId, category, word, pickedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is WordHistoryData &&
+          other.id == this.id &&
+          other.groupId == this.groupId &&
+          other.category == this.category &&
+          other.word == this.word &&
+          other.pickedAt == this.pickedAt);
+}
+
+class WordHistoryCompanion extends UpdateCompanion<WordHistoryData> {
+  final Value<int> id;
+  final Value<int?> groupId;
+  final Value<String> category;
+  final Value<String> word;
+  final Value<DateTime> pickedAt;
+  const WordHistoryCompanion({
+    this.id = const Value.absent(),
+    this.groupId = const Value.absent(),
+    this.category = const Value.absent(),
+    this.word = const Value.absent(),
+    this.pickedAt = const Value.absent(),
+  });
+  WordHistoryCompanion.insert({
+    this.id = const Value.absent(),
+    this.groupId = const Value.absent(),
+    required String category,
+    required String word,
+    this.pickedAt = const Value.absent(),
+  }) : category = Value(category),
+       word = Value(word);
+  static Insertable<WordHistoryData> custom({
+    Expression<int>? id,
+    Expression<int>? groupId,
+    Expression<String>? category,
+    Expression<String>? word,
+    Expression<DateTime>? pickedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (groupId != null) 'group_id': groupId,
+      if (category != null) 'category': category,
+      if (word != null) 'word': word,
+      if (pickedAt != null) 'picked_at': pickedAt,
+    });
+  }
+
+  WordHistoryCompanion copyWith({
+    Value<int>? id,
+    Value<int?>? groupId,
+    Value<String>? category,
+    Value<String>? word,
+    Value<DateTime>? pickedAt,
+  }) {
+    return WordHistoryCompanion(
+      id: id ?? this.id,
+      groupId: groupId ?? this.groupId,
+      category: category ?? this.category,
+      word: word ?? this.word,
+      pickedAt: pickedAt ?? this.pickedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (groupId.present) {
+      map['group_id'] = Variable<int>(groupId.value);
+    }
+    if (category.present) {
+      map['category'] = Variable<String>(category.value);
+    }
+    if (word.present) {
+      map['word'] = Variable<String>(word.value);
+    }
+    if (pickedAt.present) {
+      map['picked_at'] = Variable<DateTime>(pickedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('WordHistoryCompanion(')
+          ..write('id: $id, ')
+          ..write('groupId: $groupId, ')
+          ..write('category: $category, ')
+          ..write('word: $word, ')
+          ..write('pickedAt: $pickedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -1581,6 +1927,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $GamePlayersTableTable gamePlayersTable = $GamePlayersTableTable(
     this,
   );
+  late final $WordHistoryTable wordHistory = $WordHistoryTable(this);
   late final GroupDao groupDao = GroupDao(this as AppDatabase);
   late final GameDao gameDao = GameDao(this as AppDatabase);
   @override
@@ -1592,6 +1939,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     groupPlayers,
     games,
     gamePlayersTable,
+    wordHistory,
   ];
 }
 
@@ -1644,6 +1992,24 @@ final class $$GroupsTableReferences
     ).filter((f) => f.groupId.id.sqlEquals($_itemColumn<int>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_gamesRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$WordHistoryTable, List<WordHistoryData>>
+  _wordHistoryRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.wordHistory,
+    aliasName: $_aliasNameGenerator(db.groups.id, db.wordHistory.groupId),
+  );
+
+  $$WordHistoryTableProcessedTableManager get wordHistoryRefs {
+    final manager = $$WordHistoryTableTableManager(
+      $_db,
+      $_db.wordHistory,
+    ).filter((f) => f.groupId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_wordHistoryRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -1715,6 +2081,31 @@ class $$GroupsTableFilterComposer
           }) => $$GamesTableFilterComposer(
             $db: $db,
             $table: $db.games,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> wordHistoryRefs(
+    Expression<bool> Function($$WordHistoryTableFilterComposer f) f,
+  ) {
+    final $$WordHistoryTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.wordHistory,
+      getReferencedColumn: (t) => t.groupId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WordHistoryTableFilterComposer(
+            $db: $db,
+            $table: $db.wordHistory,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -1817,6 +2208,31 @@ class $$GroupsTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> wordHistoryRefs<T extends Object>(
+    Expression<T> Function($$WordHistoryTableAnnotationComposer a) f,
+  ) {
+    final $$WordHistoryTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.wordHistory,
+      getReferencedColumn: (t) => t.groupId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$WordHistoryTableAnnotationComposer(
+            $db: $db,
+            $table: $db.wordHistory,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$GroupsTableTableManager
@@ -1832,7 +2248,11 @@ class $$GroupsTableTableManager
           $$GroupsTableUpdateCompanionBuilder,
           (Group, $$GroupsTableReferences),
           Group,
-          PrefetchHooks Function({bool groupPlayersRefs, bool gamesRefs})
+          PrefetchHooks Function({
+            bool groupPlayersRefs,
+            bool gamesRefs,
+            bool wordHistoryRefs,
+          })
         > {
   $$GroupsTableTableManager(_$AppDatabase db, $GroupsTable table)
     : super(
@@ -1868,12 +2288,17 @@ class $$GroupsTableTableManager
               )
               .toList(),
           prefetchHooksCallback:
-              ({groupPlayersRefs = false, gamesRefs = false}) {
+              ({
+                groupPlayersRefs = false,
+                gamesRefs = false,
+                wordHistoryRefs = false,
+              }) {
                 return PrefetchHooks(
                   db: db,
                   explicitlyWatchedTables: [
                     if (groupPlayersRefs) db.groupPlayers,
                     if (gamesRefs) db.games,
+                    if (wordHistoryRefs) db.wordHistory,
                   ],
                   addJoins: null,
                   getPrefetchedDataCallback: (items) async {
@@ -1912,6 +2337,27 @@ class $$GroupsTableTableManager
                               ),
                           typedResults: items,
                         ),
+                      if (wordHistoryRefs)
+                        await $_getPrefetchedData<
+                          Group,
+                          $GroupsTable,
+                          WordHistoryData
+                        >(
+                          currentTable: table,
+                          referencedTable: $$GroupsTableReferences
+                              ._wordHistoryRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$GroupsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).wordHistoryRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.groupId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
                     ];
                   },
                 );
@@ -1932,7 +2378,11 @@ typedef $$GroupsTableProcessedTableManager =
       $$GroupsTableUpdateCompanionBuilder,
       (Group, $$GroupsTableReferences),
       Group,
-      PrefetchHooks Function({bool groupPlayersRefs, bool gamesRefs})
+      PrefetchHooks Function({
+        bool groupPlayersRefs,
+        bool gamesRefs,
+        bool wordHistoryRefs,
+      })
     >;
 typedef $$GroupPlayersTableCreateCompanionBuilder =
     GroupPlayersCompanion Function({
@@ -3078,6 +3528,318 @@ typedef $$GamePlayersTableTableProcessedTableManager =
       GamePlayersTableData,
       PrefetchHooks Function({bool gameId})
     >;
+typedef $$WordHistoryTableCreateCompanionBuilder =
+    WordHistoryCompanion Function({
+      Value<int> id,
+      Value<int?> groupId,
+      required String category,
+      required String word,
+      Value<DateTime> pickedAt,
+    });
+typedef $$WordHistoryTableUpdateCompanionBuilder =
+    WordHistoryCompanion Function({
+      Value<int> id,
+      Value<int?> groupId,
+      Value<String> category,
+      Value<String> word,
+      Value<DateTime> pickedAt,
+    });
+
+final class $$WordHistoryTableReferences
+    extends BaseReferences<_$AppDatabase, $WordHistoryTable, WordHistoryData> {
+  $$WordHistoryTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $GroupsTable _groupIdTable(_$AppDatabase db) => db.groups.createAlias(
+    $_aliasNameGenerator(db.wordHistory.groupId, db.groups.id),
+  );
+
+  $$GroupsTableProcessedTableManager? get groupId {
+    final $_column = $_itemColumn<int>('group_id');
+    if ($_column == null) return null;
+    final manager = $$GroupsTableTableManager(
+      $_db,
+      $_db.groups,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_groupIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$WordHistoryTableFilterComposer
+    extends Composer<_$AppDatabase, $WordHistoryTable> {
+  $$WordHistoryTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get word => $composableBuilder(
+    column: $table.word,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get pickedAt => $composableBuilder(
+    column: $table.pickedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$GroupsTableFilterComposer get groupId {
+    final $$GroupsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.groupId,
+      referencedTable: $db.groups,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GroupsTableFilterComposer(
+            $db: $db,
+            $table: $db.groups,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WordHistoryTableOrderingComposer
+    extends Composer<_$AppDatabase, $WordHistoryTable> {
+  $$WordHistoryTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get category => $composableBuilder(
+    column: $table.category,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get word => $composableBuilder(
+    column: $table.word,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get pickedAt => $composableBuilder(
+    column: $table.pickedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$GroupsTableOrderingComposer get groupId {
+    final $$GroupsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.groupId,
+      referencedTable: $db.groups,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GroupsTableOrderingComposer(
+            $db: $db,
+            $table: $db.groups,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WordHistoryTableAnnotationComposer
+    extends Composer<_$AppDatabase, $WordHistoryTable> {
+  $$WordHistoryTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get category =>
+      $composableBuilder(column: $table.category, builder: (column) => column);
+
+  GeneratedColumn<String> get word =>
+      $composableBuilder(column: $table.word, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get pickedAt =>
+      $composableBuilder(column: $table.pickedAt, builder: (column) => column);
+
+  $$GroupsTableAnnotationComposer get groupId {
+    final $$GroupsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.groupId,
+      referencedTable: $db.groups,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$GroupsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.groups,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$WordHistoryTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $WordHistoryTable,
+          WordHistoryData,
+          $$WordHistoryTableFilterComposer,
+          $$WordHistoryTableOrderingComposer,
+          $$WordHistoryTableAnnotationComposer,
+          $$WordHistoryTableCreateCompanionBuilder,
+          $$WordHistoryTableUpdateCompanionBuilder,
+          (WordHistoryData, $$WordHistoryTableReferences),
+          WordHistoryData,
+          PrefetchHooks Function({bool groupId})
+        > {
+  $$WordHistoryTableTableManager(_$AppDatabase db, $WordHistoryTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$WordHistoryTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$WordHistoryTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$WordHistoryTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int?> groupId = const Value.absent(),
+                Value<String> category = const Value.absent(),
+                Value<String> word = const Value.absent(),
+                Value<DateTime> pickedAt = const Value.absent(),
+              }) => WordHistoryCompanion(
+                id: id,
+                groupId: groupId,
+                category: category,
+                word: word,
+                pickedAt: pickedAt,
+              ),
+          createCompanionCallback:
+              ({
+                Value<int> id = const Value.absent(),
+                Value<int?> groupId = const Value.absent(),
+                required String category,
+                required String word,
+                Value<DateTime> pickedAt = const Value.absent(),
+              }) => WordHistoryCompanion.insert(
+                id: id,
+                groupId: groupId,
+                category: category,
+                word: word,
+                pickedAt: pickedAt,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$WordHistoryTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({groupId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (groupId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.groupId,
+                                referencedTable: $$WordHistoryTableReferences
+                                    ._groupIdTable(db),
+                                referencedColumn: $$WordHistoryTableReferences
+                                    ._groupIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$WordHistoryTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $WordHistoryTable,
+      WordHistoryData,
+      $$WordHistoryTableFilterComposer,
+      $$WordHistoryTableOrderingComposer,
+      $$WordHistoryTableAnnotationComposer,
+      $$WordHistoryTableCreateCompanionBuilder,
+      $$WordHistoryTableUpdateCompanionBuilder,
+      (WordHistoryData, $$WordHistoryTableReferences),
+      WordHistoryData,
+      PrefetchHooks Function({bool groupId})
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -3090,6 +3852,8 @@ class $AppDatabaseManager {
       $$GamesTableTableManager(_db, _db.games);
   $$GamePlayersTableTableTableManager get gamePlayersTable =>
       $$GamePlayersTableTableTableManager(_db, _db.gamePlayersTable);
+  $$WordHistoryTableTableManager get wordHistory =>
+      $$WordHistoryTableTableManager(_db, _db.wordHistory);
 }
 
 mixin _$GroupDaoMixin on DatabaseAccessor<AppDatabase> {
@@ -3112,6 +3876,7 @@ mixin _$GameDaoMixin on DatabaseAccessor<AppDatabase> {
   $GamesTable get games => attachedDatabase.games;
   $GamePlayersTableTable get gamePlayersTable =>
       attachedDatabase.gamePlayersTable;
+  $WordHistoryTable get wordHistory => attachedDatabase.wordHistory;
   GameDaoManager get managers => GameDaoManager(this);
 }
 
@@ -3127,4 +3892,6 @@ class GameDaoManager {
         _db.attachedDatabase,
         _db.gamePlayersTable,
       );
+  $$WordHistoryTableTableManager get wordHistory =>
+      $$WordHistoryTableTableManager(_db.attachedDatabase, _db.wordHistory);
 }

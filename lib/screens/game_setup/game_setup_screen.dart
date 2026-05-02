@@ -263,8 +263,6 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
       ref.read(lastQuickGamePresetProvider.notifier).save(preset);
     }
 
-    ref.read(gameProvider.notifier).startNewGame(config);
-
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -273,7 +271,16 @@ class _GameSetupScreenState extends ConsumerState<GameSetupScreen> {
         child: CircularProgressIndicator(color: AppTheme.primaryColor),
       ),
     );
-    await Future.delayed(const Duration(milliseconds: 400));
+
+    // Inicio del juego en paralelo con el delay UX. La elección de palabra
+    // ahora consulta `word_history` en BD (anti-repetición), por lo que es
+    // async — pero se solapa con los 400ms de UX y normalmente termina
+    // mucho antes.
+    await Future.wait<void>([
+      ref.read(gameProvider.notifier).startNewGame(config),
+      Future<void>.delayed(const Duration(milliseconds: 400)),
+    ]);
+
     if (context.mounted) {
       Navigator.of(context).pop();
       context.push('/role-reveal');
