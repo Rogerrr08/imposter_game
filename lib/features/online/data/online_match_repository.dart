@@ -18,20 +18,46 @@ class OnlineMatchRepository {
     required OnlineRoom room,
     required List<OnlineRoomPlayer> players,
   }) async {
-    // 1. Pick word from the room's configured categories
-    final wordEntry = WordBank.getRandomWordFromCategories(room.categories);
+    // 1. Pre-fetch las últimas 25 palabras jugadas por este host (por
+    //    categoría) para excluirlas de la siguiente elección. Espejo de
+    //    la lógica local, scoped al host_user_id en BD.
+    Set<String> excluded = const <String>{};
+    try {
+      final result = await _client.rpc(
+        'get_recent_words_for_host',
+        params: {
+          'input_categories':
+              room.categories.map((category) => category.name).toList(),
+        },
+      );
+      if (result is List) {
+        excluded = result.map((entry) => entry.toString()).toSet();
+      }
+    } catch (_) {
+      // Degradación graciosa: si falla el RPC seguimos sin exclusión, peor
+      // caso es la repetición que ya teníamos antes.
+      excluded = const <String>{};
+    }
 
-    // 2. Pick impostor indices (0-based, referencing seat_order - 1)
+    // 2. Pick word con la lista de excluidas
+    final wordEntry = WordBank.getRandomWordFromCategories(
+      room.categories,
+      excludedWords: excluded,
+    );
+
+    // 3. Pick impostor indices (0-based, referencing seat_order - 1)
     final indices = List.generate(players.length, (i) => i)..shuffle(_random);
     final impostorIndices = indices.take(room.impostorCount).toList();
 
-    // 3. Get hints using the same logic as local game
+    // 4. Get hints using the same logic as local game
     final hints = WordBank.getHardHints(
       wordEntry,
       count: room.impostorCount,
     );
 
     try {
+      // El RPC `start_match` registra la palabra en `match_word_history`
+      // para que la próxima partida del mismo host la excluya.
       final matchId = await _client.rpc(
         'start_match',
         params: {

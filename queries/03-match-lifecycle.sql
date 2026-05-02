@@ -127,6 +127,13 @@ begin
 
   update public.rooms set status = 'playing' where id = input_room_id;
 
+  -- Anti-repetición: registrar la palabra para que la próxima partida del
+  -- mismo host la excluya. La función se encarga de podar a las últimas 25
+  -- por (host, category). Ver queries/15-word-anti-repetition.sql.
+  perform public.record_word_pick(
+    target_room.host_user_id, input_category, input_word
+  );
+
   return new_match_id;
 end;
 $$;
