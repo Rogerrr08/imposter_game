@@ -152,6 +152,18 @@ class AppDatabase extends _$AppDatabase {
         PRIMARY KEY (group_id, scope, player_name)
       )
     ''');
+    // Fix defensivo: aunque la migración v5 cree esta tabla en `onUpgrade`,
+    // si por alguna razón falló (DB en estado inconsistente) la próxima
+    // apertura la recrea acá. IF NOT EXISTS la hace idempotente.
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS word_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        group_id INTEGER REFERENCES groups(id),
+        category TEXT NOT NULL,
+        word TEXT NOT NULL,
+        picked_at INTEGER NOT NULL
+      )
+    ''');
     await customStatement('''
       CREATE TABLE IF NOT EXISTS app_meta (
         key TEXT NOT NULL PRIMARY KEY,
@@ -439,25 +451,29 @@ class GroupDao extends DatabaseAccessor<AppDatabase> with _$GroupDaoMixin {
 class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
   GameDao(super.db);
 
-  /// Cuántas palabras recientes excluir antes de volver a poderse repetir.
-  /// Empíricamente ~33% del tamaño de categoría (75) es donde los humanos
-  /// dejan de notar repetición.
-  static const int _wordHistoryWindow = 25;
+  /// Profundidad de historial que mantenemos por (grupo, categoría). 35 ≈
+  /// 47% del tamaño de categoría (75): industria recomienda 30–50% para que
+  /// se sienta fresco. El selector usa este histórico en dos capas:
+  /// (1) un hard floor de las 10 más recientes (nunca se repiten), y
+  /// (2) soft scoring por decay temporal para las restantes — palabras vistas
+  /// hace mucho tiempo tienen score cercano a 1, vistas hace poco cercano a 0.
+  /// Ver [WordBank.pickWordWithDecay].
+  static const int _wordHistoryWindow = 35;
 
-  /// Devuelve las palabras jugadas recientemente por este grupo en estas
-  /// categorías. La intersección entre el resultado y los candidatos del
-  /// `WordBank` es lo que se excluye en la siguiente elección.
+  /// Devuelve un mapa `palabra → última vez que se eligió` para las últimas
+  /// `_wordHistoryWindow` palabras jugadas por este grupo en las categorías
+  /// indicadas. Si la misma palabra aparece varias veces, se queda el
+  /// timestamp más reciente.
   ///
   /// `groupId == null` representa el modo Juego rápido (todos los quick
-  /// games comparten un mismo bucket virtual, lo cual es lo correcto:
-  /// si juegas 5 quick games seguidos, no quieres que la 6ª te repita
-  /// la palabra de hace 2 minutos).
-  Future<Set<String>> recentWordsForCategories({
+  /// games comparten un mismo bucket virtual: si juegas 5 quick games
+  /// seguidos, no quieres que la 6ª te repita la palabra de hace 2 minutos).
+  Future<Map<String, DateTime>> wordTimestampsForCategories({
     required int? groupId,
     required List<String> categories,
     int? limit,
   }) async {
-    if (categories.isEmpty) return const <String>{};
+    if (categories.isEmpty) return const <String, DateTime>{};
 
     final query = select(wordHistory)
       ..where((tbl) => groupId == null
@@ -468,7 +484,13 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
       ..limit(limit ?? _wordHistoryWindow * categories.length);
 
     final rows = await query.get();
-    return rows.map((row) => row.word).toSet();
+    final result = <String, DateTime>{};
+    for (final row in rows) {
+      // ORDER BY DESC: la primera vez que vemos cada palabra es la más
+      // reciente. putIfAbsent preserva ese timestamp.
+      result.putIfAbsent(row.word, () => row.pickedAt);
+    }
+    return result;
   }
 
   /// Registra una palabra recién elegida y poda entries viejas para que
@@ -506,6 +528,16 @@ class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
         ],
       );
     });
+  }
+
+  /// Diagnóstico: cuenta cuántas filas hay en `word_history` total. Útil para
+  /// verificar que la tabla existe y que los inserts están aplicándose.
+  /// Solo se invoca en debug builds desde `game_provider`.
+  Future<int> debugWordHistoryRowCount() async {
+    final row = await customSelect(
+      'SELECT COUNT(*) AS count FROM word_history',
+    ).getSingle();
+    return row.read<int>('count');
   }
 
   /// Persist a completed game together with all its player results.

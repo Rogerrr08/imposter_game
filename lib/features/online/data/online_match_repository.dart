@@ -18,32 +18,43 @@ class OnlineMatchRepository {
     required OnlineRoom room,
     required List<OnlineRoomPlayer> players,
   }) async {
-    // 1. Pre-fetch las últimas 25 palabras jugadas por este host (por
-    //    categoría) para excluirlas de la siguiente elección. Espejo de
-    //    la lógica local, scoped al host_user_id en BD.
-    Set<String> excluded = const <String>{};
+    // 1. Pre-fetch el histórico de palabras del host (con timestamps) para
+    //    el algoritmo Spotify-style con decay. Espejo de la lógica local,
+    //    scoped al host_user_id en BD.
+    Map<String, DateTime> lastSeenAt = const <String, DateTime>{};
     try {
       final result = await _client.rpc(
-        'get_recent_words_for_host',
+        'get_word_freshness_for_host',
         params: {
           'input_categories':
               room.categories.map((category) => category.name).toList(),
         },
       );
       if (result is List) {
-        excluded = result.map((entry) => entry.toString()).toSet();
+        final map = <String, DateTime>{};
+        for (final entry in result) {
+          if (entry is Map) {
+            final word = entry['word'];
+            final pickedAt = entry['picked_at'];
+            if (word is String && pickedAt is String) {
+              final parsed = DateTime.tryParse(pickedAt);
+              if (parsed != null) map[word] = parsed;
+            }
+          }
+        }
+        lastSeenAt = map;
       }
     } catch (_) {
-      // Degradación graciosa: si falla el RPC seguimos sin exclusión, peor
-      // caso es la repetición que ya teníamos antes.
-      excluded = const <String>{};
+      // Degradación graciosa: si falla el RPC seguimos con scoring uniforme.
+      lastSeenAt = const <String, DateTime>{};
     }
 
-    // 2. Pick word con la lista de excluidas
-    final wordEntry = WordBank.getRandomWordFromCategories(
-      room.categories,
-      excludedWords: excluded,
+    // 2. Pick word con scoring por decay temporal.
+    final pickResult = WordBank.pickWordWithDecay(
+      categories: room.categories,
+      lastSeenAt: lastSeenAt,
     );
+    final wordEntry = pickResult.word;
 
     // 3. Pick impostor indices (0-based, referencing seat_order - 1)
     final indices = List.generate(players.length, (i) => i)..shuffle(_random);

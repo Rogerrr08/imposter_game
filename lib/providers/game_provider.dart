@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/word_bank.dart';
@@ -34,26 +36,56 @@ class GameNotifier extends Notifier<ActiveGame?> {
 
   Future<void> startNewGame(GameConfig config) async {
     // Anti-repetición: leer las últimas N palabras jugadas por este grupo
-    // (o por el bucket de "Juego rápido" si no hay grupo) y excluirlas de
-    // la elección. Si la BD falla por algún motivo, seguimos sin exclusión
-    // — degradación graciosa, peor caso es la repetición que ya teníamos.
+    // (con sus timestamps) y pasarlas al algoritmo Spotify-style en
+    // [WordBank.pickWordWithDecay]. Si la BD falla, seguimos con un mapa
+    // vacío — degradación graciosa: peor caso es el random uniforme.
     final dao = ref.read(databaseProvider).gameDao;
     final categoryNames =
         config.categories.map((category) => category.name).toList();
-    Set<String> excluded = const <String>{};
+    Map<String, DateTime> lastSeenAt = const <String, DateTime>{};
+    Object? readError;
     try {
-      excluded = await dao.recentWordsForCategories(
+      lastSeenAt = await dao.wordTimestampsForCategories(
         groupId: config.groupId,
         categories: categoryNames,
       );
-    } catch (_) {
-      excluded = const <String>{};
+    } catch (e) {
+      readError = e;
+      lastSeenAt = const <String, DateTime>{};
     }
 
-    final wordEntry = WordBank.getRandomWordFromCategories(
-      config.categories,
-      excludedWords: excluded,
+    final pickResult = WordBank.pickWordWithDecay(
+      categories: config.categories,
+      lastSeenAt: lastSeenAt,
     );
+    final wordEntry = pickResult.word;
+
+    // Diagnóstico visible en `flutter logs` cuando corre en debug. Si la
+    // anti-repetición no está funcionando, acá vamos a ver `historySize: 0`
+    // partida tras partida (o un error en `readError`).
+    if (kDebugMode) {
+      try {
+        final totalRows = await dao.debugWordHistoryRowCount();
+        developer.log(
+          '[word-pick] group=${config.groupId} '
+          'historySize=${lastSeenAt.length} '
+          'totalRowsInDb=$totalRows '
+          'word=${wordEntry.word} '
+          'category=${wordEntry.category.name} '
+          'score=${pickResult.freshnessScore.toStringAsFixed(2)} '
+          'eligiblePool=${pickResult.eligiblePoolSize} '
+          'hardExcluded=${pickResult.hardExcludedCount} '
+          'readError=$readError',
+          name: 'AntiRepetition',
+        );
+      } catch (e) {
+        developer.log(
+          '[word-pick] DIAG FAILED: $e (la tabla word_history probablemente no existe)',
+          name: 'AntiRepetition',
+          error: e,
+        );
+      }
+    }
 
     // Registrar la elección inmediatamente para que la siguiente partida
     // (incluso si el usuario reabre el app) ya no la considere candidata.
@@ -66,7 +98,15 @@ class GameNotifier extends Notifier<ActiveGame?> {
             category: wordEntry.category.name,
             word: wordEntry.word,
           )
-          .catchError((_) {}),
+          .catchError((e) {
+        if (kDebugMode) {
+          developer.log(
+            '[word-pick] recordWordPick FAILED: $e',
+            name: 'AntiRepetition',
+            error: e,
+          );
+        }
+      }),
     );
 
     final shuffledNames = List<String>.from(config.playerNames)
