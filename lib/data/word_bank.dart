@@ -22,7 +22,7 @@ class WordPickResult {
   final int candidatesGenerated;
   /// Cantidad de palabras en hard exclusion en esta elección.
   final int hardExcludedCount;
-  /// Tamaño total del pool elegible (categorías × 75, menos hard excluded).
+  /// Tamaño del pool elegible de la categoría elegida (≤75, menos hard excluded).
   final int eligiblePoolSize;
 
   const WordPickResult({
@@ -64,6 +64,11 @@ class WordBank {
       .expand((words) => words)
       .toList(growable: false);
 
+  /// Bolsa de categorías (shuffle-bag), una por cada conjunto de categorías
+  /// seleccionadas. Garantiza que no se repita una categoría hasta que todas
+  /// las del conjunto hayan salido. En memoria: se reinicia al cerrar la app.
+  static final Map<String, List<WordCategory>> _categoryBags = {};
+
   static List<WordEntry> get allWords => List.unmodifiable(_allWords);
 
   static List<WordEntry> getWordsByCategory(WordCategory category) {
@@ -83,20 +88,37 @@ class WordBank {
     return words[_random.nextInt(words.length)];
   }
 
-  /// Selección con soft scoring por decay temporal — patrón usado por
-  /// Spotify desde nov 2025 ("Fewer Repeats").
+  /// Shuffle-bag de categorías: devuelve una categoría que no se repite hasta
+  /// que todas las del conjunto seleccionado hayan salido. Al vaciarse la
+  /// bolsa, se rellena con todas y se baraja de nuevo. La clave por conjunto
+  /// de categorías hace que distintas selecciones tengan bolsas independientes.
+  static WordCategory _pickCategoryFromBag(List<WordCategory> categories) {
+    final normalized = categories.toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
+    final key = normalized.map((c) => c.name).join('|');
+    final bag = _categoryBags.putIfAbsent(key, () => <WordCategory>[]);
+    if (bag.isEmpty) {
+      bag
+        ..addAll(normalized)
+        ..shuffle(_random);
+    }
+    return bag.removeLast();
+  }
+
+  /// Selección en dos pasos:
+  ///   A. **Bolsa de categorías**: elige una categoría que no se repite hasta
+  ///      que todas las seleccionadas hayan salido ([_pickCategoryFromBag]).
+  ///   B. **Soft scoring por decay** de la PALABRA dentro de esa categoría
+  ///      (patrón Spotify "Fewer Repeats", sin cambios respecto a antes):
+  ///        1. Hard floor: las últimas [_hardExclusionWindow] palabras (por
+  ///           `lastSeenAt`) quedan FUERA.
+  ///        2. Genera [_candidatePoolSize] candidatos aleatorios del pool
+  ///           elegible de la categoría.
+  ///        3. Cada candidato recibe score `1 - exp(-Δt/τ)`; gana el mayor.
+  ///           Nunca vista → 1.0; vista hace mucho → ~1; reciente → ~0.
   ///
-  /// Pipeline:
-  /// 1. Construye el pool union de las categorías pedidas (~75 × N).
-  /// 2. Hard floor: las últimas [_hardExclusionWindow] palabras (por
-  ///    `lastSeenAt`) quedan FUERA. Garantía dura de no repetir.
-  /// 3. Genera [_candidatePoolSize] candidatos aleatorios del pool eligible.
-  /// 4. Cada candidato recibe score `1 - exp(-Δt/τ)`. Palabras nunca vistas
-  ///    → score 1.0; vistas hace mucho → score ~1; recientes → score ~0.
-  /// 5. Devuelve el candidato con mayor score (en empate, el primero).
-  ///
-  /// Si el pool elegible queda vacío (ej. cooldown más grande que el pool,
-  /// no debería pasar con 75 × N >> 10), cae a uniforme sobre todo el pool.
+  /// Si el pool elegible queda vacío (cooldown ≥ tamaño de categoría, no
+  /// debería pasar con 75 palabras), cae a uniforme sobre la categoría.
   static WordPickResult pickWordWithDecay({
     required List<WordCategory> categories,
     required Map<String, DateTime> lastSeenAt,
@@ -111,11 +133,11 @@ class WordBank {
           'No hay palabras disponibles para las categorías seleccionadas.');
     }
 
-    final pool = <WordEntry>[];
-    for (final category in validCategories) {
-      pool.addAll(getWordsByCategory(category));
-    }
+    // Paso A: categoría desde la bolsa (no repite hasta agotar todas).
+    final category = _pickCategoryFromBag(validCategories);
+    final pool = getWordsByCategory(category);
 
+    // Paso B: soft-decay de la palabra dentro de la categoría elegida.
     // Hard floor: top _hardExclusionWindow más recientes
     final hardExcluded = _topRecent(
       lastSeenAt,

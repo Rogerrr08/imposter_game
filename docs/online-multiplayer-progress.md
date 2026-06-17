@@ -29,6 +29,14 @@ Refactor de confiabilidad pre-publicación (ver auditoría en
   (`myState.currentTurnIndex` → stream del match), tocando gameplay activo con
   riesgo real. Revisitar solo si el juego escala a cientos de concurrentes.
 
+- **Selección de palabra — bolsa de categorías** (local + online): `WordBank
+  .pickWordWithDecay` ahora elige primero la **categoría** desde un shuffle-bag
+  (no repite categoría hasta agotar todas las seleccionadas) y luego la
+  **palabra** dentro de esa categoría con el mismo soft-decay de antes (sin
+  cambios en la aleatoriedad de la palabra). Ambos modos lo usan, así que
+  queda cubierto de una. Bag en memoria (por conjunto de categorías). Smoke
+  test en `test/word_bank_test.dart`.
+
 ---
 
 ## 2026-04-19 — Plan de optimización local/offline
