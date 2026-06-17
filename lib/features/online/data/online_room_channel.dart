@@ -19,6 +19,7 @@ class OnlineRoomChannel {
   RealtimeChannel? _channel;
   bool _started = false;
   bool _disposed = false;
+  bool _resyncing = false;
 
   OnlineRoom? _room;
   final Map<String, OnlineRoomPlayer> _players = {};
@@ -41,7 +42,15 @@ class OnlineRoomChannel {
     _started = true;
 
     await _loadSnapshot();
+    if (_disposed) return;
 
+    _channel = _subscribeChannel();
+  }
+
+  /// Crea y suscribe una nueva instancia del canal broadcast privado.
+  /// `subscribe()` solo puede llamarse una vez por instancia (lanza si no),
+  /// por eso para reconectar hay que crear una nueva — ver [resync].
+  RealtimeChannel _subscribeChannel() {
     final channel = _client.channel(
       'room:$roomId',
       opts: const RealtimeChannelConfig(private: true),
@@ -53,14 +62,39 @@ class OnlineRoomChannel {
         .onBroadcast(event: 'player-updated', callback: _onPlayerUpserted)
         .onBroadcast(event: 'player-left', callback: _onPlayerLeft)
         .subscribe((status, error) async {
-      if (_disposed) return;
-      if (status == RealtimeSubscribeStatus.subscribed && _channel != null) {
-        // Reconnects: re-cargar snapshot para recuperar deltas perdidos.
-        await _loadSnapshot();
-      }
-    });
+          if (_disposed) return;
+          if (status == RealtimeSubscribeStatus.subscribed) {
+            // Reconnects: re-cargar snapshot para recuperar deltas perdidos.
+            await _loadSnapshot();
+          }
+        });
 
-    _channel = channel;
+    return channel;
+  }
+
+  /// Reconciliación forzada tras un posible corte silencioso del socket
+  /// (la app vuelve de segundo plano y el WebSocket murió sin detectarse).
+  /// Recarga el snapshot por HTTPS y recrea el canal subyacente para forzar
+  /// una reconexión limpia. Idempotente mientras hay un resync en curso.
+  Future<void> resync() async {
+    if (_disposed || !_started || _resyncing) return;
+    _resyncing = true;
+    try {
+      await _loadSnapshot();
+      if (_disposed) return;
+
+      final old = _channel;
+      _channel = null;
+      if (old != null) {
+        try {
+          await _client.removeChannel(old);
+        } catch (_) {}
+      }
+      if (_disposed) return;
+      _channel = _subscribeChannel();
+    } finally {
+      _resyncing = false;
+    }
   }
 
   Future<void> _loadSnapshot() async {
@@ -73,9 +107,7 @@ class OnlineRoomChannel {
 
       if (_disposed) return;
 
-      _room = roomRows.isEmpty
-          ? null
-          : OnlineRoom.fromMap(roomRows.first);
+      _room = roomRows.isEmpty ? null : OnlineRoom.fromMap(roomRows.first);
 
       final playerRows = await _client
           .from('room_players')
@@ -86,10 +118,12 @@ class OnlineRoomChannel {
 
       _players
         ..clear()
-        ..addEntries(playerRows.map((row) {
-          final p = OnlineRoomPlayer.fromMap(row);
-          return MapEntry(p.id, p);
-        }));
+        ..addEntries(
+          playerRows.map((row) {
+            final p = OnlineRoomPlayer.fromMap(row);
+            return MapEntry(p.id, p);
+          }),
+        );
 
       _emitRoom();
       _emitPlayers();
@@ -129,8 +163,9 @@ class OnlineRoomChannel {
     return null;
   }
 
-  List<OnlineRoomPlayer> _sortedPlayers() => _players.values.toList()
-    ..sort((a, b) => a.seatOrder.compareTo(b.seatOrder));
+  List<OnlineRoomPlayer> _sortedPlayers() =>
+      _players.values.toList()
+        ..sort((a, b) => a.seatOrder.compareTo(b.seatOrder));
 
   void _emitRoom() {
     if (_disposed || _roomCtrl.isClosed) return;

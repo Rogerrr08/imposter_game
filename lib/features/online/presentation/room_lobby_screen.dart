@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../theme/app_theme.dart';
 import '../application/online_match_provider.dart';
+import '../application/online_rooms_provider.dart';
 import '../application/room_lobby_notifier.dart';
 import '../domain/online_room.dart';
 import 'widgets/lobby_code_card.dart';
@@ -21,90 +24,102 @@ class RoomLobbyScreen extends ConsumerWidget {
     final asyncState = ref.watch(roomLobbyNotifierProvider(roomId));
 
     // Show snackbar when an error surfaces
-    ref.listen<AsyncValue<RoomLobbyState>>(
-      roomLobbyNotifierProvider(roomId),
-      (prev, next) {
-        final error = next.value?.error;
-        if (error != null && error != prev?.value?.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error, style: const TextStyle(fontFamily: 'Nunito',))),
-          );
-        }
-
-        // Non-host: navigate to match when room transitions to playing
-        final prevRoom = prev?.value?.room;
-        final nextRoom = next.value?.room;
-        if (prevRoom?.status == OnlineRoomStatus.waiting &&
-            nextRoom?.status == OnlineRoomStatus.playing) {
-          _navigateToActiveMatch(context, ref);
-        }
-      },
-    );
-
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _handleLeave(context, ref);
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            onPressed: () => _handleLeave(context, ref),
-            icon: const Icon(Icons.arrow_back_rounded),
+    ref.listen<AsyncValue<RoomLobbyState>>(roomLobbyNotifierProvider(roomId), (
+      prev,
+      next,
+    ) {
+      final error = next.value?.error;
+      if (error != null && error != prev?.value?.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error, style: const TextStyle(fontFamily: 'Nunito')),
           ),
-          title: const Text(
-            'Lobby privado',
-            style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
-          ),
-          actions: [
-            IconButton(
+        );
+      }
+
+      // Non-host: navigate to match when room transitions to playing
+      final prevRoom = prev?.value?.room;
+      final nextRoom = next.value?.room;
+      if (prevRoom?.status == OnlineRoomStatus.waiting &&
+          nextRoom?.status == OnlineRoomStatus.playing) {
+        _navigateToActiveMatch(context, ref);
+      }
+    });
+
+    return _LifecycleResync(
+      // Al volver de segundo plano el socket pudo morir en silencio; forzamos
+      // recarga de snapshot + reconexión del canal de la sala para no quedar
+      // atascados en el lobby (p. ej. si el host inició la partida mientras
+      // estábamos en background).
+      onResume: () => ref.read(onlineRoomChannelProvider(roomId)).resync(),
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _handleLeave(context, ref);
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
               onPressed: () => _handleLeave(context, ref),
-              icon: const Icon(Icons.logout_rounded),
-              tooltip: 'Salir de la sala',
+              icon: const Icon(Icons.arrow_back_rounded),
             ),
-          ],
-        ),
-        body: asyncState.when(
-          skipLoadingOnReload: true,
-          skipLoadingOnRefresh: true,
-          loading: () => Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryColor),
+            title: const Text(
+              'Lobby privado',
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            actions: [
+              IconButton(
+                onPressed: () => _handleLeave(context, ref),
+                icon: const Icon(Icons.logout_rounded),
+                tooltip: 'Salir de la sala',
+              ),
+            ],
           ),
-          error: (_, __) => _buildCenteredMessage(
-            title: 'No pudimos cargar la sala',
-            subtitle:
-                'Puede que la sala ya no esté disponible. Intenta salir y volver.',
+          body: asyncState.when(
+            skipLoadingOnReload: true,
+            skipLoadingOnRefresh: true,
+            loading: () => Center(
+              child: CircularProgressIndicator(color: AppTheme.primaryColor),
+            ),
+            error: (_, __) => _buildCenteredMessage(
+              title: 'No pudimos cargar la sala',
+              subtitle:
+                  'Puede que la sala ya no esté disponible. Intenta salir y volver.',
+            ),
+            data: (lobbyState) {
+              final profile = lobbyState.profile;
+              if (profile == null || !profile.hasDisplayName) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  if (context.mounted) context.go('/online/display-name');
+                });
+                return const SizedBox.shrink();
+              }
+
+              if (lobbyState.room == null) {
+                return _buildCenteredMessage(
+                  title: 'La sala ya no existe',
+                  subtitle: 'Parece que fue cerrada o eliminada.',
+                );
+              }
+
+              if (lobbyState.currentPlayer == null) {
+                return _buildCenteredMessage(
+                  title: 'No encontramos tu jugador en la sala',
+                  subtitle:
+                      'Puede que todavía se esté sincronizando o que ya no formes parte del lobby.',
+                );
+              }
+
+              if (lobbyState.room!.status == OnlineRoomStatus.playing) {
+                return _buildMatchInProgress(context, ref, lobbyState);
+              }
+
+              return _buildLobbyContent(context, ref, lobbyState);
+            },
           ),
-          data: (lobbyState) {
-            final profile = lobbyState.profile;
-            if (profile == null || !profile.hasDisplayName) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (context.mounted) context.go('/online/display-name');
-              });
-              return const SizedBox.shrink();
-            }
-
-            if (lobbyState.room == null) {
-              return _buildCenteredMessage(
-                title: 'La sala ya no existe',
-                subtitle: 'Parece que fue cerrada o eliminada.',
-              );
-            }
-
-            if (lobbyState.currentPlayer == null) {
-              return _buildCenteredMessage(
-                title: 'No encontramos tu jugador en la sala',
-                subtitle:
-                    'Puede que todavía se esté sincronizando o que ya no formes parte del lobby.',
-              );
-            }
-
-            if (lobbyState.room!.status == OnlineRoomStatus.playing) {
-              return _buildMatchInProgress(context, ref, lobbyState);
-            }
-
-            return _buildLobbyContent(context, ref, lobbyState);
-          },
         ),
       ),
     );
@@ -132,19 +147,20 @@ class RoomLobbyScreen extends ConsumerWidget {
                   const SizedBox(height: 24),
                   LobbyConfigCard(
                     lobbyState: lobbyState,
-                    onConfigChanged: ({
-                      categories,
-                      hintsEnabled,
-                      impostorCount,
-                      durationSeconds,
-                    }) {
-                      notifier.updateConfig(
-                        categories: categories,
-                        hintsEnabled: hintsEnabled,
-                        impostorCount: impostorCount,
-                        durationSeconds: durationSeconds,
-                      );
-                    },
+                    onConfigChanged:
+                        ({
+                          categories,
+                          hintsEnabled,
+                          impostorCount,
+                          durationSeconds,
+                        }) {
+                          notifier.updateConfig(
+                            categories: categories,
+                            hintsEnabled: hintsEnabled,
+                            impostorCount: impostorCount,
+                            durationSeconds: durationSeconds,
+                          );
+                        },
                   ),
                   const SizedBox(height: 24),
                   LobbyPlayersSection(
@@ -180,30 +196,30 @@ class RoomLobbyScreen extends ConsumerWidget {
     final title = isHost
         ? 'Tu sala ya está lista para configurarse'
         : isReady
-            ? 'Ya estás listo'
-            : 'Marca cuando estes listo';
+        ? 'Ya estás listo'
+        : 'Marca cuando estes listo';
 
     final subtitle = isHost
         ? missingPlayers > 0
-            ? 'Faltan $missingPlayers jugador${missingPlayers == 1 ? '' : 'es'} para completar el minimo.'
-            : missingReady > 0
-                ? 'Aun faltan $missingReady jugador${missingReady == 1 ? '' : 'es'} listos para empezar.'
-                : 'La sala ya cumplió el mínimo de listos y queda preparada para el siguiente paso del online.'
+              ? 'Faltan $missingPlayers jugador${missingPlayers == 1 ? '' : 'es'} para completar el minimo.'
+              : missingReady > 0
+              ? 'Aun faltan $missingReady jugador${missingReady == 1 ? '' : 'es'} listos para empezar.'
+              : 'La sala ya cumplió el mínimo de listos y queda preparada para el siguiente paso del online.'
         : isReady
-            ? 'Puedes esperar mientras el host termina de ajustar la sala.'
-            : 'Cuando lo confirmes con el boton inferior, el host lo vera al instante.';
+        ? 'Puedes esperar mientras el host termina de ajustar la sala.'
+        : 'Cuando lo confirmes con el boton inferior, el host lo vera al instante.';
 
     final accentColor = isHost
         ? AppTheme.primaryColor
         : isReady
-            ? AppTheme.successColor
-            : AppTheme.warningColor;
+        ? AppTheme.successColor
+        : AppTheme.warningColor;
 
     final backgroundColor = isHost
         ? AppTheme.primaryColor.withValues(alpha: 0.09)
         : isReady
-            ? AppTheme.successColor.withValues(alpha: 0.10)
-            : AppTheme.warningColor.withValues(alpha: 0.10);
+        ? AppTheme.successColor.withValues(alpha: 0.10)
+        : AppTheme.warningColor.withValues(alpha: 0.10);
 
     return Container(
       width: double.infinity,
@@ -211,9 +227,7 @@ class RoomLobbyScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: accentColor.withValues(alpha: 0.22),
-        ),
+        border: Border.all(color: accentColor.withValues(alpha: 0.22)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,8 +243,8 @@ class RoomLobbyScreen extends ConsumerWidget {
               isHost
                   ? Icons.admin_panel_settings_rounded
                   : isReady
-                      ? Icons.check_circle_rounded
-                      : Icons.notifications_active_rounded,
+                  ? Icons.check_circle_rounded
+                  : Icons.notifications_active_rounded,
               color: accentColor,
               size: 24,
             ),
@@ -242,7 +256,8 @@ class RoomLobbyScreen extends ConsumerWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,
@@ -251,7 +266,8 @@ class RoomLobbyScreen extends ConsumerWidget {
                 const SizedBox(height: 6),
                 Text(
                   subtitle,
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
                     fontSize: 13,
                     height: 1.4,
                     color: AppTheme.textSecondary,
@@ -303,7 +319,9 @@ class RoomLobbyScreen extends ConsumerWidget {
                           width: 48,
                           height: 48,
                           decoration: BoxDecoration(
-                            color: AppTheme.warningColor.withValues(alpha: 0.15),
+                            color: AppTheme.warningColor.withValues(
+                              alpha: 0.15,
+                            ),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -410,11 +428,11 @@ class RoomLobbyScreen extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text(
           'Salir de la sala',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Saldrás del lobby actual. Si eras el host, la sala pasará al siguiente jugador.',
-          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+          style: TextStyle(fontFamily: 'Nunito', color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
@@ -461,7 +479,8 @@ class RoomLobbyScreen extends ConsumerWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
+                fontFamily: 'Nunito',
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -471,7 +490,8 @@ class RoomLobbyScreen extends ConsumerWidget {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
+                fontFamily: 'Nunito',
                 fontSize: 14,
                 height: 1.45,
                 color: AppTheme.textSecondary,
@@ -482,4 +502,42 @@ class RoomLobbyScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Envoltura mínima que ejecuta [onResume] cuando la app vuelve a primer
+/// plano (`AppLifecycleState.resumed`). Permite que una pantalla basada en
+/// `ConsumerWidget` reaccione al ciclo de vida sin convertirse en stateful.
+class _LifecycleResync extends StatefulWidget {
+  final Future<void> Function() onResume;
+  final Widget child;
+
+  const _LifecycleResync({required this.onResume, required this.child});
+
+  @override
+  State<_LifecycleResync> createState() => _LifecycleResyncState();
+}
+
+class _LifecycleResyncState extends State<_LifecycleResync>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(widget.onResume());
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }

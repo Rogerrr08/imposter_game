@@ -26,6 +26,7 @@ class OnlineMatchChannel {
   RealtimeChannel? _channel;
   bool _started = false;
   bool _disposed = false;
+  bool _resyncing = false;
 
   // Estado en memoria
   OnlineMatch? _match;
@@ -68,8 +69,17 @@ class OnlineMatchChannel {
     // 1. Snapshot inicial. Si falla, el canal queda sin estado pero igual
     //    suscribimos para no perder deltas (los aplicará sobre vacío).
     await _loadSnapshot();
+    if (_disposed) return;
 
     // 2. Canal broadcast privado.
+    _channel = _subscribeChannel();
+  }
+
+  /// Crea y suscribe una nueva instancia del canal broadcast privado.
+  /// `subscribe()` solo puede llamarse una vez por instancia de canal
+  /// (lanza si no), por eso para reconectar hay que crear una nueva — ver
+  /// [resync].
+  RealtimeChannel _subscribeChannel() {
     final channel = _client.channel(
       'match:$matchId',
       opts: const RealtimeChannelConfig(private: true),
@@ -81,16 +91,51 @@ class OnlineMatchChannel {
         .onBroadcast(event: 'clue-added', callback: _onClueAdded)
         .onBroadcast(event: 'vote-added', callback: _onVoteAdded)
         .subscribe((status, error) async {
+          if (_disposed) return;
+
+          // En reconnects (closed → subscribed) recargamos el snapshot para
+          // recuperar los eventos perdidos durante la desconexión.
+          if (status == RealtimeSubscribeStatus.subscribed) {
+            await _loadSnapshot();
+          }
+        });
+
+    return channel;
+  }
+
+  /// Reconciliación forzada tras un posible corte silencioso del socket
+  /// (caso típico: la app vuelve de segundo plano y el WebSocket murió sin
+  /// que el cliente lo detecte, porque los timers de heartbeat estuvieron
+  /// congelados). Hace dos cosas:
+  ///   1. Recarga el snapshot por HTTPS → catch-up inmediato del estado,
+  ///      sin esperar a que el socket se reconecte.
+  ///   2. Recrea el canal subyacente para forzar una reconexión limpia del
+  ///      WebSocket (`subscribe()` solo se puede invocar una vez por
+  ///      instancia, así que se descarta la vieja y se crea una nueva).
+  ///
+  /// Pensado para llamarse desde el lifecycle `resumed`. Idempotente: si ya
+  /// hay un resync en curso, no encola otro.
+  Future<void> resync() async {
+    if (_disposed || !_started || _resyncing) return;
+    _resyncing = true;
+    try {
+      // 1. Catch-up inmediato del estado.
+      await _loadSnapshot();
       if (_disposed) return;
 
-      // En reconnects (closed → subscribed) recargamos el snapshot para
-      // recuperar los eventos perdidos durante la desconexión.
-      if (status == RealtimeSubscribeStatus.subscribed && _channel != null) {
-        await _loadSnapshot();
+      // 2. Recrear el canal para reconectar el socket si murió en silencio.
+      final old = _channel;
+      _channel = null;
+      if (old != null) {
+        try {
+          await _client.removeChannel(old);
+        } catch (_) {}
       }
-    });
-
-    _channel = channel;
+      if (_disposed) return;
+      _channel = _subscribeChannel();
+    } finally {
+      _resyncing = false;
+    }
   }
 
   Future<void> _loadSnapshot() async {
@@ -188,14 +233,17 @@ class OnlineMatchChannel {
     return null;
   }
 
-  List<OnlineMatchPlayer> _sortedPlayers() => _players.values.toList()
-    ..sort((a, b) => a.seatOrder.compareTo(b.seatOrder));
+  List<OnlineMatchPlayer> _sortedPlayers() =>
+      _players.values.toList()
+        ..sort((a, b) => a.seatOrder.compareTo(b.seatOrder));
 
-  List<OnlineMatchClue> _sortedClues() => _clues.values.toList()
-    ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+  List<OnlineMatchClue> _sortedClues() =>
+      _clues.values.toList()
+        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-  List<OnlineMatchVote> _sortedVotes() => _votes.values.toList()
-    ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+  List<OnlineMatchVote> _sortedVotes() =>
+      _votes.values.toList()
+        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
   void _emitMatch() {
     if (_disposed || _matchCtrl.isClosed) return;

@@ -114,8 +114,13 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       _setConnected(false);
     } else if (state == AppLifecycleState.resumed) {
       _setConnected(true);
+      // Reconciliar tras posible muerte silenciosa del socket en segundo
+      // plano: recarga el snapshot por HTTPS y recrea el canal para forzar
+      // la reconexión del WebSocket. Reemplaza al viejo invalidate del
+      // provider (que solo re-leía el estado cacheado en memoria sin tocar
+      // el socket ni recargar el snapshot).
+      unawaited(ref.read(onlineMatchChannelProvider(widget.matchId)).resync());
       ref.invalidate(myMatchStateProvider(widget.matchId));
-      ref.invalidate(onlineMatchProvider(widget.matchId));
       // Only show reconnecting banner if actually backgrounded for >1 second
       final wasPausedAt = _pausedAt;
       _pausedAt = null;
@@ -209,67 +214,67 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     }
 
     // Listen for match changes via Realtime — refresh myMatchState on phase/version change
-    ref.listen<AsyncValue<OnlineMatch?>>(
-      onlineMatchProvider(widget.matchId),
-      (prev, next) {
-        final prevMatch = prev?.value;
-        final nextMatch = next.value;
-        if (nextMatch == null) return;
+    ref.listen<AsyncValue<OnlineMatch?>>(onlineMatchProvider(widget.matchId), (
+      prev,
+      next,
+    ) {
+      final prevMatch = prev?.value;
+      final nextMatch = next.value;
+      if (nextMatch == null) return;
 
-        if (nextMatch.status == OnlineMatchStatus.cancelled) {
-          _showCancelledAndLeave();
-          return;
-        }
+      if (nextMatch.status == OnlineMatchStatus.cancelled) {
+        _showCancelledAndLeave();
+        return;
+      }
 
-        // Refresh myMatchState when phase or version changes
-        if (prevMatch != null &&
-            (prevMatch.currentPhase != nextMatch.currentPhase ||
-                prevMatch.stateVersion != nextMatch.stateVersion)) {
-          // Catch fast vote_result → next transitions (Realtime may skip rendering vote_result)
-          if (prevMatch.currentPhase == OnlineMatchPhase.voteResult &&
-              nextMatch.currentPhase != OnlineMatchPhase.voteResult &&
-              !_holdingVoteResult) {
-            _holdingVoteResult = true;
-            _heldVoteResultState = _isLateJoinSpectator && prevMatch != null
-                ? MyMatchState.spectator(prevMatch)
-                : myStateAsync.value;
-            _voteResultTimer?.cancel();
-            _voteResultTimer = Timer(const Duration(seconds: 5), () {
-              if (mounted) {
-                setState(() {
-                  _holdingVoteResult = false;
-                  _heldVoteResultState = null;
-                });
-                if (_pendingElimination) {
-                  _pendingElimination = false;
-                  _showEliminatedAndLeave();
-                }
+      // Refresh myMatchState when phase or version changes
+      if (prevMatch != null &&
+          (prevMatch.currentPhase != nextMatch.currentPhase ||
+              prevMatch.stateVersion != nextMatch.stateVersion)) {
+        // Catch fast vote_result → next transitions (Realtime may skip rendering vote_result)
+        if (prevMatch.currentPhase == OnlineMatchPhase.voteResult &&
+            nextMatch.currentPhase != OnlineMatchPhase.voteResult &&
+            !_holdingVoteResult) {
+          _holdingVoteResult = true;
+          _heldVoteResultState = _isLateJoinSpectator && prevMatch != null
+              ? MyMatchState.spectator(prevMatch)
+              : myStateAsync.value;
+          _voteResultTimer?.cancel();
+          _voteResultTimer = Timer(const Duration(seconds: 5), () {
+            if (mounted) {
+              setState(() {
+                _holdingVoteResult = false;
+                _heldVoteResultState = null;
+              });
+              if (_pendingElimination) {
+                _pendingElimination = false;
+                _showEliminatedAndLeave();
               }
-            });
-          }
-
-          // Reset reveal countdown target when entering a new round
-          if (nextMatch.currentPhase == OnlineMatchPhase.clueWriting ||
-              nextMatch.currentPhase == OnlineMatchPhase.voting) {
-            _revealTarget = null;
-          }
-
-          // Catch clue_writing → voting: hold clues for 5s countdown
-          if (prevMatch.currentPhase == OnlineMatchPhase.clueWriting &&
-              nextMatch.currentPhase == OnlineMatchPhase.voting &&
-              !_holdingPreVote) {
-            _startPreVoteCountdown();
-          }
-
-          // Impostor choice/guess → next phase: show intermediate screen
-          _detectImpostorTransition(prevMatch, nextMatch);
-
-          if (!_isLateJoinSpectator) {
-            ref.invalidate(myMatchStateProvider(widget.matchId));
-          }
+            }
+          });
         }
-      },
-    );
+
+        // Reset reveal countdown target when entering a new round
+        if (nextMatch.currentPhase == OnlineMatchPhase.clueWriting ||
+            nextMatch.currentPhase == OnlineMatchPhase.voting) {
+          _revealTarget = null;
+        }
+
+        // Catch clue_writing → voting: hold clues for 5s countdown
+        if (prevMatch.currentPhase == OnlineMatchPhase.clueWriting &&
+            nextMatch.currentPhase == OnlineMatchPhase.voting &&
+            !_holdingPreVote) {
+          _startPreVoteCountdown();
+        }
+
+        // Impostor choice/guess → next phase: show intermediate screen
+        _detectImpostorTransition(prevMatch, nextMatch);
+
+        if (!_isLateJoinSpectator) {
+          ref.invalidate(myMatchStateProvider(widget.matchId));
+        }
+      }
+    });
 
     // Listen for other players leaving (show snackbar notification)
     ref.listen<AsyncValue<List<OnlineMatchPlayer>>>(
@@ -282,15 +287,22 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
         // Find players who were active before but are now eliminated
         // Only show "left" notification if it's not a vote elimination
         final currentPhase = match?.currentPhase;
-        final isVoteElimination = currentPhase == OnlineMatchPhase.voteResult ||
+        final isVoteElimination =
+            currentPhase == OnlineMatchPhase.voteResult ||
             currentPhase == OnlineMatchPhase.impostorChoice ||
             currentPhase == OnlineMatchPhase.impostorGuess;
         if (!isVoteElimination) {
           for (final prevPlayer in prevPlayers) {
             if (prevPlayer.isEliminated) continue;
             // Skip self
-            if (!_isLateJoinSpectator && myState != null && prevPlayer.id == myState.myPlayerId) continue;
-            final nextPlayer = nextPlayers.where((p) => p.id == prevPlayer.id).firstOrNull;
+            if (!_isLateJoinSpectator &&
+                myState != null &&
+                prevPlayer.id == myState.myPlayerId) {
+              continue;
+            }
+            final nextPlayer = nextPlayers
+                .where((p) => p.id == prevPlayer.id)
+                .firstOrNull;
             if (nextPlayer != null && nextPlayer.isEliminated) {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -349,7 +361,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
           ),
           title: const Text(
             'Partida online',
-            style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+            style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w700),
           ),
         ),
         body: Column(
@@ -370,7 +382,8 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
                   : myStateAsync.when(
                       loading: () => Center(
                         child: CircularProgressIndicator(
-                            color: AppTheme.primaryColor),
+                          color: AppTheme.primaryColor,
+                        ),
                       ),
                       error: (e, _) => _buildError(e.toString()),
                       data: (myState) {
@@ -400,11 +413,11 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       builder: (dialogContext) => AlertDialog(
         title: const Text(
           'Salir de la partida',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Si sales ahora serás eliminado de la partida. Si no quedan suficientes jugadores, la partida se cancelará.',
-          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+          style: TextStyle(fontFamily: 'Nunito', color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
@@ -454,9 +467,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       if (mounted) {
         setState(() => _roleConfirmed = false); // Revert on error
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceFirst('Exception: ', '')),
-          ),
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
         );
       }
     } finally {
@@ -582,13 +593,18 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     final phase = myState.currentPhase;
 
     // Show reveal countdown before vote_result
-    if (phase == OnlineMatchPhase.voteResult && !_holdingVoteResult && !_showingRevealCountdown && _revealTarget != 'vote_result_done') {
+    if (phase == OnlineMatchPhase.voteResult &&
+        !_holdingVoteResult &&
+        !_showingRevealCountdown &&
+        _revealTarget != 'vote_result_done') {
       _showingRevealCountdown = true;
       _revealTarget = 'vote_result';
     }
 
     // Show reveal countdown before finished (final results)
-    if (phase == OnlineMatchPhase.finished && !_showingRevealCountdown && _revealTarget != 'finished_done') {
+    if (phase == OnlineMatchPhase.finished &&
+        !_showingRevealCountdown &&
+        _revealTarget != 'finished_done') {
       _showingRevealCountdown = true;
       _revealTarget = 'finished';
     }
@@ -631,7 +647,9 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     }
 
     // When entering vote_result (after countdown), hold it for 5 seconds
-    if (phase == OnlineMatchPhase.voteResult && !_holdingVoteResult && _revealTarget == 'vote_result_done') {
+    if (phase == OnlineMatchPhase.voteResult &&
+        !_holdingVoteResult &&
+        _revealTarget == 'vote_result_done') {
       _holdingVoteResult = true;
       _heldVoteResultState = myState;
       _voteResultTimer?.cancel();
@@ -724,14 +742,29 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     }
 
     // Trigger reveal countdown for spectator
-    if (phase == OnlineMatchPhase.voteResult && !_holdingVoteResult && !_showingRevealCountdown && _revealTarget != 'vote_result_done') {
+    if (phase == OnlineMatchPhase.voteResult &&
+        !_holdingVoteResult &&
+        !_showingRevealCountdown &&
+        _revealTarget != 'vote_result_done') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() { _showingRevealCountdown = true; _revealTarget = 'vote_result'; });
+        if (mounted) {
+          setState(() {
+            _showingRevealCountdown = true;
+            _revealTarget = 'vote_result';
+          });
+        }
       });
     }
-    if (phase == OnlineMatchPhase.finished && !_showingRevealCountdown && _revealTarget != 'finished_done') {
+    if (phase == OnlineMatchPhase.finished &&
+        !_showingRevealCountdown &&
+        _revealTarget != 'finished_done') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() { _showingRevealCountdown = true; _revealTarget = 'finished'; });
+        if (mounted) {
+          setState(() {
+            _showingRevealCountdown = true;
+            _revealTarget = 'finished';
+          });
+        }
       });
     }
 
@@ -792,14 +825,22 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.hourglass_top_rounded, size: 56,
-                    color: AppTheme.primaryColor.withValues(alpha: 0.5)),
+                Icon(
+                  Icons.hourglass_top_rounded,
+                  size: 56,
+                  color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                ),
                 const SizedBox(height: 16),
-                Text('El impostor está tomando una decisión...',
+                Text(
+                  'El impostor está tomando una decisión...',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontFamily: 'Nunito',
-                    fontSize: 18, fontWeight: FontWeight.w800,
-                    color: AppTheme.textPrimary)),
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -847,24 +888,15 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
   }
 
   Widget _buildImpostorChoice(MyMatchState myState) {
-    return ImpostorChoicePhase(
-      matchId: widget.matchId,
-      myState: myState,
-    );
+    return ImpostorChoicePhase(matchId: widget.matchId, myState: myState);
   }
 
   Widget _buildImpostorGuess(MyMatchState myState) {
-    return ImpostorGuessPhase(
-      matchId: widget.matchId,
-      myState: myState,
-    );
+    return ImpostorGuessPhase(matchId: widget.matchId, myState: myState);
   }
 
   Widget _buildMatchResults(MyMatchState myState) {
-    return MatchResultsPhase(
-      matchId: widget.matchId,
-      myState: myState,
-    );
+    return MatchResultsPhase(matchId: widget.matchId, myState: myState);
   }
 
   Widget _buildRoleReveal(MyMatchState myState) {
@@ -895,7 +927,8 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             const SizedBox(height: 20),
             Text(
               'Partida cancelada',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
+                fontFamily: 'Nunito',
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -905,7 +938,8 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             Text(
               'No quedaron suficientes jugadores para continuar la partida.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
+                fontFamily: 'Nunito',
                 fontSize: 14,
                 height: 1.45,
                 color: AppTheme.textSecondary,
@@ -915,7 +949,9 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => context.go(_roomId != null ? '/online/room/$_roomId' : '/online'),
+                onPressed: () => context.go(
+                  _roomId != null ? '/online/room/$_roomId' : '/online',
+                ),
                 child: const Text('Volver a la sala'),
               ),
             ),
@@ -940,7 +976,8 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             const SizedBox(height: 16),
             Text(
               'Error al cargar la partida',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
+                fontFamily: 'Nunito',
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -950,7 +987,8 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             Text(
               error.replaceFirst('Exception: ', ''),
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
+                fontFamily: 'Nunito',
                 fontSize: 14,
                 color: AppTheme.textSecondary,
               ),
@@ -960,5 +998,4 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       ),
     );
   }
-
 }
