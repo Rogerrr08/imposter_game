@@ -75,9 +75,9 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
           .submitImpostorGuess(matchId: widget.matchId, guess: guess);
 
       if (mounted) {
-        // Force immediate refresh for phase transition
+        // El cambio de fase llega por el canal broadcast; solo refrescamos
+        // el estado propio (secreto) tras nuestra acción.
         ref.invalidate(myMatchStateProvider(widget.matchId));
-        ref.invalidate(onlineMatchProvider(widget.matchId));
       }
     } catch (e) {
       if (mounted) {
@@ -103,7 +103,6 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
 
       if (mounted) {
         ref.invalidate(myMatchStateProvider(widget.matchId));
-        ref.invalidate(onlineMatchProvider(widget.matchId));
       }
     } catch (e) {
       if (mounted) {

@@ -347,8 +347,9 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             choice: choice,
           );
       if (mounted) {
+        // El cambio de fase llega solo por el canal broadcast (match-updated);
+        // solo refrescamos el estado propio (secreto) tras nuestra acción.
         ref.invalidate(myMatchStateProvider(widget.matchId));
-        ref.invalidate(onlineMatchProvider(widget.matchId));
       }
     } catch (e) {
       if (mounted) {

@@ -5,6 +5,32 @@ El plan vigente está en [online-multiplayer-plan.md](online-multiplayer-plan.md
 
 ---
 
+## 2026-06-17 — Confiabilidad online (rama `feature/online-reliability`)
+
+Refactor de confiabilidad pre-publicación (ver auditoría en
+[ui-ux-audit.md](ui-ux-audit.md) y plan consolidado en el chat).
+
+- **Fase 1 — resync en resume** (commit `cf31593`): `OnlineMatchChannel` y
+  `OnlineRoomChannel` ahora exponen `resync()` (recarga snapshot por HTTPS +
+  recrea el canal subyacente, porque `subscribe()` es one-shot por instancia).
+  Se llama desde el lifecycle `resumed` de la pantalla de partida y del lobby
+  (vía un `_LifecycleResync` mínimo). Cubre la muerte silenciosa del WebSocket
+  al volver de segundo plano. El refresh de token al socket ya lo maneja
+  `supabase_flutter` (setAuth en `tokenRefreshed`); `heartbeatCallback` no
+  existe en `realtime_client` 2.7.1.
+- **Fase 2.2 — quitar invalidates redundantes**: eliminados 4
+  `ref.invalidate(onlineMatchProvider)` (impostor_choice, impostor_guess ×2,
+  clue_writing). El canal ya propaga `match-updated`; invalidar solo causaba
+  re-suscripción inútil del canal.
+- **Fase 2.1 — DIFERIDA**: reducir la "tormenta" de RPCs `get_my_match_state`
+  (un RPC por cliente por version-bump) se difiere. Motivo: a 4-8 jugadores el
+  volumen es trivial para el free tier (optimización prematura / YAGNI), y el
+  fix correcto recablea la detección de turno de `clue_writing`
+  (`myState.currentTurnIndex` → stream del match), tocando gameplay activo con
+  riesgo real. Revisitar solo si el juego escala a cientos de concurrentes.
+
+---
+
 ## 2026-04-19 — Plan de optimización local/offline
 
 Creado [local-performance-refactor-plan.md](local-performance-refactor-plan.md).

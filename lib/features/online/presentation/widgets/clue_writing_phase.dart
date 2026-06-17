@@ -103,10 +103,10 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
       if (mounted) {
         _clueController.clear();
         setState(() => _myClueWritten = true);
-        // If phase advanced to voting, force immediate refresh
+        // If phase advanced to voting, force immediate refresh of my own
+        // (secret) state. El cambio de fase del match llega por el canal.
         if (nextPhase == 'voting') {
           ref.invalidate(myMatchStateProvider(widget.matchId));
-          ref.invalidate(onlineMatchProvider(widget.matchId));
         }
       }
     } catch (e) {
