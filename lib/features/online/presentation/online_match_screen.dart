@@ -825,10 +825,12 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.hourglass_top_rounded,
-                  size: 56,
-                  color: AppTheme.primaryColor.withValues(alpha: 0.5),
+                Image.asset(
+                  'assets/images/player_impostor.webp',
+                  width: 110,
+                  height: 110,
+                  cacheWidth: 220,
+                  cacheHeight: 220,
                 ),
                 const SizedBox(height: 16),
                 Text(

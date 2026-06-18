@@ -139,9 +139,9 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
         child: SingleChildScrollView(
           child: ConstrainedBox(
             constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top -
-                  MediaQuery.of(context).padding.bottom -
+              minHeight: MediaQuery.sizeOf(context).height -
+                  MediaQuery.paddingOf(context).top -
+                  MediaQuery.paddingOf(context).bottom -
                   kToolbarHeight,
             ),
             child: IntrinsicHeight(
@@ -174,22 +174,13 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                     ),
                   ),
                   const Spacer(flex: 1),
-                  // Icon
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color:
-                          AppTheme.secondaryColor.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: AppTheme.secondaryColor, width: 3),
-                    ),
-                    child: Icon(
-                      Icons.psychology_rounded,
-                      size: 48,
-                      color: AppTheme.secondaryColor,
-                    ),
+                  // Ilustración del impostor
+                  Image.asset(
+                    'assets/images/player_impostor.webp',
+                    width: 120,
+                    height: 120,
+                    cacheWidth: 240,
+                    cacheHeight: 240,
                   ),
                   const SizedBox(height: 24),
                   // Title
@@ -276,7 +267,7 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: Text(
-                            'Si aciertas, los impostores ganan. Si fallas, el juego continua.',
+                            'Si aciertas, los impostores ganan. Si fallas, el juego continúa.',
                             style: TextStyle(fontFamily: 'Nunito',
                               fontSize: 12,
                               color: AppTheme.warningColor
@@ -369,22 +360,12 @@ class _ImpostorGuessPhaseState extends ConsumerState<ImpostorGuessPhase> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color:
-                    AppTheme.secondaryColor.withValues(alpha: 0.15),
-                shape: BoxShape.circle,
-                border: Border.all(
-                    color: AppTheme.secondaryColor.withValues(alpha: 0.5),
-                    width: 2),
-              ),
-              child: Icon(
-                Icons.psychology_rounded,
-                size: 48,
-                color: AppTheme.secondaryColor,
-              ),
+            Image.asset(
+              'assets/images/player_impostor.webp',
+              width: 120,
+              height: 120,
+              cacheWidth: 240,
+              cacheHeight: 240,
             ),
             const SizedBox(height: 28),
             Text(

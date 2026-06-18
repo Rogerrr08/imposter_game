@@ -323,8 +323,8 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                         const SizedBox(height: 16),
                         Text(
                           civilsWon
-                              ? 'Los civiles ganan!'
-                              : 'Los impostores ganan!',
+                              ? '¡Los civiles ganan!'
+                              : '¡Los impostores ganan!',
                           style: TextStyle(
                             fontFamily: 'Nunito',
                             fontSize: 24,
@@ -750,7 +750,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                     if (isCurrentUser) ...[
                       const SizedBox(width: 4),
                       Text(
-                        '(Tu)',
+                        '(Tú)',
                         style: TextStyle(fontFamily: 'Nunito',
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
@@ -879,7 +879,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                       if (isCurrentUser) ...[
                         const SizedBox(width: 4),
                         Text(
-                          '(Tu)',
+                          '(Tú)',
                           style: TextStyle(
                             fontFamily: 'Nunito',
                             fontSize: 10,
@@ -955,7 +955,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text(
-          'Que impostor adivino?',
+          '¿Qué impostor adivinó?',
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Column(
@@ -1009,9 +1009,9 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
           style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'Se cambiara el resultado a victoria de impostores. '
-          '$impostorName recibira 3 pts y los demas impostores 1 pt. '
-          'Los civiles no recibiran puntos.',
+          'Se cambiará el resultado a victoria de impostores. '
+          '$impostorName recibirá 3 pts y los demás impostores 1 pt. '
+          'Los civiles no recibirán puntos.',
           style: const TextStyle(fontFamily: 'Nunito',fontSize: 14),
         ),
         actions: [

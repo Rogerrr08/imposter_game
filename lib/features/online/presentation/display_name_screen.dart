@@ -242,9 +242,9 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 32),
             child: ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height -
-                    MediaQuery.of(context).padding.top -
-                    MediaQuery.of(context).padding.bottom,
+                minHeight: MediaQuery.sizeOf(context).height -
+                    MediaQuery.paddingOf(context).top -
+                    MediaQuery.paddingOf(context).bottom,
               ),
               child: IntrinsicHeight(
                 child: Column(

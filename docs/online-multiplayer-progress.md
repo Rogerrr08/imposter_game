@@ -37,6 +37,27 @@ Refactor de confiabilidad pre-publicación (ver auditoría en
   queda cubierto de una. Bag en memoria (por conjunto de categorías). Smoke
   test en `test/word_bank_test.dart`.
 
+- **Fase 3 — pulido visual + ortografía** (quick wins de la auditoría):
+  - **Íconos Material → ilustraciones `.webp`** en los momentos clímax del
+    impostor: `impostor_result_hold` (risk/no_risk → `player_impostor`,
+    wrong_guess → `impostor_failed_guess`), `impostor_choice_phase`
+    (waiting), `impostor_guess_phase` (guesser + waiting) y la espera del
+    espectador en `online_match_screen`. Cierra la brecha visual local↔online.
+  - **Ortografía/tildes y signos de apertura** en todo `features/online`:
+    decidió, arriesgar, adivinó, adivinar, Intentó, continúa, ¡…ganan!,
+    ¡Empate!, ¡Era Impostor!, Votó, (Tú), ¿Qué impostor adivinó?,
+    se cambiará/recibirá/demás/recibirán.
+  - **Imagen neutra para espectadores** en `vote_result_phase` (late-join
+    neutral → `tie_after_voting` en vez de la del bando civil).
+  - **`MediaQuery.of` → `.sizeOf`/`.paddingOf`** en `impostor_guess_phase` y
+    `display_name_screen` (evita rebuild completo por size/padding).
+  - **Home scrollable** (`LayoutBuilder` + `SingleChildScrollView` +
+    `IntrinsicHeight`): sin overflow en pantallas cortas / text scaling alto,
+    conservando el centrado con Spacers cuando hay espacio.
+  - **Barrier color** de los loadings de `groups_screen` unificado con home
+    (`Colors.black @ 0.16`).
+  - `flutter analyze`: 27 issues (baseline, cero nuevos).
+
 ---
 
 ## 2026-04-19 — Plan de optimización local/offline

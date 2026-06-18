@@ -6,9 +6,9 @@ import 'player_avatar.dart';
 /// Intermediate screen shown after the impostor makes a decision.
 ///
 /// Types:
-/// - `risk`: "El impostor decidio arriesgar!" (3s)
-/// - `no_risk`: "El impostor decidio no arriesgar" (3s)
-/// - `wrong_guess`: "El impostor adivino mal!" — shows guess word (4s)
+/// - `risk`: "¡El impostor decidió arriesgar!" (3s)
+/// - `no_risk`: "El impostor decidió no arriesgar" (3s)
+/// - `wrong_guess`: "¡El impostor adivinó mal!" — shows guess word (4s)
 class ImpostorResultHold extends StatefulWidget {
   final String type; // 'risk', 'no_risk', 'wrong_guess'
   final String impostorName;
@@ -55,20 +55,20 @@ class _ImpostorResultHoldState extends State<ImpostorResultHold>
         : AppTheme.secondaryColor;
 
     final String title;
-    final IconData icon;
+    final String image;
     switch (widget.type) {
       case 'risk':
-        title = 'El impostor decidio\narriesgar!';
-        icon = Icons.casino_rounded;
+        title = '¡El impostor decidió\narriesgar!';
+        image = 'assets/images/player_impostor.webp';
       case 'no_risk':
-        title = 'El impostor decidio\nno arriesgar';
-        icon = Icons.shield_rounded;
+        title = 'El impostor decidió\nno arriesgar';
+        image = 'assets/images/player_impostor.webp';
       case 'wrong_guess':
-        title = 'El impostor\nadivino mal!';
-        icon = Icons.close_rounded;
+        title = '¡El impostor\nadivinó mal!';
+        image = 'assets/images/impostor_failed_guess.webp';
       default:
         title = '';
-        icon = Icons.info_rounded;
+        image = 'assets/images/player_impostor.webp';
     }
 
     return Column(
@@ -93,19 +93,13 @@ class _ImpostorResultHoldState extends State<ImpostorResultHold>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Icon
-                  Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: color.withValues(alpha: 0.5),
-                        width: 2,
-                      ),
-                    ),
-                    child: Icon(icon, size: 48, color: color),
+                  // Ilustración del impostor
+                  Image.asset(
+                    image,
+                    width: 120,
+                    height: 120,
+                    cacheWidth: 240,
+                    cacheHeight: 240,
                   ),
                   const SizedBox(height: 24),
 
@@ -175,7 +169,7 @@ class _ImpostorResultHoldState extends State<ImpostorResultHold>
                       child: Column(
                         children: [
                           Text(
-                            'Intento adivinar:',
+                            'Intentó adivinar:',
                             style: TextStyle(
                               fontFamily: 'Nunito',
                               fontSize: 13,

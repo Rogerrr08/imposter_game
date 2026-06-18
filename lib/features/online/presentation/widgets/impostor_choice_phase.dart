@@ -221,7 +221,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
           children: [
             const Spacer(flex: 2),
 
-            // Pulsing icon
+            // Ilustración del impostor con pulso
             AnimatedBuilder(
               animation: _pulseController,
               builder: (context, child) {
@@ -231,22 +231,12 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                   child: child,
                 );
               },
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: AppTheme.secondaryColor.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppTheme.secondaryColor.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
-                child: Icon(
-                  Icons.psychology_rounded,
-                  size: 48,
-                  color: AppTheme.secondaryColor,
-                ),
+              child: Image.asset(
+                'assets/images/player_impostor.webp',
+                width: 120,
+                height: 120,
+                cacheWidth: 240,
+                cacheHeight: 240,
               ),
             ),
             const SizedBox(height: 28),

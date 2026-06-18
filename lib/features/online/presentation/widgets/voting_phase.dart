@@ -401,7 +401,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                         ? AppTheme.warningColor
                         : AppTheme.textSecondary;
                 final statusText = hasVoted
-                    ? 'Voto'
+                    ? 'Votó'
                     : isDisconnected
                         ? 'Desconectado'
                         : 'Esperando...';
@@ -422,7 +422,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                     child: Icon(statusIcon, size: 18, color: statusColor),
                   ),
                   title: Text(
-                    '${player.displayName}${isMe ? ' (Tu)' : ''}',
+                    '${player.displayName}${isMe ? ' (Tú)' : ''}',
                     style: TextStyle(fontFamily: 'Nunito',
                       fontSize: 14,
                       fontWeight: FontWeight.w700,

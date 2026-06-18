@@ -388,7 +388,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
             ),
             const SizedBox(height: 16),
             Text(
-              'Empate!',
+              '¡Empate!',
               style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
@@ -436,13 +436,16 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
       child: Column(
         children: [
           Image.asset(
-            isImpostor
-                ? (viewerIsImpostor
-                    ? 'assets/images/impostor_failed_guess.webp'
-                    : 'assets/images/civil_correct_guess.webp')
-                : (viewerIsImpostor
-                    ? 'assets/images/impostor_correct_guess.webp'
-                    : 'assets/images/civil_lose_life.webp'),
+            // El espectador neutral no pertenece a ningún bando: imagen neutra.
+            widget.isSpectator
+                ? 'assets/images/tie_after_voting.webp'
+                : isImpostor
+                    ? (viewerIsImpostor
+                        ? 'assets/images/impostor_failed_guess.webp'
+                        : 'assets/images/civil_correct_guess.webp')
+                    : (viewerIsImpostor
+                        ? 'assets/images/impostor_correct_guess.webp'
+                        : 'assets/images/civil_lose_life.webp'),
             width: 140,
             height: 140,
             cacheWidth: 280,
@@ -465,7 +468,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
               borderRadius: BorderRadius.circular(999),
             ),
             child: Text(
-              isImpostor ? 'Era Impostor!' : 'Era Civil',
+              isImpostor ? '¡Era Impostor!' : 'Era Civil',
               style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
@@ -477,8 +480,8 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
             const SizedBox(height: 16),
             Text(
               resolution.winner == 'civils'
-                  ? 'Los civiles ganan!'
-                  : 'Los impostores ganan!',
+                  ? '¡Los civiles ganan!'
+                  : '¡Los impostores ganan!',
               style: TextStyle(fontFamily: 'Nunito',
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
