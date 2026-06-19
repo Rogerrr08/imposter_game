@@ -9,8 +9,9 @@ import 'player_avatar.dart';
 /// - `risk`: "¡El impostor decidió arriesgar!" (3s)
 /// - `no_risk`: "El impostor decidió no arriesgar" (3s)
 /// - `wrong_guess`: "¡El impostor adivinó mal!" — shows guess word (4s)
+/// - `correct_guess`: "¡El impostor adivinó la palabra!" — shows guess word (4s)
 class ImpostorResultHold extends StatefulWidget {
-  final String type; // 'risk', 'no_risk', 'wrong_guess'
+  final String type; // 'risk', 'no_risk', 'wrong_guess', 'correct_guess'
   final String impostorName;
   final String? impostorAvatarUrl;
   final String? guessWord;
@@ -66,10 +67,15 @@ class _ImpostorResultHoldState extends State<ImpostorResultHold>
       case 'wrong_guess':
         title = '¡El impostor\nadivinó mal!';
         image = 'assets/images/impostor_failed_guess.webp';
+      case 'correct_guess':
+        title = '¡El impostor\nadivinó la palabra!';
+        image = 'assets/images/impostor_correct_guess.webp';
       default:
         title = '';
         image = 'assets/images/player_impostor.webp';
     }
+    final showGuessWord = widget.type == 'wrong_guess' ||
+        widget.type == 'correct_guess';
 
     return Column(
       children: [
@@ -108,7 +114,6 @@ class _ImpostorResultHoldState extends State<ImpostorResultHold>
                     title,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontFamily: 'Nunito',
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: AppTheme.textPrimary,
@@ -141,7 +146,6 @@ class _ImpostorResultHoldState extends State<ImpostorResultHold>
                         Text(
                           widget.impostorName,
                           style: TextStyle(
-                            fontFamily: 'Nunito',
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                             color: AppTheme.textPrimary,
@@ -151,27 +155,26 @@ class _ImpostorResultHoldState extends State<ImpostorResultHold>
                     ),
                   ),
 
-                  // Guess word (only for wrong_guess)
-                  if (widget.type == 'wrong_guess' &&
-                      widget.guessWord != null) ...[
+                  // Palabra adivinada (wrong_guess / correct_guess)
+                  if (showGuessWord && widget.guessWord != null) ...[
                     const SizedBox(height: 20),
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.secondaryColor.withValues(alpha: 0.08),
+                        color: color.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color:
-                              AppTheme.secondaryColor.withValues(alpha: 0.2),
+                          color: color.withValues(alpha: 0.2),
                         ),
                       ),
                       child: Column(
                         children: [
                           Text(
-                            'Intentó adivinar:',
+                            widget.type == 'correct_guess'
+                                ? 'La palabra era:'
+                                : 'Intentó adivinar:',
                             style: TextStyle(
-                              fontFamily: 'Nunito',
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: AppTheme.textSecondary,
@@ -182,11 +185,10 @@ class _ImpostorResultHoldState extends State<ImpostorResultHold>
                             '"${widget.guessWord}"',
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontFamily: 'Nunito',
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
                               fontStyle: FontStyle.italic,
-                              color: AppTheme.secondaryColor,
+                              color: color,
                             ),
                           ),
                         ],

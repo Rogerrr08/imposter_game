@@ -57,7 +57,7 @@ class LobbyConfigCard extends StatelessWidget {
             isHost
                 ? 'Usa exactamente el mismo lenguaje visual del setup local, pero sincronizado con toda la sala.'
                 : 'Estás viendo la misma configuración que el host mantiene para toda la sala.',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 13,
               height: 1.4,
               color: AppTheme.textSecondary,
@@ -153,7 +153,7 @@ class LobbyConfigCard extends StatelessWidget {
               children: [
                 Text(
                   room.gameMode.displayName,
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
@@ -162,7 +162,7 @@ class LobbyConfigCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   room.gameMode.subtitle,
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 12,
                     height: 1.3,
                     color: AppTheme.textSecondary,
@@ -192,7 +192,7 @@ class LobbyConfigCard extends StatelessWidget {
           Expanded(
             child: Text(
               'Solo el host puede editar esta configuración, pero aquí siempre verás los cambios al momento.',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 12,
                 height: 1.35,
                 color: AppTheme.textSecondary,

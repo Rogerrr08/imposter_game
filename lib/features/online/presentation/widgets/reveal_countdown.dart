@@ -95,7 +95,6 @@ class _RevealCountdownState extends State<RevealCountdown>
               child: Text(
                 'Revelando resultados...',
                 style: TextStyle(
-                  fontFamily: 'Nunito',
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.textSecondary,
@@ -136,7 +135,6 @@ class _RevealCountdownState extends State<RevealCountdown>
                         Text(
                           '$_current',
                           style: TextStyle(
-                            fontFamily: 'Nunito',
                             fontSize: 120,
                             fontWeight: FontWeight.w900,
                             color: numberColor,

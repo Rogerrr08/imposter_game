@@ -168,7 +168,6 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
               Text(
                 'Foto de perfil',
                 style: TextStyle(
-                  fontFamily: 'Nunito',
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textPrimary,
@@ -181,7 +180,6 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                 title: const Text(
                   'Elegir de galer\u00eda',
                   style: TextStyle(
-                    fontFamily: 'Nunito',
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -193,7 +191,6 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                 title: const Text(
                   'Tomar foto',
                   style: TextStyle(
-                    fontFamily: 'Nunito',
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -207,7 +204,6 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                   title: Text(
                     'Eliminar foto',
                     style: TextStyle(
-                      fontFamily: 'Nunito',
                       fontWeight: FontWeight.w600,
                       color: AppTheme.errorColor,
                     ),
@@ -257,6 +253,7 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                               ? null
                               : () => context.go(_isFirstTime ? '/' : '/online'),
                           icon: const Icon(Icons.arrow_back_rounded),
+                          tooltip: 'Volver',
                         ),
                         const Spacer(),
                       ],
@@ -337,7 +334,6 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                           ? '\u00bfC\u00f3mo te llamas?'
                           : 'Editar perfil',
                       style: TextStyle(
-                        fontFamily: 'Nunito',
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.textPrimary,
@@ -349,7 +345,6 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                           ? 'Este nombre ver\u00e1n los dem\u00e1s jugadores'
                           : 'Cambia tu nombre o foto de perfil',
                       style: TextStyle(
-                        fontFamily: 'Nunito',
                         fontSize: 14,
                         color: AppTheme.textSecondary,
                       ),
@@ -363,7 +358,6 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                       textCapitalization: TextCapitalization.words,
                       maxLength: 15,
                       style: TextStyle(
-                        fontFamily: 'Nunito',
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.textPrimary,
@@ -398,7 +392,6 @@ class _DisplayNameScreenState extends ConsumerState<DisplayNameScreen> {
                             : Text(
                                 _isFirstTime ? 'Continuar' : 'Guardar',
                                 style: const TextStyle(
-                                  fontFamily: 'Nunito',
                                   fontSize: 17,
                                   fontWeight: FontWeight.w700,
                                 ),

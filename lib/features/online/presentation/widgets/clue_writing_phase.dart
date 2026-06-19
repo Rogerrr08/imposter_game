@@ -262,7 +262,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
                     _isMyTurn
                         ? 'Tu turno — escribe una pista'
                         : 'Turno de ${currentPlayer?.displayName ?? '...'}${currentPlayer != null && !currentPlayer.isConnected ? ' (desconectado)' : ''}',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: _isMyTurn ? accentColor : AppTheme.textPrimary,
@@ -285,7 +285,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
                 const SizedBox(width: 4),
                 Text(
                   '${_secondsLeft}s',
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: timerColor,
@@ -326,7 +326,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 color: accentColor,
@@ -360,7 +360,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
             const SizedBox(height: 12),
             Text(
               'Aún no hay pistas',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textSecondary,
@@ -412,14 +412,14 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
               autofocus: true,
               maxLength: 40,
               textCapitalization: TextCapitalization.none,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textPrimary,
               ),
               decoration: InputDecoration(
                 hintText: 'Escribe tu pista...',
-                hintStyle: TextStyle(fontFamily: 'Nunito',
+                hintStyle: TextStyle(
                   color: AppTheme.textSecondary,
                 ),
                 counterText: '',
@@ -449,26 +449,29 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
           const SizedBox(width: 10),
           SizedBox(
             height: 50,
-            child: ElevatedButton(
-              onPressed: _submitting ? null : _handleSubmitClue,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: accentColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
+            child: Tooltip(
+              message: 'Enviar pista',
+              child: ElevatedButton(
+                onPressed: _submitting ? null : _handleSubmitClue,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: accentColor,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
+                child: _submitting
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.send_rounded),
               ),
-              child: _submitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Icon(Icons.send_rounded),
             ),
           ),
         ],
@@ -504,7 +507,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
               currentPlayer != null && !currentPlayer.isConnected
                   ? 'Esperando a ${currentPlayer.displayName} (desconectado)...'
                   : 'Esperando a ${currentPlayer?.displayName ?? '...'}...',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: currentPlayer != null && !currentPlayer.isConnected
@@ -555,7 +558,6 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
               Text(
                 'Votación en $seconds...',
                 style: TextStyle(
-                  fontFamily: 'Nunito',
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.warningColor,
@@ -580,7 +582,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
       ),
       child: Text(
         label,
-        style: TextStyle(fontFamily: 'Nunito',
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: color,
@@ -661,7 +663,7 @@ class _ClueCard extends StatelessWidget {
                   children: [
                     Text(
                       playerName,
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.textSecondary,
@@ -680,7 +682,6 @@ class _ClueCard extends StatelessWidget {
                         child: Text(
                           role == 'impostor' ? 'Impostor' : 'Civil',
                           style: TextStyle(
-                            fontFamily: 'Nunito',
                             fontSize: 10,
                             fontWeight: FontWeight.w800,
                             color: role == 'impostor'
@@ -694,7 +695,7 @@ class _ClueCard extends StatelessWidget {
                 ),
                 Text(
                   clue,
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,

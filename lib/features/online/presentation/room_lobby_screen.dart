@@ -32,7 +32,7 @@ class RoomLobbyScreen extends ConsumerWidget {
       if (error != null && error != prev?.value?.error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(error, style: const TextStyle(fontFamily: 'Nunito')),
+            content: Text(error),
           ),
         );
       }
@@ -62,11 +62,11 @@ class RoomLobbyScreen extends ConsumerWidget {
             leading: IconButton(
               onPressed: () => _handleLeave(context, ref),
               icon: const Icon(Icons.arrow_back_rounded),
+              tooltip: 'Salir de la sala',
             ),
             title: const Text(
               'Lobby privado',
               style: TextStyle(
-                fontFamily: 'Nunito',
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -257,7 +257,6 @@ class RoomLobbyScreen extends ConsumerWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    fontFamily: 'Nunito',
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,
@@ -267,7 +266,6 @@ class RoomLobbyScreen extends ConsumerWidget {
                 Text(
                   subtitle,
                   style: TextStyle(
-                    fontFamily: 'Nunito',
                     fontSize: 13,
                     height: 1.4,
                     color: AppTheme.textSecondary,
@@ -338,7 +336,6 @@ class RoomLobbyScreen extends ConsumerWidget {
                               Text(
                                 'Hay una partida en curso',
                                 style: TextStyle(
-                                  fontFamily: 'Nunito',
                                   fontSize: 16,
                                   fontWeight: FontWeight.w800,
                                   color: AppTheme.textPrimary,
@@ -348,7 +345,6 @@ class RoomLobbyScreen extends ConsumerWidget {
                               Text(
                                 'Puedes espectar la partida actual. Cuando termine, podrás unirte a la siguiente.',
                                 style: TextStyle(
-                                  fontFamily: 'Nunito',
                                   fontSize: 13,
                                   height: 1.4,
                                   color: AppTheme.textSecondary,
@@ -428,11 +424,11 @@ class RoomLobbyScreen extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text(
           'Salir de la sala',
-          style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Saldrás del lobby actual. Si eras el host, la sala pasará al siguiente jugador.',
-          style: TextStyle(fontFamily: 'Nunito', color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
@@ -480,7 +476,6 @@ class RoomLobbyScreen extends ConsumerWidget {
               title,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Nunito',
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -491,7 +486,6 @@ class RoomLobbyScreen extends ConsumerWidget {
               subtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Nunito',
                 fontSize: 14,
                 height: 1.45,
                 color: AppTheme.textSecondary,

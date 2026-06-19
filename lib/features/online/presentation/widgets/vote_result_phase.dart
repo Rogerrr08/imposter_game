@@ -172,7 +172,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
             const SizedBox(height: 16),
             Text(
               'Contando votos...',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textSecondary,
@@ -222,7 +222,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
                   // Title
                   Text(
                     'Resultado de la votación',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
                       color: AppTheme.textPrimary,
@@ -266,7 +266,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
       children: [
         Text(
           'Votos',
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
             color: AppTheme.textSecondary,
@@ -314,7 +314,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
                   child: Center(
                     child: Text(
                       '$voteCount',
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.secondaryColor,
@@ -329,7 +329,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
                     children: [
                       Text(
                         target?.displayName ?? '?',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
@@ -337,7 +337,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
                       ),
                       Text(
                         'Votaron: ${voters.join(', ')}',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 11,
                           color: AppTheme.textSecondary,
                         ),
@@ -389,7 +389,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
             const SizedBox(height: 16),
             Text(
               '¡Empate!',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.warningColor,
@@ -399,7 +399,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
             Text(
               'Empataron: ${tiedNames.join(' y ')}',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 14,
                 color: AppTheme.textSecondary,
               ),
@@ -407,7 +407,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
             const SizedBox(height: 4),
             Text(
               'Se hará una ronda de desempate.',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textSecondary,
@@ -454,7 +454,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
           const SizedBox(height: 16),
           Text(
             '${eliminatedPlayer?.displayName ?? '?'} fue eliminado',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
@@ -469,7 +469,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
             ),
             child: Text(
               isImpostor ? '¡Era Impostor!' : 'Era Civil',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
                 color: roleColor,
@@ -482,7 +482,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
               resolution.winner == 'civils'
                   ? '¡Los civiles ganan!'
                   : '¡Los impostores ganan!',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
                 color: resolution.winner == 'civils'
@@ -508,7 +508,7 @@ class _VoteResultPhaseState extends ConsumerState<VoteResultPhase>
     return Text(
       text,
       textAlign: TextAlign.center,
-      style: TextStyle(fontFamily: 'Nunito',
+      style: TextStyle(
         fontSize: 13,
         height: 1.4,
         fontWeight: FontWeight.w600,

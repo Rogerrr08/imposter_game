@@ -58,6 +58,27 @@ Refactor de confiabilidad pre-publicación (ver auditoría en
     (`Colors.black @ 0.16`).
   - `flutter analyze`: 27 issues (baseline, cero nuevos).
 
+- **Fase 4 — arco narrativo + mantenibilidad + a11y básica**:
+  - **Pantalla "¡El impostor adivinó la palabra!"** (#7): nuevo tipo
+    `correct_guess` en `ImpostorResultHold` (con `impostor_correct_guess.webp`
+    y la palabra). En `_detectImpostorTransition` se infiere el acierto SIN
+    tocar SQL: el RPC marca `eliminated_by_failed_guess` solo en fallo, así que
+    si el adivinador tiene `guessWord` y NO ese flag, acertó. El hold tiene
+    prioridad sobre el reveal countdown final (guard `!_holdingImpostorResult`).
+    De paso se consolidaron `_findImpostorName`/`_findImpostorGuessWord` en
+    `_captureImpostorInfo`.
+  - **Limpieza de `fontFamily: 'Nunito'` inline** (#2): 186 ocurrencias
+    eliminadas en 23 archivos de `features/online` (el `ThemeData` ya aplica
+    Nunito global → render idéntico). Sin `dart format` para no inflar el diff.
+  - **Accesibilidad básica** (#4, subconjunto): `tooltip` en los 6 botones
+    "atrás"/salir de solo-ícono y en el botón de enviar pista (da label a
+    TalkBack). Las ilustraciones de rol/resultado ya tienen texto acompañante,
+    así que no se les añadió `semanticLabel` (sería redundante). Pendiente
+    (requiere QA con TalkBack en dispositivo): `Semantics`/live-region en
+    contadores y timers, y prueba con text scaling 130-150%.
+  - Test stale `widget_test.dart` actualizado al copy real del home.
+  - `flutter analyze`: 27 issues (baseline). `flutter test`: verde.
+
 ---
 
 ## 2026-04-19 — Plan de optimización local/offline

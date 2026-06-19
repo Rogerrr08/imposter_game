@@ -59,10 +59,11 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
         leading: IconButton(
           onPressed: _creating ? null : () => context.go('/online'),
           icon: const Icon(Icons.arrow_back_rounded),
+          tooltip: 'Volver',
         ),
         title: const Text(
           'Crear sala privada',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       body: profileAsync.when(
@@ -145,7 +146,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
         const SizedBox(height: 18),
         Text(
           'Sala privada',
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w800,
             color: AppTheme.textPrimary,
@@ -155,7 +156,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
         Text(
           'Se generará un código para compartir con tus amigos. '
           'Las salas online arrancan en Modo Clásico.',
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 15,
             height: 1.45,
             color: AppTheme.textSecondary,
@@ -181,7 +182,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
         children: [
           Text(
             'Configuración inicial',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: AppTheme.textPrimary,
@@ -196,7 +197,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
           const SizedBox(height: 12),
           Text(
             'Podrás ajustar categorías, tiempo, pistas e impostores dentro del lobby.',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 13,
               color: AppTheme.textSecondary,
             ),
@@ -214,7 +215,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 14,
                 color: AppTheme.textSecondary,
               ),
@@ -222,7 +223,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
           ),
           Text(
             value,
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w700,
               color: AppTheme.textPrimary,
@@ -246,7 +247,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
       ),
       child: Text(
         message,
-        style: TextStyle(fontFamily: 'Nunito',
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: AppTheme.errorColor,
@@ -275,7 +276,7 @@ class _CreateRoomScreenState extends ConsumerState<CreateRoomScreen> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textPrimary,

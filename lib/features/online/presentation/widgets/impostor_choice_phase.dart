@@ -72,7 +72,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             Text(
               'Fuiste eliminado',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -82,7 +82,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             Text(
               'Como eras impostor, puedes intentar adivinar la palabra secreta.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 15,
                 color: AppTheme.textSecondary,
               ),
@@ -114,7 +114,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                       child: Text.rich(
                         TextSpan(
                           text: 'Tu pista: ',
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textSecondary,
@@ -122,7 +122,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                           children: [
                             TextSpan(
                               text: widget.myState.myHint!,
-                              style: TextStyle(fontFamily: 'Nunito',
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
                                 color: AppTheme.warningColor,
@@ -163,7 +163,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                       )
                     : const Text(
                         'Arriesgar e intentar adivinar',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                         ),
@@ -187,7 +187,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                 ),
                 child: const Text(
                   'No arriesgar',
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
@@ -244,7 +244,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             Text(
               'El impostor está decidiendo...',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -254,7 +254,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             Text(
               'Está eligiendo si arriesgar e intentar adivinar la palabra secreta o no.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 15,
                 color: AppTheme.textSecondary,
               ),
@@ -289,7 +289,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                       children: [
                         Text(
                           impostorName,
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: AppTheme.textPrimary,
@@ -297,7 +297,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                         ),
                         Text(
                           'Impostor eliminado',
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.secondaryColor,

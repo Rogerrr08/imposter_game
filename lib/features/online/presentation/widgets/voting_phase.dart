@@ -148,7 +148,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
               isTiebreak
                   ? 'Desempate — vota de nuevo'
                   : 'Votación — elige al sospechoso',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.warningColor,
@@ -163,7 +163,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
             ),
             child: Text(
               '$votedCount/$totalActive',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.primaryColor,
@@ -185,7 +185,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
       tilePadding: const EdgeInsets.symmetric(horizontal: 20),
       title: Text(
         'Pistas de esta ronda (${roundClues.length})',
-        style: TextStyle(fontFamily: 'Nunito',
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w700,
           color: AppTheme.textSecondary,
@@ -209,7 +209,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                 ),
                 label: Text(
                   clue.clue,
-                  style: const TextStyle(fontFamily: 'Nunito',
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
@@ -271,7 +271,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                         children: [
                           Text(
                             player.displayName,
-                            style: TextStyle(fontFamily: 'Nunito',
+                            style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textPrimary,
@@ -291,7 +291,6 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                               child: Text(
                                 player.role == 'impostor' ? 'Impostor' : 'Civil',
                                 style: TextStyle(
-                                  fontFamily: 'Nunito',
                                   fontSize: 10,
                                   fontWeight: FontWeight.w800,
                                   color: player.role == 'impostor'
@@ -306,7 +305,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                       if (!player.isConnected)
                         Text(
                           '(desconectado)',
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.warningColor,
@@ -363,14 +362,14 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                     child: Text.rich(
                       TextSpan(
                         text: 'Votaste por ',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 14,
                           color: AppTheme.textSecondary,
                         ),
                         children: [
                           TextSpan(
                             text: myTarget?.displayName ?? '...',
-                            style: TextStyle(fontFamily: 'Nunito',
+                            style: TextStyle(
                               fontWeight: FontWeight.w800,
                               color: AppTheme.secondaryColor,
                             ),
@@ -423,7 +422,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                   ),
                   title: Text(
                     '${player.displayName}${isMe ? ' (Tú)' : ''}',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
                       color: isDisconnected && !hasVoted
@@ -433,7 +432,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                   ),
                   trailing: Text(
                     statusText,
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: statusColor,
@@ -491,7 +490,7 @@ class _VotingPhaseState extends ConsumerState<VotingPhase> {
                   _selectedTargetId != null
                       ? 'Confirmar voto'
                       : 'Selecciona un jugador',
-                  style: const TextStyle(fontFamily: 'Nunito',
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),

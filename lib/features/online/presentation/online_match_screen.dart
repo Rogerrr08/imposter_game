@@ -309,7 +309,6 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
                   SnackBar(
                     content: Text(
                       '${prevPlayer.displayName} salió de la partida',
-                      style: const TextStyle(fontFamily: 'Nunito'),
                     ),
                     duration: const Duration(seconds: 3),
                     behavior: SnackBarBehavior.floating,
@@ -358,10 +357,11 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
           leading: IconButton(
             onPressed: _confirmLeave,
             icon: const Icon(Icons.arrow_back_rounded),
+            tooltip: 'Salir de la partida',
           ),
           title: const Text(
             'Partida online',
-            style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w700),
+            style: TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
         body: Column(
@@ -413,11 +413,11 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       builder: (dialogContext) => AlertDialog(
         title: const Text(
           'Salir de la partida',
-          style: TextStyle(fontFamily: 'Nunito', fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Si sales ahora serás eliminado de la partida. Si no quedan suficientes jugadores, la partida se cancelará.',
-          style: TextStyle(fontFamily: 'Nunito', color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
@@ -507,7 +507,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     // impostor_choice → impostor_guess = decided to risk
     if (prevPhase == OnlineMatchPhase.impostorChoice &&
         nextPhase == OnlineMatchPhase.impostorGuess) {
-      _findImpostorName();
+      _captureImpostorInfo();
       _startImpostorHold('risk', 3);
       return;
     }
@@ -516,56 +516,53 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     if (prevPhase == OnlineMatchPhase.impostorChoice &&
         (nextPhase == OnlineMatchPhase.clueWriting ||
             nextPhase == OnlineMatchPhase.finished)) {
-      _findImpostorName();
+      _captureImpostorInfo();
       _startImpostorHold('no_risk', 3);
       return;
     }
 
-    // impostor_guess → clue_writing or finished = guessed wrong
-    // (If guess was correct, match goes to finished with impostors winning —
-    //  but skip also goes to clue_writing/finished. We show wrong_guess for
-    //  any impostor_guess → non-finished transition, and for finished when
-    //  civils win. If impostors win from guess, go straight to results.)
+    // impostor_guess → otra fase: el impostor adivinó (bien o mal).
+    // Inferimos el resultado SIN tocar SQL: el RPC marca
+    // `eliminated_by_failed_guess = true` solo en adivinanza incorrecta. Si el
+    // adivinador tiene `guessWord` y NO ese flag, acertó (los impostores ganan).
     if (prevPhase == OnlineMatchPhase.impostorGuess &&
         nextPhase != OnlineMatchPhase.impostorGuess) {
-      // If impostors won → skip intermediate, go to results
-      if (nextPhase == OnlineMatchPhase.finished &&
+      final guesser = _findImpostorGuesser();
+      final guessedCorrectly = guesser != null &&
+          guesser.guessWord != null &&
+          !guesser.eliminatedByFailedGuess;
+
+      _captureImpostorInfo(guesser);
+
+      if (guessedCorrectly) {
+        // Cierra el arco: celebración antes de los resultados finales.
+        _startImpostorHold('correct_guess', 4);
+      } else if (nextPhase == OnlineMatchPhase.finished &&
           nextMatch.status == OnlineMatchStatus.finished) {
-        // Check if impostors won — we'll need to load this from match state.
-        // For now, we can infer: if match finished from impostor_guess,
-        // and winner_override is not set, we need to check.
-        // Simplification: always show wrong_guess unless the phase goes to finished
-        // AND state says impostors won. We'll let the results screen handle the win.
-        // Actually the simplest: fetch guess_word from players to show it.
-        // But we can't easily know winner here. Let's always show wrong_guess
-        // for impostor_guess → finished where civils win, and skip for impostor win.
-        // Since we can't easily determine winner in the listener, let's just
-        // not hold when going to finished — the results screen will tell the story.
+        // Adivinó mal y se acabó (civiles ganan): la pantalla de resultados
+        // cuenta la historia, no holdeamos.
         return;
+      } else {
+        _startImpostorHold('wrong_guess', 4);
       }
-      _findImpostorName();
-      _findImpostorGuessWord();
-      _startImpostorHold('wrong_guess', 4);
       return;
     }
   }
 
-  void _findImpostorName() {
+  /// El impostor eliminado que adivinó (último impostor eliminado).
+  OnlineMatchPlayer? _findImpostorGuesser() {
     final players =
         ref.read(onlineMatchPlayersProvider(widget.matchId)).value ?? [];
-    final impostor = players
+    return players
         .where((p) => p.isImpostor && p.isEliminated)
         .lastOrNull;
-    _impostorName = impostor?.displayName ?? 'Impostor';
-    _impostorAvatarUrl = impostor?.avatarUrl;
   }
 
-  void _findImpostorGuessWord() {
-    final players =
-        ref.read(onlineMatchPlayersProvider(widget.matchId)).value ?? [];
-    final impostor = players
-        .where((p) => p.isImpostor && p.isEliminated)
-        .lastOrNull;
+  /// Captura nombre/avatar/palabra del impostor que adivinó para el hold.
+  void _captureImpostorInfo([OnlineMatchPlayer? guesser]) {
+    final impostor = guesser ?? _findImpostorGuesser();
+    _impostorName = impostor?.displayName ?? 'Impostor';
+    _impostorAvatarUrl = impostor?.avatarUrl;
     _impostorGuessWord = impostor?.guessWord;
   }
 
@@ -601,9 +598,12 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       _revealTarget = 'vote_result';
     }
 
-    // Show reveal countdown before finished (final results)
+    // Show reveal countdown before finished (final results).
+    // Si estamos holdeando el resultado del impostor (p.ej. adivinó correcto),
+    // ese hold va primero; el countdown se dispara al terminar.
     if (phase == OnlineMatchPhase.finished &&
         !_showingRevealCountdown &&
+        !_holdingImpostorResult &&
         _revealTarget != 'finished_done') {
       _showingRevealCountdown = true;
       _revealTarget = 'finished';
@@ -757,6 +757,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     }
     if (phase == OnlineMatchPhase.finished &&
         !_showingRevealCountdown &&
+        !_holdingImpostorResult &&
         _revealTarget != 'finished_done') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
@@ -837,7 +838,6 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
                   'El impostor está tomando una decisión...',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontFamily: 'Nunito',
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textPrimary,
@@ -930,7 +930,6 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             Text(
               'Partida cancelada',
               style: TextStyle(
-                fontFamily: 'Nunito',
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -941,7 +940,6 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
               'No quedaron suficientes jugadores para continuar la partida.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Nunito',
                 fontSize: 14,
                 height: 1.45,
                 color: AppTheme.textSecondary,
@@ -979,7 +977,6 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             Text(
               'Error al cargar la partida',
               style: TextStyle(
-                fontFamily: 'Nunito',
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -990,7 +987,6 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
               error.replaceFirst('Exception: ', ''),
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Nunito',
                 fontSize: 14,
                 color: AppTheme.textSecondary,
               ),

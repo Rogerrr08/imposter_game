@@ -100,7 +100,6 @@ class _InitialCircle extends StatelessWidget {
         child: Text(
           initial,
           style: TextStyle(
-            fontFamily: 'Nunito',
             fontSize: fontSize,
             fontWeight: FontWeight.w800,
             color: fgColor,
