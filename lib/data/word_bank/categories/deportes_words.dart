@@ -3,7 +3,7 @@ import '../word_bank_models.dart';
 const List<WordEntry> deportesWords = [
   WordEntry(
     word: 'Lionel Messi',
-    hints: ['Zurdo', 'Rosario', 'Capitán'],
+    hints: ['Zurdo', 'Capitán', 'Récords'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -13,7 +13,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'LeBron James',
-    hints: ['Alero', 'Ohio', 'Rey'],
+    hints: ['Alero', 'Veterano', 'Realeza'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -23,7 +23,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Usain Bolt',
-    hints: ['Jamaica', 'Rayo', 'Récord'],
+    hints: ['Velocidad', 'Rayo', 'Récord'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -33,7 +33,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Michael Jordan',
-    hints: ['Chicago', 'Aire', 'Leyenda'],
+    hints: ['Aire', 'Seis', 'Leyenda'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -43,7 +43,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Cristiano Ronaldo',
-    hints: ['Portugal', 'Salto', 'Capitán'],
+    hints: ['Físico', 'Salto', 'Capitán'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -63,7 +63,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Real Madrid',
-    hints: ['Blanco', 'Bernabéu', 'Merengue'],
+    hints: ['Blanco', 'Galácticos', 'Copas'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -73,7 +73,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Rafael Nadal',
-    hints: ['Arcilla', 'Zurdo', 'Mallorca'],
+    hints: ['Arcilla', 'Zurdo', 'Tenacidad'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -83,7 +83,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Neymar',
-    hints: ['Brasil', 'Regate', 'Santos'],
+    hints: ['Regate', 'Habilidad', 'Selección'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -93,7 +93,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Barcelona FC',
-    hints: ['Azulgrana', 'Cataluña', 'Masia'],
+    hints: ['Azulgrana', 'Tiki', 'Cantera'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -103,7 +103,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Tiger Woods',
-    hints: ['Masters', 'Augusta', 'Palos'],
+    hints: ['Hoyo', 'Palos', 'Regreso'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -113,7 +113,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Maradona',
-    hints: ['Zurda', 'Nápoles', 'Barrilete'],
+    hints: ['Zurda', 'Diez', 'Genio'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -133,7 +133,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Pelé',
-    hints: ['Brasil', 'Rey', 'Santos'],
+    hints: ['Tricampeón', 'Gol', 'Ídolo'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -143,7 +143,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Kylian Mbappé',
-    hints: ['París', 'Velocidad', 'Francia'],
+    hints: ['Velocidad', 'Delantero', 'Juvenil'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -153,7 +153,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Mike Tyson',
-    hints: ['Pesado', 'Nocaut', 'Tatuaje'],
+    hints: ['Pegada', 'Nocaut', 'Peso'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -163,12 +163,12 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Lewis Hamilton',
-    hints: ['Británico', 'Pole', 'Mercedes'],
+    hints: ['Campeonatos', 'Pole', 'Velocidad'],
     category: WordCategory.deportes,
   ),
   WordEntry(
     word: 'Estadio Santiago Bernabéu',
-    hints: ['Madrid', 'Gradas', 'Merengue'],
+    hints: ['Gradas', 'Tribuna', 'Coliseo'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -178,7 +178,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Stephen Curry',
-    hints: ['Triples', 'Warriors', 'Base'],
+    hints: ['Lanzador', 'Base', 'Anotador'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -188,7 +188,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Estadio Maracaná',
-    hints: ['Río', 'Gradas', 'Brasil'],
+    hints: ['Gradas', 'Tribuna', 'Coliseo'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -198,12 +198,12 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Zinedine Zidane',
-    hints: ['Francés', 'Cabezazo', 'Volante'],
+    hints: ['Técnico', 'Cabezazo', 'Volante'],
     category: WordCategory.deportes,
   ),
   WordEntry(
     word: 'Wimbledon',
-    hints: ['Césped', 'Londres', 'Blanco'],
+    hints: ['Césped', 'Tradición', 'Blanco'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -213,7 +213,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Manchester United',
-    hints: ['Rojo', 'Trafford', 'Inglaterra'],
+    hints: ['Rojo', 'Diablo', 'Campeones'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -223,7 +223,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Roger Federer',
-    hints: ['Suiza', 'Revés', 'Elegancia'],
+    hints: ['Elegancia', 'Revés', 'Maestría'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -243,7 +243,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Erling Haaland',
-    hints: ['Noruega', 'Delantero', 'Altura'],
+    hints: ['Delantero', 'Altura', 'Goleador'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -254,7 +254,7 @@ const List<WordEntry> deportesWords = [
   // --- 25 new entries (51-75) ---
   WordEntry(
     word: 'Novak Djokovic',
-    hints: ['Serbia', 'Flexibilidad', 'Devolución'],
+    hints: ['Flexibilidad', 'Resistencia', 'Número'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -264,17 +264,17 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Juventus',
-    hints: ['Turín', 'Rayas', 'Italia'],
+    hints: ['Rayas', 'Campeones', 'Serie'],
     category: WordCategory.deportes,
   ),
   WordEntry(
     word: 'Taekwondo',
-    hints: ['Patada', 'Corea', 'Peto'],
+    hints: ['Patada', 'Cinturón', 'Peto'],
     category: WordCategory.deportes,
   ),
   WordEntry(
     word: 'Michael Phelps',
-    hints: ['Piscina', 'Medallas', 'Baltimore'],
+    hints: ['Medallas', 'Estilo', 'Récords'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -284,12 +284,12 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Bayern Múnich',
-    hints: ['Baviera', 'Rojo', 'Alemania'],
+    hints: ['Rojo', 'Dominante', 'Liga'],
     category: WordCategory.deportes,
   ),
   WordEntry(
     word: 'Luka Modrić',
-    hints: ['Croacia', 'Mediocampista', 'Balón'],
+    hints: ['Mediocampista', 'Elegante', 'Capitán'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -299,12 +299,12 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Valentino Rossi',
-    hints: ['Moto', 'Amarillo', 'Italiano'],
+    hints: ['Moto', 'Campeón', 'Fanáticos'],
     category: WordCategory.deportes,
   ),
   WordEntry(
     word: 'Boca Juniors',
-    hints: ['Bombonera', 'Azul', 'Argentina'],
+    hints: ['Azul', 'Pasión', 'Hinchada'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -319,17 +319,17 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Shaquille O\'Neal',
-    hints: ['Pívot', 'Orlando', 'Gigante'],
+    hints: ['Pívot', 'Gigante', 'Dominante'],
     category: WordCategory.deportes,
   ),
   WordEntry(
     word: 'Judo',
-    hints: ['Tatami', 'Llave', 'Japón'],
+    hints: ['Tatami', 'Llave', 'Derribo'],
     category: WordCategory.deportes,
   ),
   WordEntry(
     word: 'Roland Garros',
-    hints: ['París', 'Arcilla', 'Primavera'],
+    hints: ['Arcilla', 'Primavera', 'Torneo'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -344,7 +344,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Nadia Comăneci',
-    hints: ['Rumanía', 'Perfecto', 'Barra'],
+    hints: ['Perfecto', 'Barra', 'Gimnasta'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -354,7 +354,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'River Plate',
-    hints: ['Monumental', 'Núñez', 'Millonario'],
+    hints: ['Blanco', 'Clásico', 'Millonario'],
     category: WordCategory.deportes,
   ),
   WordEntry(
@@ -364,7 +364,7 @@ const List<WordEntry> deportesWords = [
   ),
   WordEntry(
     word: 'Conor McGregor',
-    hints: ['Irlanda', 'Octágono', 'Izquierda'],
+    hints: ['Octágono', 'Pegada', 'Provocador'],
     category: WordCategory.deportes,
   ),
   WordEntry(

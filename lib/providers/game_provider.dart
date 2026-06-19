@@ -113,7 +113,7 @@ class GameNotifier extends Notifier<ActiveGame?> {
       ..shuffle(_random);
     final impostorNames = shuffledNames.take(config.impostorCount).toSet();
 
-    final availableHints = WordBank.getHardHints(
+    final availableHints = WordBank.getImpostorHints(
       wordEntry,
       count: config.impostorCount,
     );

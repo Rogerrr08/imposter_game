@@ -61,7 +61,7 @@ class OnlineMatchRepository {
     final impostorIndices = indices.take(room.impostorCount).toList();
 
     // 4. Get hints using the same logic as local game
-    final hints = WordBank.getHardHints(
+    final hints = WordBank.getImpostorHints(
       wordEntry,
       count: room.impostorCount,
     );

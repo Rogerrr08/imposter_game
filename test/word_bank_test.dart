@@ -25,4 +25,21 @@ void main() {
       expect(seen.length, n, reason: 'la bolsa debe cubrir todas las categorías');
     }
   });
+
+  test('cada palabra tiene exactamente 3 pistas de una sola palabra', () {
+    for (final entry in WordBank.allWords) {
+      expect(entry.hints.length, 3,
+          reason: '${entry.word}: debe tener 3 pistas');
+      final lower = entry.hints.map((h) => h.toLowerCase()).toList();
+      for (final hint in entry.hints) {
+        expect(hint.trim(), isNotEmpty, reason: '${entry.word}: pista vacía');
+        expect(hint.trim().contains(' '), isFalse,
+            reason: '${entry.word}: la pista "$hint" debe ser una sola palabra');
+      }
+      expect(lower.toSet().length, 3,
+          reason: '${entry.word}: pistas duplicadas');
+      expect(lower.contains(entry.word.toLowerCase()), isFalse,
+          reason: '${entry.word}: una pista es la palabra misma');
+    }
+  });
 }

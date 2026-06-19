@@ -174,17 +174,14 @@ class WordBank {
     );
   }
 
-  static List<String> getHardHints(WordEntry word, {required int count}) {
+  /// Reparte las pistas a los impostores: baraja las 3 (todas calibradas a la
+  /// misma dificultad, sin reservar una "fácil") y entrega una por impostor,
+  /// distintas entre sí mientras alcancen. Usada por el modo local y el online.
+  static List<String> getImpostorHints(WordEntry word, {required int count}) {
     if (word.hints.isEmpty) return const [];
 
-    // When count fits within the total hints, use all hints so each
-    // impostor gets a unique one. Only skip the easiest hint when there
-    // are more hints than impostors (keeping difficulty preference).
-    final pool = word.hints.length > count
-        ? word.hints.skip(1).toList()
-        : List<String>.from(word.hints);
-
-    pool.shuffle(_random);
+    // Cualquier pista es elegible; se baraja y se reparte una por impostor.
+    final pool = List<String>.from(word.hints)..shuffle(_random);
 
     return List<String>.generate(
       count,
