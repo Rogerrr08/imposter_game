@@ -11,6 +11,9 @@ import 'package:imposter_game/screens/home/home_screen.dart';
 import 'package:imposter_game/screens/home/how_to_play_screen.dart';
 import 'package:imposter_game/screens/settings/settings_screen.dart';
 import 'package:imposter_game/theme/app_theme.dart';
+import 'package:imposter_game/widgets/player_row.dart';
+import 'package:imposter_game/widgets/result_hero.dart';
+import 'package:imposter_game/widgets/secret_word_card.dart';
 
 /// Harness de capturas: renderiza pantallas a PNG (en test/screenshots/goldens)
 /// cargando todas las fuentes (Nunito + Material Icons) y simulando los
@@ -20,9 +23,9 @@ import 'package:imposter_game/theme/app_theme.dart';
 Future<void> _loadFonts() async {
   // Carga todas las familias del FontManifest (incluye MaterialIcons via
   // uses-material-design), para que los íconos no salgan como cuadritos.
-  final manifest = json.decode(
-    await rootBundle.loadString('FontManifest.json'),
-  ) as List<dynamic>;
+  final manifest =
+      json.decode(await rootBundle.loadString('FontManifest.json'))
+          as List<dynamic>;
   for (final entry in manifest) {
     final family = entry['family'] as String;
     final loader = FontLoader(family);
@@ -38,13 +41,16 @@ Future<void> _loadFonts() async {
 }
 
 Widget _app(Widget screen, {bool dark = true}) => MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
-      home: screen,
-    );
+  debugShowCheckedModeBanner: false,
+  theme: dark ? AppTheme.darkTheme : AppTheme.lightTheme,
+  home: screen,
+);
 
-Future<void> _pump(WidgetTester tester, Widget rootWithScope,
-    {bool dark = true}) async {
+Future<void> _pump(
+  WidgetTester tester,
+  Widget rootWithScope, {
+  bool dark = true,
+}) async {
   AppTheme.applyBrightness(dark);
   tester.view.devicePixelRatio = 2.0;
   tester.view.physicalSize = const Size(390 * 2, 844 * 2);
@@ -107,4 +113,87 @@ void main() {
       matchesGoldenFile('goldens/how_to_play_dark.png'),
     );
   });
+
+  // Preview de los componentes compartidos de resultado (Ola 3b). Sin providers:
+  // se construyen con datos de muestra para validar el look unificado.
+  testWidgets('result_components_dark', (tester) async {
+    await _pump(tester, _app(const _ResultComponentsPreview()));
+    await expectLater(
+      find.byType(_ResultComponentsPreview),
+      matchesGoldenFile('goldens/result_components_dark.png'),
+    );
+  });
+}
+
+class _ResultComponentsPreview extends StatelessWidget {
+  const _ResultComponentsPreview();
+
+  Widget _avatar(String name, bool isImpostor) {
+    final color = isImpostor ? AppTheme.secondaryColor : AppTheme.primaryColor;
+    return CircleAvatar(
+      radius: 18,
+      backgroundColor: color.withValues(alpha: 0.15),
+      child: Text(
+        name[0].toUpperCase(),
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.w800,
+          fontSize: 15,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              const ResultHero(
+                civilsWon: true,
+                title: '¡Civiles ganan!',
+                subtitle: 'Todos los impostores fueron descubiertos',
+              ),
+              const SizedBox(height: 24),
+              const SecretWordCard(word: 'Camaleón', category: 'Animales'),
+              const SizedBox(height: 24),
+              PlayerRow(
+                position: 1,
+                name: 'Yeison',
+                avatar: _avatar('Yeison', false),
+                isImpostor: false,
+                points: 5,
+                isCurrentUser: true,
+              ),
+              PlayerRow(
+                position: 2,
+                name: 'Mariana',
+                avatar: _avatar('Mariana', true),
+                isImpostor: true,
+                points: 3,
+              ),
+              PlayerRow(
+                position: 3,
+                name: 'Sofía',
+                avatar: _avatar('Sofía', false),
+                isImpostor: false,
+                points: 1,
+                isEliminated: true,
+              ),
+              PlayerRow(
+                position: 4,
+                name: 'Diego',
+                avatar: _avatar('Diego', false),
+                isImpostor: false,
+                points: -1,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

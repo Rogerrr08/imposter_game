@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../models/game_state.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/player_row.dart';
+import '../../widgets/result_hero.dart';
+import '../../widgets/secret_word_card.dart';
 
 class GameResultsScreen extends ConsumerWidget {
   const GameResultsScreen({super.key});
@@ -29,7 +32,14 @@ class GameResultsScreen extends ConsumerWidget {
               const SizedBox(height: 8),
               _buildResultHeader(civilsWon, impostorGuessed),
               const SizedBox(height: 24),
-              _buildSpotlightSection(game),
+              SecretWordCard(
+                word: game.secretWord,
+                category: game.wordCategory.displayName,
+              ),
+              if (game.impostors.any((p) => p.hint != null)) ...[
+                const SizedBox(height: 16),
+                _buildImpostorHints(game),
+              ],
               if (civilsWon && !impostorGuessed) ...[
                 const SizedBox(height: 18),
                 _buildImpostorOverrideButton(context, ref, game),
@@ -80,135 +90,17 @@ class GameResultsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSpotlightSection(ActiveGame game) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: AppTheme.primaryColor.withValues(alpha: 0.14),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 24,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          _buildWordReveal(game.secretWord, game.wordCategory.displayName),
-          const SizedBox(height: 16),
-          _buildImpostorHints(game),
-        ],
-      ),
-    );
-  }
-
   Widget _buildResultHeader(bool civilsWon, bool impostorGuessed) {
-    final color = civilsWon ? AppTheme.successColor : AppTheme.secondaryColor;
-    final title = civilsWon ? '¡Civiles Ganan!' : '¡Impostores Ganan!';
     final subtitle = civilsWon
         ? 'Todos los impostores fueron descubiertos'
         : impostorGuessed
         ? 'El impostor adivinó la palabra secreta'
         : 'Los civiles se quedaron sin vidas o ya solo quedaban dos jugadores';
 
-    return Column(
-      children: [
-        Image.asset(
-          civilsWon
-              ? 'assets/images/player_civil.webp'
-              : 'assets/images/player_impostor.webp',
-          width: 188,
-          height: 188,
-          cacheWidth: 376,
-          cacheHeight: 376,
-        ),
-        const SizedBox(height: 12),
-        Text(
-          title,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 36,
-            fontWeight: FontWeight.w900,
-            color: color,
-            height: 1,
-          ),
-        ),
-        const SizedBox(height: 10),
-        ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 320),
-          child: Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.textSecondary,
-              height: 1.35,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildWordReveal(String word, String category) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
-      decoration: BoxDecoration(
-        color: AppTheme.backgroundColor.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: AppTheme.primaryColor.withValues(alpha: 0.38),
-          width: 1.2,
-        ),
-      ),
-      child: Column(
-        children: [
-          Text(
-            'La Palabra Secreta',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: AppTheme.textSecondary,
-              letterSpacing: 2,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            word,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 38,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.warningColor,
-              height: 1.05,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              category,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppTheme.primaryColor,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return ResultHero(
+      civilsWon: civilsWon,
+      title: civilsWon ? '¡Civiles ganan!' : '¡Impostores ganan!',
+      subtitle: subtitle,
     );
   }
 
@@ -324,233 +216,36 @@ class GameResultsScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 12),
-        // MVP card (first place)
-        if (sorted.isNotEmpty) _buildMvpCard(sorted.first),
-        // Rest of players
-        ...List.generate(
-          sorted.length > 1 ? sorted.length - 1 : 0,
-          (i) => _buildRankedPlayerCard(sorted[i + 1], i + 2),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMvpCard(GamePlayer player) {
-    final isImpostor = player.role == PlayerRole.impostor;
-    final roleColor = isImpostor
-        ? AppTheme.secondaryColor
-        : AppTheme.successColor;
-    final roleText = isImpostor ? 'IMPOSTOR' : 'CIVIL';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.warningColor.withValues(alpha: 0.15),
-            AppTheme.warningColor.withValues(alpha: 0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: AppTheme.warningColor.withValues(alpha: 0.4),
-          width: 1.5,
-        ),
-      ),
-      child: Row(
-        children: [
-          // Crown + position
-          Column(
-            children: [
-              const Text('\u{1F451}', style: TextStyle(fontSize: 22)),
-              const SizedBox(height: 2),
-              Text(
-                '1\u00BA',
+        ...sorted.asMap().entries.map((entry) {
+          final player = entry.value;
+          final isImpostor = player.role == PlayerRole.impostor;
+          final roleColor = isImpostor
+              ? AppTheme.secondaryColor
+              : AppTheme.primaryColor;
+          final initial = player.name.trim().isEmpty
+              ? '?'
+              : player.name.trim()[0].toUpperCase();
+          return PlayerRow(
+            position: entry.key + 1,
+            name: player.name,
+            isImpostor: isImpostor,
+            points: player.points,
+            isEliminated: player.isEliminated,
+            avatar: CircleAvatar(
+              radius: 18,
+              backgroundColor: roleColor.withValues(alpha: 0.15),
+              child: Text(
+                initial,
                 style: TextStyle(
-                  fontSize: 14,
+                  color: roleColor,
                   fontWeight: FontWeight.w800,
-                  color: AppTheme.warningColor,
+                  fontSize: 15,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  player.name,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: roleColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        roleText,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: roleColor,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                    ),
-                    if (player.isEliminated) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        'Eliminado',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppTheme.textSecondary.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color:
-                  (player.points >= 0
-                          ? AppTheme.successColor
-                          : AppTheme.errorColor)
-                      .withValues(alpha: 0.18),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              '${player.points >= 0 ? '+' : ''}${player.points}',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: player.points >= 0
-                    ? AppTheme.successColor
-                    : AppTheme.errorColor,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRankedPlayerCard(GamePlayer player, int position) {
-    final isImpostor = player.role == PlayerRole.impostor;
-    final roleColor = isImpostor
-        ? AppTheme.secondaryColor
-        : AppTheme.successColor;
-    final roleText = isImpostor ? 'IMPOSTOR' : 'CIVIL';
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isImpostor
-              ? AppTheme.secondaryColor.withValues(alpha: 0.3)
-              : Colors.transparent,
-        ),
-      ),
-      child: Row(
-        children: [
-          // Position number
-          SizedBox(
-            width: 32,
-            child: Text(
-              '$position\u00BA',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppTheme.textSecondary,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  player.name,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.textPrimary,
-                    decoration: player.isEliminated
-                        ? TextDecoration.lineThrough
-                        : null,
-                  ),
-                ),
-                Row(
-                  children: [
-                    Text(
-                      roleText,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        color: roleColor,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                    if (player.isEliminated) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        'Eliminado',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppTheme.textSecondary.withValues(alpha: 0.6),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color:
-                  (player.points >= 0
-                          ? AppTheme.successColor
-                          : AppTheme.errorColor)
-                      .withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              '${player.points >= 0 ? '+' : ''}${player.points}',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: player.points >= 0
-                    ? AppTheme.successColor
-                    : AppTheme.errorColor,
-              ),
-            ),
-          ),
-        ],
-      ),
+          );
+        }),
+      ],
     );
   }
 
