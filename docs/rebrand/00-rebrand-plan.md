@@ -70,7 +70,9 @@ Progreso:
 - **[HECHO] 3e — role reveal payoff.** Ilustración del rol enmarcada + glow;
   civil reusa `SecretWordCard`; pista de impostor en `_buildImpostorHintCard`.
   La mecánica de deslizar-para-revelar no se tocó.
-- Pendiente: OnlineHome, GameResults "Ver ranking".
+- **[HECHO] 3f — OnlineHome carga transparente (skeleton).** Nuevo `SkeletonBox`
+  reemplaza los 5+ spinners del flujo auth→perfil→sala; glow neón en hero + CTA.
+- Pendiente (menor): botón "Ver ranking" en GameResults local.
 
 ### Ola 4 — Motion, juice y tono de fiesta  ·  riesgo bajo-medio
 Tokens de motion (4 duraciones, 4 curvas, 3 glows), **hápticos** en reveal/
