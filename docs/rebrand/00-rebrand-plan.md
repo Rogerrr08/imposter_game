@@ -54,6 +54,16 @@ Home, **VoteScreen → chips visuales** (no escribir nombres), GameResults
 (+ "Ver ranking", hints arriba), OnlineHome, role reveal, how-to-play (8→3
 páginas), "spotlight" neón detrás de las ilustraciones. Fuentes: **01, 02, 04, 05**.
 
+Progreso:
+- **[HECHO] 3a — VoteScreen Express con chips tocables** (antes campo de texto).
+  Nuevo `_PlayerChip`. La lógica de voto no cambió.
+- **[HECHO] 3b — Resultados local↔online unificados.** Componentes compartidos
+  `ResultHero` / `SecretWordCard` / `PlayerRow` en `lib/widgets/`; cableados en
+  `game_results_screen` (local) y `match_results_phase` (online). Golden de
+  preview `result_components_dark`.
+- Pendiente: Home, how-to-play (8→3), role reveal, OnlineHome, spotlight neón,
+  GameResults "Ver ranking".
+
 ### Ola 4 — Motion, juice y tono de fiesta  ·  riesgo bajo-medio
 Tokens de motion (4 duraciones, 4 curvas, 3 glows), **hápticos** en reveal/
 countdown/votación/resultado, animación de entrada en resultados, suspenso de
