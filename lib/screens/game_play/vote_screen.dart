@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -33,6 +34,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
   }
 
   void _onNameSelected(String name) {
+    HapticFeedback.selectionClick();
     if (_step == 0) {
       FocusManager.instance.primaryFocus?.unfocus();
       setState(() {

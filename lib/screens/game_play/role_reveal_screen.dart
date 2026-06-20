@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -59,6 +60,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
       // Enable button as soon as user drags up a little
       if (!_hasRevealed && _dragOffset < -40) {
         _hasRevealed = true;
+        HapticFeedback.mediumImpact();
       }
     });
   }
@@ -69,6 +71,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     // Also enable on any upward flick
     if (!_hasRevealed && (velocity < -200 || _dragOffset < -40)) {
       setState(() => _hasRevealed = true);
+      HapticFeedback.mediumImpact();
     }
 
     _snapFrom = _dragOffset;

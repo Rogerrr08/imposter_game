@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -40,6 +41,8 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
 
     _statusListener = (status) {
       if (status == AnimationStatus.completed && mounted) {
+        // Golpe háptico en el clímax: la revelación se siente, no solo se ve.
+        HapticFeedback.heavyImpact();
         setState(() {
           _showResult = true;
         });
