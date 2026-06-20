@@ -13,17 +13,17 @@ class AppTheme {
   static const _lightTextPrimary = Color(0xFF1A1A2E);
   static const _lightTextSecondary = Color(0xFF6B7280);
 
-  // ─── Neon Undercover (dark) ───
-  static const _darkPrimary = Color(0xFF00D1FF);
-  static const _darkSecondary = Color(0xFFFF2D7B);
-  static const _darkBackground = Color(0xFF0A0A12);
-  static const _darkSurface = Color(0xFF12121E);
-  static const _darkCard = Color(0xFF1A1A2E);
-  static const _darkSuccess = Color(0xFF39FF8E);
-  static const _darkWarning = Color(0xFFFFD166);
-  static const _darkError = Color(0xFFFF6B8A);
-  static const _darkTextPrimary = Color(0xFFEAEAFF);
-  static const _darkTextSecondary = Color(0xFF7B7BA0);
+  // ─── Neon Undercover (dark) — rebrand "neón fiesta nocturna" ───
+  static const _darkPrimary = Color(0xFF00E5FF); // cyan más brillante
+  static const _darkSecondary = Color(0xFFFF1A75); // magenta más saturado
+  static const _darkBackground = Color(0xFF08080F); // base más profunda
+  static const _darkSurface = Color(0xFF0F0F1C);
+  static const _darkCard = Color(0xFF16162A);
+  static const _darkSuccess = Color(0xFF00FF87);
+  static const _darkWarning = Color(0xFFFFD000);
+  static const _darkError = Color(0xFFFF3D5A);
+  static const _darkTextPrimary = Color(0xFFF0F0FF);
+  static const _darkTextSecondary = Color(0xFF6060A0);
 
   // ─── Panel colors per theme ───
   static const lightPanelColors = [
@@ -33,10 +33,59 @@ class AppTheme {
   ];
 
   static const darkPanelColors = [
-    Color(0xFF00D1FF), // cyan
-    Color(0xFFA855F7), // violeta
-    Color(0xFFFF2D7B), // magenta
+    Color(0xFF00E5FF), // cyan
+    Color(0xFFBF5FFF), // violeta
+    Color(0xFFFF1A75), // magenta
+    Color(0xFFFFD000), // ámbar
   ];
+
+  // ─── Design tokens del rebrand (para usar en widgets) ───
+  // Acentos neón.
+  static const neonCyan = Color(0xFF00E5FF);
+  static const neonMagenta = Color(0xFFFF1A75);
+  static const neonViolet = Color(0xFFBF5FFF);
+  static const neonGreen = Color(0xFF00FF87);
+  static const neonAmber = Color(0xFFFFD000);
+  static const neonRed = Color(0xFFFF3D5A);
+
+  // Radios — única escala permitida (elimina 6/10/14/18/22 ad-hoc).
+  static const r4 = 4.0;
+  static const r8 = 8.0;
+  static const r12 = 12.0;
+  static const r16 = 16.0;
+  static const r20 = 20.0;
+  static const r24 = 24.0;
+  static const rFull = 999.0;
+
+  // Espaciado — sistema de 4px.
+  static const sp4 = 4.0;
+  static const sp8 = 8.0;
+  static const sp12 = 12.0;
+  static const sp16 = 16.0;
+  static const sp20 = 20.0;
+  static const sp24 = 24.0;
+  static const sp32 = 32.0;
+  static const sp40 = 40.0;
+  static const sp48 = 48.0;
+
+  /// Glow de color: sombra neón para el elemento de MAYOR jerarquía en pantalla.
+  /// No apilar glows en la misma sección. `intensity` 0..1 para animarlo.
+  static List<BoxShadow> glow(Color color, {double intensity = 1}) => [
+        BoxShadow(
+          color: color.withValues(alpha: 0.35 * intensity),
+          blurRadius: 24,
+          spreadRadius: -4,
+        ),
+      ];
+
+  /// Glow suave (cards/paneles secundarios).
+  static List<BoxShadow> glowSoft(Color color, {double intensity = 1}) => [
+        BoxShadow(
+          color: color.withValues(alpha: 0.22 * intensity),
+          blurRadius: 18,
+          spreadRadius: -6,
+        ),
+      ];
 
   // ─── Runtime accessors (resolved via brightness) ───
   static Color primaryColor = _lightPrimary;
@@ -183,7 +232,9 @@ class AppTheme {
           foregroundColor: Colors.white,
           disabledBackgroundColor: surface,
           disabledForegroundColor: textSecondary.withValues(alpha: 0.45),
-          elevation: 0,
+          elevation: isDark ? 6 : 2,
+          shadowColor: isDark ? primary.withValues(alpha: 0.6) : Colors.black26,
+          surfaceTintColor: Colors.transparent,
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -197,7 +248,10 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: textPrimary,
-          side: BorderSide(color: textSecondary.withValues(alpha: 0.22)),
+          side: BorderSide(
+            color: primary.withValues(alpha: isDark ? 0.45 : 0.3),
+            width: 1.5,
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -212,23 +266,23 @@ class AppTheme {
         filled: true,
         fillColor: isDark ? surface : card,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: textSecondary.withValues(alpha: 0.2)),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: textSecondary.withValues(alpha: 0.2)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: error, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: error, width: 2),
         ),
         contentPadding:
@@ -289,7 +343,7 @@ class AppTheme {
         color: card,
         textStyle: TextStyle(fontFamily: 'Nunito',color: textPrimary),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
         ),
       ),
       bottomSheetTheme: BottomSheetThemeData(

@@ -64,17 +64,16 @@ ronda!, ¡Revancha!) + fix de ortografía. Fuentes: **03, 05**.
 Iconografía con más carácter, regenerar/recortar ilustraciones con fondo
 transparente, casos borde, y batería de capturas de regresión visual.
 
-## Decisiones abiertas (para el dueño)
-- **Pesos de fuente Nunito:** hoy solo está `Nunito-Regular` (700–900 son
-  sintéticos). Para fidelidad conviene agregar SemiBold/Bold/ExtraBold/Black
-  (TTF de Google Fonts, OFL). *Yo no puedo descargar los binarios* → o los
-  agregás vos a `assets/fonts/`, o seguimos con pesos sintéticos por ahora.
-- **Ilustraciones con fondo blanco:** corto plazo las enmarco en card oscura
-  con glow (sin tocar assets); largo plazo conviene regenerarlas con fondo
-  transparente (las harías vos o con una herramienta de imágenes).
-- **Default a modo oscuro:** nuevos usuarios aterrizan en neón. (Recomendado.)
-- **Modo claro "Fiesta Sospechosa":** no se toca en este rebrand (queda como
-  alternativa secundaria).
+## Decisiones (resueltas por el dueño, 2026-06-19)
+- **Pesos de fuente Nunito → el dueño agrega los TTF.** Descargará
+  SemiBold(600)/Bold(700)/ExtraBold(800)/Black(900) de Google Fonts (OFL) a
+  `assets/fonts/`. Yo los cableo en `pubspec.yaml` cuando estén.
+- **Ilustraciones con fondo blanco → enmarcar en card oscura + glow** (sin tocar
+  assets). Regeneración con fondo transparente queda para más adelante (opcional).
+- **Default a modo oscuro:** nuevos usuarios aterrizan en neón. (Recomendado, a
+  confirmar al implementar.)
+- **Modo claro "Fiesta Sospechosa":** no se toca (alternativa secundaria).
+- **Arranque:** el dueño revisa el plan + informes antes de iniciar la Ola 0.
 
 ## Lo que NO se toca
 `gameProvider`/`game_provider.dart`, canales online (Supabase), máquina de

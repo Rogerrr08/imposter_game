@@ -14,7 +14,9 @@ final initialDarkModeProvider = Provider<bool>((ref) => false);
 /// de `runApp` para que el primer frame use el tema correcto.
 Future<bool> loadInitialDarkMode() async {
   final prefs = await SharedPreferences.getInstance();
-  return prefs.getBool(_kThemeKey) ?? false;
+  // Default a modo oscuro (neón) para que los nuevos usuarios aterricen en la
+  // identidad primaria del rebrand. El usuario puede cambiarlo en Ajustes.
+  return prefs.getBool(_kThemeKey) ?? true;
 }
 
 final isDarkModeProvider = NotifierProvider<DarkModeNotifier, bool>(
