@@ -106,7 +106,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
           if (profile == null || !profile.hasDisplayName) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                context.go('/online/display-name');
+                context.go('/online/perfil');
               }
             });
             return const SizedBox.shrink();

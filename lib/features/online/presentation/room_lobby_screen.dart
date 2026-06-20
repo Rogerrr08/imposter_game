@@ -93,7 +93,7 @@ class RoomLobbyScreen extends ConsumerWidget {
               final profile = lobbyState.profile;
               if (profile == null || !profile.hasDisplayName) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (context.mounted) context.go('/online/display-name');
+                  if (context.mounted) context.go('/online/perfil');
                 });
                 return const SizedBox.shrink();
               }

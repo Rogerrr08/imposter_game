@@ -17,7 +17,6 @@ import '../screens/groups/group_detail_screen.dart';
 import '../screens/rankings/rankings_screen.dart';
 import '../screens/rankings/game_history_screen.dart';
 import '../models/action_reveal.dart';
-import '../features/online/presentation/create_room_screen.dart';
 import '../features/online/presentation/display_name_screen.dart';
 import '../features/online/presentation/join_room_screen.dart';
 import '../features/online/presentation/online_home_screen.dart';
@@ -91,11 +90,6 @@ class AppRouter {
             _buildPage(state, const OnlineHomeScreen()),
       ),
       GoRoute(
-        path: '/online/create-room',
-        pageBuilder: (context, state) =>
-            _buildPage(state, const CreateRoomScreen()),
-      ),
-      GoRoute(
         path: '/online/join-room',
         pageBuilder: (context, state) =>
             _buildPage(state, const JoinRoomScreen()),
@@ -115,7 +109,7 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: '/online/display-name',
+        path: '/online/perfil',
         pageBuilder: (context, state) =>
             _buildPage(state, const DisplayNameScreen()),
       ),

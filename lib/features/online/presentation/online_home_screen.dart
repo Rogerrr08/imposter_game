@@ -22,6 +22,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
   bool _redirectingToActiveRoom = false;
   bool _activeRoomHandled = false;
   bool _chipPressed = false;
+  bool _creatingRoom = false;
   String? _authError;
 
   Future<void> _ensureAnonymousAuth() async {
@@ -91,8 +92,40 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      context.go('/online/display-name');
+      context.go('/online/perfil');
     });
+  }
+
+  /// Crea la sala directamente desde aquí (antes había una CreateRoomScreen
+  /// intermedia que solo mostraba un resumen y un botón). El perfil ya está
+  /// garantizado en este punto del flujo.
+  Future<void> _createRoom(OnlineProfile profile) async {
+    if (_creatingRoom) return;
+    setState(() => _creatingRoom = true);
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: Colors.black.withValues(alpha: 0.16),
+      builder: (_) => Center(
+        child: CircularProgressIndicator(color: AppTheme.primaryColor),
+      ),
+    );
+    try {
+      final roomId = await ref.read(onlineRoomsRepositoryProvider).createPrivateRoom(
+            displayName: profile.displayName!,
+            avatarUrl: profile.avatarUrl,
+          );
+      if (!mounted) return;
+      Navigator.of(context).pop(); // cierra el loading
+      context.go('/online/room/$roomId');
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      setState(() => _creatingRoom = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
+      );
+    }
   }
 
   @override
@@ -229,7 +262,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
               description:
                   'Genera un código para compartir con tus amigos y configura la partida desde el lobby.',
               buttonLabel: 'Crear sala',
-              onPressed: () => context.go('/online/create-room'),
+              onPressed: () => _createRoom(profile),
               filled: true,
             ),
             const SizedBox(height: 14),
@@ -264,7 +297,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           GestureDetector(
-            onTap: () => context.go('/online/display-name'),
+            onTap: () => context.go('/online/perfil'),
             onTapDown: (_) => setState(() => _chipPressed = true),
             onTapUp: (_) => setState(() => _chipPressed = false),
             onTapCancel: () => setState(() => _chipPressed = false),
