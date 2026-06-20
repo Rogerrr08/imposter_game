@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,11 +10,25 @@ import '../../widgets/player_row.dart';
 import '../../widgets/result_hero.dart';
 import '../../widgets/secret_word_card.dart';
 
-class GameResultsScreen extends ConsumerWidget {
+class GameResultsScreen extends ConsumerStatefulWidget {
   const GameResultsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<GameResultsScreen> createState() => _GameResultsScreenState();
+}
+
+class _GameResultsScreenState extends ConsumerState<GameResultsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Celebración: un golpe háptico al aterrizar en los resultados.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) HapticFeedback.heavyImpact();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final game = ref.watch(gameProvider);
     if (game == null) {
       return const Scaffold(body: Center(child: Text('No hay partida activa')));
@@ -27,74 +42,86 @@ class GameResultsScreen extends ConsumerWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            children: [
-              const SizedBox(height: 8),
-              _buildResultHeader(civilsWon, impostorGuessed),
-              const SizedBox(height: 24),
-              SecretWordCard(
-                word: game.secretWord,
-                category: game.wordCategory.displayName,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0, end: 1),
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, child) => Opacity(
+              opacity: value,
+              child: Transform.translate(
+                offset: Offset(0, 20 * (1 - value)),
+                child: child,
               ),
-              if (game.impostors.any((p) => p.hint != null)) ...[
-                const SizedBox(height: 16),
-                _buildImpostorHints(game),
-              ],
-              if (civilsWon && !impostorGuessed) ...[
-                const SizedBox(height: 18),
-                _buildImpostorOverrideButton(context, ref, game),
-              ],
-              const SizedBox(height: 32),
-              _buildPlayerRanking(game),
-              const SizedBox(height: 32),
-              _buildPointsSummary(game),
-              const SizedBox(height: 40),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    ref.read(gameProvider.notifier).clearGame();
-                    context.go('/setup', extra: groupId);
-                  },
-                  icon: const Icon(Icons.replay_rounded),
-                  label: const Text('¡Otra ronda!'),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 8),
+                _buildResultHeader(civilsWon, impostorGuessed),
+                const SizedBox(height: 24),
+                SecretWordCard(
+                  word: game.secretWord,
+                  category: game.wordCategory.displayName,
                 ),
-              ),
-              if (groupId != null) ...[
+                if (game.impostors.any((p) => p.hint != null)) ...[
+                  const SizedBox(height: 16),
+                  _buildImpostorHints(game),
+                ],
+                if (civilsWon && !impostorGuessed) ...[
+                  const SizedBox(height: 18),
+                  _buildImpostorOverrideButton(context, ref, game),
+                ],
+                const SizedBox(height: 32),
+                _buildPlayerRanking(game),
+                const SizedBox(height: 32),
+                _buildPointsSummary(game),
+                const SizedBox(height: 40),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      ref.read(gameProvider.notifier).clearGame();
+                      context.go('/setup', extra: groupId);
+                    },
+                    icon: const Icon(Icons.replay_rounded),
+                    label: const Text('¡Otra ronda!'),
+                  ),
+                ),
+                if (groupId != null) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.push('/rankings/$groupId'),
+                      icon: const Icon(Icons.leaderboard_rounded),
+                      label: const Text('Ver ranking'),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => context.push('/rankings/$groupId'),
-                    icon: const Icon(Icons.leaderboard_rounded),
-                    label: const Text('Ver ranking'),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: TextButton(
-                  onPressed: () {
-                    ref.read(gameProvider.notifier).clearGame();
-                    if (groupId != null) {
-                      context.go('/groups/$groupId');
-                    } else {
-                      context.go('/');
-                    }
-                  },
-                  child: Text(
-                    groupId != null ? 'Volver al grupo' : 'Ir al inicio',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textSecondary,
+                  child: TextButton(
+                    onPressed: () {
+                      ref.read(gameProvider.notifier).clearGame();
+                      if (groupId != null) {
+                        context.go('/groups/$groupId');
+                      } else {
+                        context.go('/');
+                      }
+                    },
+                    child: Text(
+                      groupId != null ? 'Volver al grupo' : 'Ir al inicio',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.textSecondary,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-            ],
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

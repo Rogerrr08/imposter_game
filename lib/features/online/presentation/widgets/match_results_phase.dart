@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -60,6 +61,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
           _scores = result;
           _loading = false;
         });
+        HapticFeedback.heavyImpact();
       }
     } catch (e) {
       if (mounted) {
@@ -117,6 +119,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
         );
         _loading = false;
       });
+      HapticFeedback.heavyImpact();
     });
   }
 
