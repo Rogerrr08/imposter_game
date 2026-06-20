@@ -67,7 +67,10 @@ Progreso:
   futuro podrían vivir en una sección "Reglas" de Ajustes — informe 02).
 - **[HECHO] 3d — Home con spotlight neón** detrás del logo (NeonSpotlight),
   ajuste de tamaño/espaciado. CTA "Juego rápido" primario con glow.
-- Pendiente: role reveal, OnlineHome, GameResults "Ver ranking".
+- **[HECHO] 3e — role reveal payoff.** Ilustración del rol enmarcada + glow;
+  civil reusa `SecretWordCard`; pista de impostor en `_buildImpostorHintCard`.
+  La mecánica de deslizar-para-revelar no se tocó.
+- Pendiente: OnlineHome, GameResults "Ver ranking".
 
 ### Ola 4 — Motion, juice y tono de fiesta  ·  riesgo bajo-medio
 Tokens de motion (4 duraciones, 4 curvas, 3 glows), **hápticos** en reveal/
