@@ -61,8 +61,11 @@ Progreso:
   `ResultHero` / `SecretWordCard` / `PlayerRow` en `lib/widgets/`; cableados en
   `game_results_screen` (local) y `match_results_phase` (online). Golden de
   preview `result_components_dark`.
-- Pendiente: Home, how-to-play (8→3), role reveal, OnlineHome, spotlight neón,
-  GameResults "Ver ranking".
+- **[HECHO] 3c — how-to-play 8→3 páginas + spotlight neón.** Onboarding corto
+  (Qué es / Cómo se juega / Puntos). Nuevo `NeonSpotlight` (lib/widgets/) detrás
+  del logo. Tablas de puntaje detalladas por modo se quitaron (van al jugar; a
+  futuro podrían vivir en una sección "Reglas" de Ajustes — informe 02).
+- Pendiente: Home, role reveal, OnlineHome, GameResults "Ver ranking".
 
 ### Ola 4 — Motion, juice y tono de fiesta  ·  riesgo bajo-medio
 Tokens de motion (4 duraciones, 4 curvas, 3 glows), **hápticos** en reveal/
