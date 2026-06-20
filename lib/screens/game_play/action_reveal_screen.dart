@@ -207,76 +207,84 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
   }
 
   Widget _buildLoadingView() {
+    // Suspenso temático SIN porcentaje ni barra determinista: el ojo crece y
+    // su glow se intensifica hacia el clímax, y tres puntos se encienden en
+    // secuencia. La tensión se siente, no se mide.
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppTheme.primaryColor.withValues(alpha: 0.45),
-                width: 2,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          final t = Curves.easeInOut.transform(_controller.value);
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Transform.scale(
+                scale: 0.9 + 0.2 * t,
+                child: Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.45),
+                      width: 2,
+                    ),
+                    boxShadow: AppTheme.glow(
+                      AppTheme.primaryColor,
+                      intensity: t,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.visibility_rounded,
+                    color: AppTheme.primaryColor,
+                    size: 44,
+                  ),
+                ),
               ),
-            ),
-            child: Icon(
-              Icons.visibility_rounded,
-              color: AppTheme.primaryColor,
-              size: 44,
-            ),
-          ),
-          const SizedBox(height: 28),
-          Text(
-            'Revelando resultado...',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Un poco de suspenso antes de mostrar lo que pasó',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
-          ),
-          const SizedBox(height: 28),
-          SizedBox(
-            width: 280,
-            child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, _) {
-                return Column(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(999),
-                      child: LinearProgressIndicator(
-                        minHeight: 12,
-                        value: _controller.value,
-                        backgroundColor: AppTheme.surfaceColor,
-                        valueColor: AlwaysStoppedAnimation<Color>(
+              const SizedBox(height: 28),
+              Text(
+                'Revelando resultado',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Un poco de suspenso antes de mostrar lo que pasó',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 28),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(3, (i) {
+                  final fill = ((_controller.value - i / 3) * 3).clamp(
+                    0.0,
+                    1.0,
+                  );
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color.lerp(
+                          AppTheme.surfaceColor,
                           AppTheme.primaryColor,
+                          fill,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      '${(_controller.value * 100).round()}%',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
+                  );
+                }),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
