@@ -85,6 +85,14 @@ countdown/votación/resultado, animación de entrada en resultados, suspenso de
 action-reveal sin "%", celebración de victoria, y **copy de fiesta** (¡Otra
 ronda!, ¡Revancha!) + fix de ortografía. Fuentes: **03, 05**.
 
+Progreso:
+- **[HECHO] 4a — hápticos** en role reveal (umbral), votación (chip) y
+  action-reveal (clímax). `HapticFeedback`.
+- **[HECHO] 4b — copy de fiesta + ortografía.** "Jugar de nuevo"/"Volver a
+  jugar" → "¡Otra ronda!"; tildes/signos en votación y lobby online.
+- Pendiente: animación de entrada en resultados + celebración de victoria,
+  suspenso de action-reveal sin "%".
+
 ### Ola 5 — Pulido  ·  riesgo bajo
 Iconografía con más carácter, regenerar/recortar ilustraciones con fondo
 transparente, casos borde, y batería de capturas de regresión visual.
