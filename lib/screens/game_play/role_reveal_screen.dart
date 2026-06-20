@@ -82,7 +82,8 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
         gameState.currentRevealIndex >= gameState.players.length - 1;
 
     if (isLastPlayer) {
-      context.go('/round-start');
+      ref.read(gameProvider.notifier).startPlaying();
+      context.go('/play');
       return;
     }
 

@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/online/data/supabase_config.dart';
 import '../../providers/app_info_provider.dart';
-import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/full_width_button.dart';
 
@@ -43,25 +42,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final appVersionLabel = ref.watch(appVersionLabelProvider);
-    final isDark = ref.watch(isDarkModeProvider);
 
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
-            // Dark mode toggle (top right)
-            Positioned(
-              top: 12,
-              right: 16,
-              child: IconButton(
-                onPressed: () => ref.read(isDarkModeProvider.notifier).toggle(),
-                icon: Icon(
-                  isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                  color: AppTheme.textSecondary,
-                ),
-                tooltip: isDark ? 'Modo claro' : 'Modo oscuro',
-              ),
-            ),
             // Scrollable para que no haya overflow en pantallas cortas o con
             // text scaling grande; los Spacers centran cuando sí hay espacio.
             LayoutBuilder(
@@ -210,6 +195,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                 ),
+              ),
+            ),
+            // Ajustes — al final del Stack para quedar ENCIMA del scroll y
+            // recibir el tap (antes el scroll lo tapaba y no respondía).
+            Positioned(
+              top: 12,
+              right: 16,
+              child: IconButton(
+                onPressed: () => context.push('/settings'),
+                icon: Icon(
+                  Icons.settings_rounded,
+                  color: AppTheme.textSecondary,
+                ),
+                tooltip: 'Ajustes',
               ),
             ),
           ],

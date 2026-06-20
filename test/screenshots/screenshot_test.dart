@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:imposter_game/providers/theme_provider.dart';
 import 'package:imposter_game/screens/home/home_screen.dart';
 import 'package:imposter_game/screens/home/how_to_play_screen.dart';
+import 'package:imposter_game/screens/settings/settings_screen.dart';
 import 'package:imposter_game/theme/app_theme.dart';
 
 /// Harness de capturas: renderiza pantallas a PNG (en test/screenshots/goldens)
@@ -76,6 +77,20 @@ void main() {
     await expectLater(
       find.byType(HomeScreen),
       matchesGoldenFile('goldens/home_dark.png'),
+    );
+  });
+
+  testWidgets('settings_dark', (tester) async {
+    await _pump(
+      tester,
+      ProviderScope(
+        overrides: [initialDarkModeProvider.overrideWithValue(true)],
+        child: _app(const SettingsScreen()),
+      ),
+    );
+    await expectLater(
+      find.byType(SettingsScreen),
+      matchesGoldenFile('goldens/settings_dark.png'),
     );
   });
 

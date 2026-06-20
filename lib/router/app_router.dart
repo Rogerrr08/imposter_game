@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 
 import '../screens/home/home_screen.dart';
 import '../screens/home/how_to_play_screen.dart';
+import '../screens/settings/settings_screen.dart';
 import '../screens/game_setup/game_setup_screen.dart';
 import '../screens/game_play/role_reveal_screen.dart';
-import '../screens/game_play/round_start_screen.dart';
 import '../screens/game_play/game_play_screen.dart';
 import '../screens/game_play/vote_screen.dart';
 import '../screens/game_play/impostor_guess_screen.dart';
@@ -38,6 +38,11 @@ class AppRouter {
             _buildPage(state, const HowToPlayScreen()),
       ),
       GoRoute(
+        path: '/settings',
+        pageBuilder: (context, state) =>
+            _buildPage(state, const SettingsScreen()),
+      ),
+      GoRoute(
         path: '/setup',
         pageBuilder: (context, state) {
           final groupId = state.extra as int?;
@@ -48,10 +53,6 @@ class AppRouter {
         path: '/role-reveal',
         pageBuilder: (context, state) =>
             _buildPage(state, const RoleRevealScreen()),
-      ),
-      GoRoute(
-        path: '/round-start',
-        builder: (context, state) => const RoundStartScreen(),
       ),
       GoRoute(
         path: '/play',
