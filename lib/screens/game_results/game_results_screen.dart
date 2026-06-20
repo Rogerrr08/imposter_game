@@ -60,6 +60,17 @@ class GameResultsScreen extends ConsumerWidget {
                   label: const Text('Jugar de nuevo'),
                 ),
               ),
+              if (groupId != null) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => context.push('/rankings/$groupId'),
+                    icon: const Icon(Icons.leaderboard_rounded),
+                    label: const Text('Ver ranking'),
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               SizedBox(
                 width: double.infinity,

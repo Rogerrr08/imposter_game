@@ -72,7 +72,12 @@ Progreso:
   La mecánica de deslizar-para-revelar no se tocó.
 - **[HECHO] 3f — OnlineHome carga transparente (skeleton).** Nuevo `SkeletonBox`
   reemplaza los 5+ spinners del flujo auth→perfil→sala; glow neón en hero + CTA.
-- Pendiente (menor): botón "Ver ranking" en GameResults local.
+- **[HECHO] 3g — botón "Ver ranking"** en GameResults local (push a /rankings,
+  solo si la partida es de un grupo).
+
+**Ola 3 COMPLETA.** Componentes nuevos en `lib/widgets/`: `ResultHero`,
+`SecretWordCard`, `PlayerRow`, `NeonSpotlight`, `SkeletonBox` (+ `AppBadge`,
+`FullWidthButton` de Ola 1).
 
 ### Ola 4 — Motion, juice y tono de fiesta  ·  riesgo bajo-medio
 Tokens de motion (4 duraciones, 4 curvas, 3 glows), **hápticos** en reveal/
