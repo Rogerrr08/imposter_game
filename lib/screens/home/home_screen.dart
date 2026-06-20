@@ -6,6 +6,7 @@ import '../../features/online/data/supabase_config.dart';
 import '../../providers/app_info_provider.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/full_width_button.dart';
+import '../../widgets/neon_spotlight.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -72,123 +73,130 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                      const Spacer(flex: 2),
-                      // Logo / Title
-                      Image.asset(
-                        'assets/images/app_logo_no_bg.webp',
-                        width: 240,
-                        height: 240,
-                        cacheWidth: 480,
-                        cacheHeight: 480,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(height: 28),
-                      Text(
-                        'YEISON',
-                        style: TextStyle(
-                          fontSize: 42,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 6,
-                          color: AppTheme.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        'Impostor',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.primaryColor,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'El juego de la palabra secreta',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.textSecondary,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      const Spacer(flex: 2),
-                      // ── Local play ──
-                      FullWidthButton(
-                        label: 'Juego r\u00e1pido',
-                        icon: Icons.play_arrow_rounded,
-                        onPressed: () =>
-                            _navigateWithLoading(context, '/setup'),
-                      ),
-                      const SizedBox(height: 12),
-                      FullWidthButton(
-                        label: 'Mis grupos',
-                        icon: Icons.group,
-                        outlined: true,
-                        onPressed: () =>
-                            _navigateWithLoading(context, '/groups'),
-                      ),
-                      const SizedBox(height: 20),
-                      // ── Divider ──
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              color: AppTheme.textSecondary.withValues(
-                                alpha: 0.15,
+                            const Spacer(flex: 2),
+                            // Logo con spotlight neón (momento de marca).
+                            NeonSpotlight(
+                              size: 300,
+                              child: Image.asset(
+                                'assets/images/app_logo_no_bg.webp',
+                                width: 210,
+                                height: 210,
+                                cacheWidth: 420,
+                                cacheHeight: 420,
+                                fit: BoxFit.contain,
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            child: Text(
-                              'o',
+                            const SizedBox(height: 20),
+                            Text(
+                              'YEISON',
+                              style: TextStyle(
+                                fontSize: 42,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 6,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                            Text(
+                              'Impostor',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.primaryColor,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'El juego de la palabra secreta',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: AppTheme.textSecondary.withValues(
-                                  alpha: 0.6,
+                                color: AppTheme.textSecondary,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                            const Spacer(flex: 2),
+                            // ── Local play ──
+                            FullWidthButton(
+                              label: 'Juego r\u00e1pido',
+                              icon: Icons.play_arrow_rounded,
+                              onPressed: () =>
+                                  _navigateWithLoading(context, '/setup'),
+                            ),
+                            const SizedBox(height: 12),
+                            FullWidthButton(
+                              label: 'Mis grupos',
+                              icon: Icons.group,
+                              outlined: true,
+                              onPressed: () =>
+                                  _navigateWithLoading(context, '/groups'),
+                            ),
+                            const SizedBox(height: 20),
+                            // ── Divider ──
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    height: 1,
+                                    color: AppTheme.textSecondary.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                  ),
                                 ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                  ),
+                                  child: Text(
+                                    'o',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppTheme.textSecondary.withValues(
+                                        alpha: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Container(
+                                    height: 1,
+                                    color: AppTheme.textSecondary.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            // ── Online play ──
+                            FullWidthButton(
+                              label: 'Jugar en l\u00ednea',
+                              icon: Icons.wifi_rounded,
+                              outlined: true,
+                              onPressed: () =>
+                                  _navigateWithLoading(context, '/online'),
+                            ),
+                            const Spacer(flex: 1),
+                            // How to play
+                            TextButton.icon(
+                              onPressed: () => context.push('/how-to-play'),
+                              icon: const Icon(Icons.help_outline, size: 20),
+                              label: Text(
+                                'C\u00F3mo jugar',
+                                style: TextStyle(color: AppTheme.textSecondary),
                               ),
                             ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              color: AppTheme.textSecondary.withValues(
-                                alpha: 0.15,
+                            const SizedBox(height: 4),
+                            Text(
+                              appVersionLabel,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.textSecondary.withValues(
+                                  alpha: 0.5,
+                                ),
+                                letterSpacing: 0.4,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      // ── Online play ──
-                      FullWidthButton(
-                        label: 'Jugar en l\u00ednea',
-                        icon: Icons.wifi_rounded,
-                        outlined: true,
-                        onPressed: () =>
-                            _navigateWithLoading(context, '/online'),
-                      ),
-                      const Spacer(flex: 1),
-                      // How to play
-                      TextButton.icon(
-                        onPressed: () => context.push('/how-to-play'),
-                        icon: const Icon(Icons.help_outline, size: 20),
-                        label: Text(
-                          'C\u00F3mo jugar',
-                          style: TextStyle(color: AppTheme.textSecondary),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        appVersionLabel,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.textSecondary.withValues(alpha: 0.5),
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
+                            const SizedBox(height: 16),
                           ],
                         ),
                       ),
