@@ -90,8 +90,14 @@ Progreso:
   action-reveal (clímax). `HapticFeedback`.
 - **[HECHO] 4b — copy de fiesta + ortografía.** "Jugar de nuevo"/"Volver a
   jugar" → "¡Otra ronda!"; tildes/signos en votación y lobby online.
-- Pendiente: animación de entrada en resultados + celebración de victoria,
-  suspenso de action-reveal sin "%".
+- **[HECHO] 4c — entrada animada + celebración en resultados.** GameResults
+  local entra con fade+slide (TweenAnimationBuilder) + háptico de celebración;
+  online dispara háptico al cargar puntajes.
+- **[HECHO] 4d — suspenso de action-reveal sin "%".** Ojo que crece+brilla y
+  3 puntos en secuencia; fuera la barra determinista y el porcentaje.
+
+**Ola 4 COMPLETA** (núcleo). Diferido como opcional: tokens de motion formales
+en `app_theme` (hoy duraciones/curvas inline) y háptico de countdown del timer.
 
 ### Ola 5 — Pulido  ·  riesgo bajo
 Iconografía con más carácter, regenerar/recortar ilustraciones con fondo
