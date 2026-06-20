@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../theme/app_theme.dart';
+import '../../../widgets/skeleton_box.dart';
 import '../application/online_auth_provider.dart';
 import '../application/online_match_provider.dart';
 import '../application/online_rooms_provider.dart';
@@ -290,8 +291,9 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
         color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: AppTheme.primaryColor.withValues(alpha: 0.15),
+          color: AppTheme.primaryColor.withValues(alpha: 0.25),
         ),
+        boxShadow: AppTheme.glowSoft(AppTheme.primaryColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -377,8 +379,11 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
         color: AppTheme.cardColor,
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: AppTheme.textSecondary.withValues(alpha: 0.12),
+          color: filled
+              ? AppTheme.primaryColor.withValues(alpha: 0.25)
+              : AppTheme.textSecondary.withValues(alpha: 0.12),
         ),
+        boxShadow: filled ? AppTheme.glowSoft(AppTheme.primaryColor) : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,35 +439,49 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
     );
   }
 
+  /// Carga "transparente": en vez de un spinner por cada estado del flujo
+  /// (auth → perfil → sala activa), muestra la silueta del lobby (skeleton) y
+  /// una línea de estado discreta. Se siente como que el contenido ya viene.
   Widget _buildLoadingState({
     required String title,
     required String subtitle,
   }) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(28),
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(24, 8, 24, 32),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CircularProgressIndicator(color: AppTheme.primaryColor),
-            const SizedBox(height: 20),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                height: 1.45,
-                color: AppTheme.textSecondary,
+            const SkeletonBox(height: 138, radius: 24),
+            const SizedBox(height: 24),
+            const SkeletonBox(height: 178, radius: 22),
+            const SizedBox(height: 14),
+            const SkeletonBox(height: 178, radius: 22),
+            const SizedBox(height: 24),
+            // Estado discreto (qué está pasando) sin robar el protagonismo.
+            Center(
+              child: Column(
+                children: [
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      height: 1.4,
+                      color: AppTheme.textSecondary.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
