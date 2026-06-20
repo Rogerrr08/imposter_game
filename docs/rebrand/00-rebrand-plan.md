@@ -1,0 +1,82 @@
+# Plan maestro de rebrand — Yeison Impostor
+
+> Consolidación de las 5 evaluaciones expertas (`docs/rebrand/01..05`).
+> Dirección fijada por el dueño: **neón fiesta nocturna · rediseño profundo ·
+> conservar nombre "Yeison Impostor" + logos**. Branch: `feature/visual-rebrand`.
+> **Restricción dura:** NO se toca la lógica del juego (Riverpod/Drift/Supabase/
+> fases/puntajes/anti-repetición). Solo presentación, IA, flujos y sistema visual.
+
+## Norte (qué estamos persiguiendo)
+App de **fiesta** que se sienta producto, no improvisada. Principios Jackbox:
+el objetivo es que el grupo se ría · fricción casi cero · estilo visual
+distintivo y **consistente**. Hoy la app "funciona como app pero falla como
+experiencia de fiesta" (informe 05): le falta luz (neón sin glow), consistencia
+(14 radios distintos), y momentos con "jugo".
+
+## Diagnóstico convergente (lo que los 5 coinciden)
+1. **El "neón" no tiene luz.** Cero `boxShadow` de color, `elevation: 0`, capas
+   de fondo indistinguibles. Es texto de colores, no un night-club. *(01)*
+2. **Se ve "vibe coded" por inconsistencia.** 160 `BorderRadius` con 14 valores,
+   22 tamaños de fuente, 30 opacidades, badges copiados 5×, pantalla de ganador
+   distinta en local vs online. *(04)*
+3. **Demasiada fricción para jugar.** 8 pasos a la primera ronda; pantallas de
+   transición muertas (RoundStart, CreateRoom); falta pantalla de Ajustes
+   (el toggle de tema vive suelto). *(02, 05)*
+4. **Los momentos clímax están planos.** Reveal de rol sin animación, resultados
+   estáticos, cero hápticos en toda la app, suspenso roto por un "23%". *(03, 05)*
+5. **Copy de "wizard", no de fiesta** + errores de ortografía en votación/lobby,
+   y los hints (lo más gracioso) enterrados al fondo de resultados. *(05)*
+
+## Roadmap por olas (cada ola es revisable y se re-renderiza con el harness)
+
+### Ola 0 — Fundación visual (design system)  ·  riesgo bajo · impacto máximo
+Reescribe los tokens en `app_theme.dart`: paleta neón (5 capas de fondo + 6
+acentos), **glow de color** (cyan/magenta/violeta/ámbar), escala de radios
+(r4–r24 + rFull), espaciado de 4px, escala tipográfica, `elevation`/profundidad,
+default a modo oscuro. → *Esto solo flipea ~80% del vibe (informe 01).* Fuente: **01**.
+
+### Ola 1 — Kit de componentes compartido (`lib/widgets/`)  ·  riesgo bajo-medio
+Extraer los componentes que hoy están duplicados/divergentes: `AppCard`,
+`AppBadge`, `ActionCard`, `AppEmptyState`, `PlayerRow` (P0); `ResultHero`,
+`SecretWordCard`, `ConfirmDialog`, `FullWidthButton`, `NeonButton` (P1). Unifica
+local↔online y mata la causa raíz del "vibe coded". Fuente: **04**.
+
+### Ola 2 — Reestructuración de IA / navegación (profunda)  ·  riesgo medio
+- **Crear `/settings`** (hogar del tema + reglas/puntos + perfil online).
+- **Eliminar** `RoundStartScreen` (→ banner en GamePlay), `CreateRoomScreen`
+  (→ acción directa desde OnlineHome), `ClassicImpostorChoiceScreen` (→ bottom
+  sheet en ActionReveal).
+- **OnlineHome** con carga transparente (skeleton) en vez de 5 spinners.
+- Renombrar DisplayName → `/online/perfil`. 20 rutas → 16. Fuente: **02**.
+
+### Ola 3 — Rediseño de pantallas clave (con tokens + kit)  ·  riesgo medio
+Home, **VoteScreen → chips visuales** (no escribir nombres), GameResults
+(+ "Ver ranking", hints arriba), OnlineHome, role reveal, how-to-play (8→3
+páginas), "spotlight" neón detrás de las ilustraciones. Fuentes: **01, 02, 04, 05**.
+
+### Ola 4 — Motion, juice y tono de fiesta  ·  riesgo bajo-medio
+Tokens de motion (4 duraciones, 4 curvas, 3 glows), **hápticos** en reveal/
+countdown/votación/resultado, animación de entrada en resultados, suspenso de
+action-reveal sin "%", celebración de victoria, y **copy de fiesta** (¡Otra
+ronda!, ¡Revancha!) + fix de ortografía. Fuentes: **03, 05**.
+
+### Ola 5 — Pulido  ·  riesgo bajo
+Iconografía con más carácter, regenerar/recortar ilustraciones con fondo
+transparente, casos borde, y batería de capturas de regresión visual.
+
+## Decisiones abiertas (para el dueño)
+- **Pesos de fuente Nunito:** hoy solo está `Nunito-Regular` (700–900 son
+  sintéticos). Para fidelidad conviene agregar SemiBold/Bold/ExtraBold/Black
+  (TTF de Google Fonts, OFL). *Yo no puedo descargar los binarios* → o los
+  agregás vos a `assets/fonts/`, o seguimos con pesos sintéticos por ahora.
+- **Ilustraciones con fondo blanco:** corto plazo las enmarco en card oscura
+  con glow (sin tocar assets); largo plazo conviene regenerarlas con fondo
+  transparente (las harías vos o con una herramienta de imágenes).
+- **Default a modo oscuro:** nuevos usuarios aterrizan en neón. (Recomendado.)
+- **Modo claro "Fiesta Sospechosa":** no se toca en este rebrand (queda como
+  alternativa secundaria).
+
+## Lo que NO se toca
+`gameProvider`/`game_provider.dart`, canales online (Supabase), máquina de
+fases, cálculo de puntos, `word_bank.dart`/anti-repetición. Las fases del juego
+siguen existiendo; solo cambia cómo se presentan/agrupan.
