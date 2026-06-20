@@ -65,7 +65,9 @@ Progreso:
   (Qué es / Cómo se juega / Puntos). Nuevo `NeonSpotlight` (lib/widgets/) detrás
   del logo. Tablas de puntaje detalladas por modo se quitaron (van al jugar; a
   futuro podrían vivir en una sección "Reglas" de Ajustes — informe 02).
-- Pendiente: Home, role reveal, OnlineHome, GameResults "Ver ranking".
+- **[HECHO] 3d — Home con spotlight neón** detrás del logo (NeonSpotlight),
+  ajuste de tamaño/espaciado. CTA "Juego rápido" primario con glow.
+- Pendiente: role reveal, OnlineHome, GameResults "Ver ranking".
 
 ### Ola 4 — Motion, juice y tono de fiesta  ·  riesgo bajo-medio
 Tokens de motion (4 duraciones, 4 curvas, 3 glows), **hápticos** en reveal/
