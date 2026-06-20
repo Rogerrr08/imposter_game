@@ -11,6 +11,8 @@ import 'package:imposter_game/screens/home/home_screen.dart';
 import 'package:imposter_game/screens/home/how_to_play_screen.dart';
 import 'package:imposter_game/screens/settings/settings_screen.dart';
 import 'package:imposter_game/theme/app_theme.dart';
+import 'package:imposter_game/widgets/app_badge.dart';
+import 'package:imposter_game/widgets/full_width_button.dart';
 import 'package:imposter_game/widgets/player_row.dart';
 import 'package:imposter_game/widgets/result_hero.dart';
 import 'package:imposter_game/widgets/secret_word_card.dart';
@@ -123,6 +125,60 @@ void main() {
       matchesGoldenFile('goldens/result_components_dark.png'),
     );
   });
+
+  testWidgets('kit_gallery_dark', (tester) async {
+    await _pump(tester, _app(const _KitGalleryPreview()));
+    await expectLater(
+      find.byType(_KitGalleryPreview),
+      matchesGoldenFile('goldens/kit_gallery_dark.png'),
+    );
+  });
+
+  // ── Variantes en tema claro ("Fiesta Sospechosa") para regresión ──
+  testWidgets('home_light', (tester) async {
+    await _pump(
+      tester,
+      ProviderScope(
+        overrides: [initialDarkModeProvider.overrideWithValue(false)],
+        child: _app(const HomeScreen(), dark: false),
+      ),
+      dark: false,
+    );
+    await expectLater(
+      find.byType(HomeScreen),
+      matchesGoldenFile('goldens/home_light.png'),
+    );
+  });
+
+  testWidgets('settings_light', (tester) async {
+    await _pump(
+      tester,
+      ProviderScope(
+        overrides: [initialDarkModeProvider.overrideWithValue(false)],
+        child: _app(const SettingsScreen(), dark: false),
+      ),
+      dark: false,
+    );
+    await expectLater(
+      find.byType(SettingsScreen),
+      matchesGoldenFile('goldens/settings_light.png'),
+    );
+  });
+
+  testWidgets('how_to_play_light', (tester) async {
+    await _pump(
+      tester,
+      ProviderScope(
+        overrides: [initialDarkModeProvider.overrideWithValue(false)],
+        child: _app(const HowToPlayScreen(), dark: false),
+      ),
+      dark: false,
+    );
+    await expectLater(
+      find.byType(HowToPlayScreen),
+      matchesGoldenFile('goldens/how_to_play_light.png'),
+    );
+  });
 }
 
 class _ResultComponentsPreview extends StatelessWidget {
@@ -189,6 +245,55 @@ class _ResultComponentsPreview extends StatelessWidget {
                 avatar: _avatar('Diego', false),
                 isImpostor: false,
                 points: -1,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Galería del kit de componentes (Ola 5): badges y botones, para regresión.
+class _KitGalleryPreview extends StatelessWidget {
+  const _KitGalleryPreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 8),
+              const Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  AppBadge(label: 'Civil', color: AppTheme.neonCyan),
+                  AppBadge(label: 'Impostor', color: AppTheme.neonMagenta),
+                  AppBadge(label: 'Animales', color: AppTheme.neonViolet),
+                  AppBadge(
+                    label: 'sm',
+                    color: AppTheme.neonGreen,
+                    size: AppBadgeSize.sm,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 28),
+              FullWidthButton(
+                label: 'Juego rápido',
+                icon: Icons.play_arrow_rounded,
+                onPressed: () {},
+              ),
+              const SizedBox(height: 12),
+              FullWidthButton(
+                label: 'Mis grupos',
+                icon: Icons.group,
+                outlined: true,
+                onPressed: () {},
               ),
             ],
           ),
