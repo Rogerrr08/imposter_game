@@ -103,6 +103,17 @@ en `app_theme` (hoy duraciones/curvas inline) y háptico de countdown del timer.
 Iconografía con más carácter, regenerar/recortar ilustraciones con fondo
 transparente, casos borde, y batería de capturas de regresión visual.
 
+Progreso:
+- **[HECHO] Batería de regresión visual:** 9 goldens (home/settings/how-to-play
+  en oscuro y claro, `result_components`, `kit_gallery`, `empty_state`).
+  Regenerar con `flutter test --update-goldens test/screenshots`.
+- **[HECHO] `AppEmptyState`** (lib/widgets/) aplicado a grupos/rankings/historial
+  (ícono con glow + acción). De paso bajó el baseline de analyze 25→23.
+- Diferido (necesita herramientas de imagen): regenerar ilustraciones con fondo
+  transparente. Hoy van enmarcadas en card + glow (decisión del dueño).
+- Opcional pendiente: `ConfirmDialog`/`AppCard` para unificar diálogos y cards
+  sueltas; revisión de iconografía.
+
 ## Decisiones (resueltas por el dueño, 2026-06-19)
 - **Pesos de fuente Nunito → el dueño agrega los TTF.** Descargará
   SemiBold(600)/Bold(700)/ExtraBold(800)/Black(900) de Google Fonts (OFL) a
