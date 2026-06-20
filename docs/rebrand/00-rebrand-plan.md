@@ -77,19 +77,18 @@ transparente, casos borde, y batería de capturas de regresión visual.
 
 ## Pedidos extra (durante el rebrand)
 
-- **Ocultar las vidas en Express LOCAL** (no cambiar la mecánica). Hoy el
-  contador de vidas se muestra y **filtra información**: tras un voto, si las
-  vidas NO bajan, los civiles deducen que el eliminado era impostor (adivinó
-  mal); si bajan, era civil. Eso les da una pista que no deberían tener.
-  - **Qué hacer:** dejar de **mostrar** el número de vidas (al menos en el
-    flujo de votación/revelación de Express local) para no dar indicios.
-  - **Qué NO cambiar:** la mecánica sigue igual — las vidas se siguen contando
-    internamente y los civiles **pierden si se agotan**.
-  - **Dónde vive el display:** `lib/screens/game_play/action_reveal_screen.dart`
-    y `lib/screens/game_play/vote_screen.dart`.
-  - **A confirmar al implementar:** ¿ocultar las vidas por completo, o solo en
-    el momento que filtra (post-voto/reveal)? Si se ocultan del todo, los
-    civiles no sabrán cuán cerca están de perder hasta el final.
+- **[HECHO] Ocultar las vidas en Express LOCAL** (sin cambiar la mecánica). El
+  contador de vidas se mostraba y **filtraba información**: tras un voto, si las
+  vidas NO bajaban, los civiles deducían que el eliminado era impostor (adivinó
+  mal); si bajaban, era civil. Eso les daba una pista que no deberían tener.
+  - **Decisión:** votación y reveal eran los **únicos** momentos donde se veían
+    las vidas → se ocultan ahí (no hizo falta esconderlas "por completo").
+  - **Qué se hizo:** se quitaron los corazones en `vote_screen.dart`
+    (`_buildStepView`, Express) y en `action_reveal_screen.dart` (reveal de
+    voto), y se eliminó el sufijo "N vidas restantes" del subtítulo del reveal.
+  - **Qué NO cambió:** la mecánica intacta — las vidas se cuentan internamente
+    y los civiles **pierden si se agotan**. El modo clásico no se tocó (no usa
+    vidas).
 
 ## Lo que NO se toca
 `gameProvider`/`game_provider.dart`, canales online (Supabase), máquina de

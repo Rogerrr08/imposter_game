@@ -337,29 +337,8 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           style: TextStyle(fontSize: 15, color: AppTheme.textSecondary),
           textAlign: TextAlign.center,
         ),
-        if (widget.reveal.type == ActionRevealType.vote &&
-            !widget.reveal.success &&
-            widget.reveal.livesRemaining != null) ...[
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (int i = 0; i < ActiveGame.maxLives; i++)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 3),
-                  child: Icon(
-                    i < widget.reveal.livesRemaining!
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: i < widget.reveal.livesRemaining!
-                        ? AppTheme.secondaryColor
-                        : AppTheme.textSecondary.withValues(alpha: 0.3),
-                    size: 28,
-                  ),
-                ),
-            ],
-          ),
-        ],
+        // Las vidas no se muestran en el reveal: el contador filtraba el rol
+        // del eliminado a los civiles. La mecánica sigue intacta.
         if (widget.reveal.voteTallies.isNotEmpty) ...[
           const SizedBox(height: 24),
           _buildVoteTallies(config.color),
@@ -557,10 +536,10 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         final actor = reveal.actorText == null
             ? 'La mayor\u00EDa del grupo'
             : reveal.actorText!;
-        final lives = reveal.livesRemaining ?? 0;
+        // No se revela el conteo de vidas: filtraba el rol del eliminado.
         final subtitle = reveal.livesRemaining == null
             ? '$actor vot\u00F3 a un civil y queda eliminado.'
-            : '$actor fall\u00F3 y queda eliminado.\n$lives vida${lives == 1 ? '' : 's'} restante${lives == 1 ? '' : 's'}';
+            : '$actor fall\u00F3 y queda eliminado.';
         return _RevealVisualConfig(
           color: AppTheme.successColor,
           imagePath: 'assets/images/civil_lose_life.webp',

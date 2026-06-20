@@ -437,26 +437,9 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                 color: AppTheme.textSecondary,
               ),
             ),
-            const Spacer(),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (int i = 0; i < ActiveGame.maxLives; i++)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: Icon(
-                      i < gameState.livesRemaining
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color: i < gameState.livesRemaining
-                          ? AppTheme.secondaryColor
-                          : AppTheme.textSecondary.withValues(alpha: 0.3),
-                      size: 20,
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(width: 8),
+            // Las vidas no se muestran durante la votación: el contador
+            // filtraba el rol del eliminado (si bajaba, era civil). La
+            // mecánica sigue intacta (se cuentan internamente).
           ],
         ),
         const Spacer(flex: 1),
