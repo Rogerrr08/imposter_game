@@ -85,7 +85,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         widget.reveal.type == ActionRevealType.vote &&
         widget.reveal.success &&
         gameState.awaitingClassicGuessDecision) {
-      context.go('/classic-impostor-choice');
+      _showClassicImpostorChoice(gameState.pendingClassicGuesserName);
       return;
     }
 
@@ -94,6 +94,101 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
     } else {
       context.go('/play');
     }
+  }
+
+  /// Decisión del impostor eliminado en Modo Clásico (¿arriesgar y adivinar?).
+  /// Antes era una pantalla completa (ClassicImpostorChoiceScreen); ahora es un
+  /// bottom sheet sobre el action-reveal — una decisión binaria no merece ruta.
+  void _showClassicImpostorChoice(String? guesserName) {
+    if (guesserName == null) {
+      context.go('/play');
+      return;
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (sheetContext) => PopScope(
+        canPop: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/player_impostor.webp',
+                width: 120,
+                height: 120,
+                cacheWidth: 240,
+                cacheHeight: 240,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '$guesserName fue eliminado',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Como era impostor, ahora puede intentar adivinar la palabra secreta.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    context.go('/impostor-guess');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.secondaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    'Arriesgar e intentar adivinar',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    ref.read(gameProvider.notifier).skipClassicImpostorGuess();
+                    context.go(
+                      '/action-reveal',
+                      extra: ActionRevealData(
+                        type: ActionRevealType.guessSkipped,
+                        success: false,
+                        subjectText: guesserName,
+                        actorText: guesserName,
+                      ),
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primaryColor,
+                    side: BorderSide(color: AppTheme.primaryColor),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    'No arriesgar',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
