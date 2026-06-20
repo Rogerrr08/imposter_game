@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../theme/app_theme.dart';
+import '../../../../widgets/app_badge.dart';
 import '../../application/online_match_provider.dart';
 import '../../domain/online_match.dart';
 
@@ -444,23 +445,8 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
   String _capitalize(String s) =>
       s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
-  Widget _badge(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w700,
-          color: color,
-        ),
-      ),
-    );
-  }
+  Widget _badge(String label, Color color) =>
+      AppBadge(label: label, color: color);
 }
 
 /// Three dots that pulse in staggered sequence — more thematic

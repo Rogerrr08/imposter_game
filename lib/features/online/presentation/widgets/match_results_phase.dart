@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../theme/app_theme.dart';
+import '../../../../widgets/app_badge.dart';
 import '../../application/online_match_provider.dart';
 import '../../application/online_rooms_provider.dart';
 import '../../data/supabase_config.dart';
@@ -640,11 +641,11 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
 
     // Position color for top 3
     final posColor = index == 0
-        ? const Color(0xFFFFD700) // Gold
+        ? AppTheme.goldColor
         : index == 1
-            ? const Color(0xFFC0C0C0) // Silver
+            ? AppTheme.silverColor
             : index == 2
-                ? const Color(0xFFCD7F32) // Bronze
+                ? AppTheme.bronzeColor
                 : AppTheme.textSecondary;
 
     return Container(
@@ -1049,21 +1050,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
   String _capitalize(String s) =>
       s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 
-  Widget _badge(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: color,
-        ),
-      ),
-    );
-  }
+  Widget _badge(String label, Color color) =>
+      AppBadge(label: label, color: color, size: AppBadgeSize.sm);
 }

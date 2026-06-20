@@ -87,6 +87,20 @@ class AppTheme {
         ),
       ];
 
+  /// Sombra estándar de card (reemplaza las ~10 boxShadow ad-hoc).
+  static List<BoxShadow> get cardShadow => [
+        BoxShadow(
+          color: Colors.black.withValues(alpha: 0.20),
+          blurRadius: 16,
+          offset: const Offset(0, 6),
+        ),
+      ];
+
+  // Colores de medalla (antes duplicados en rankings y match_results).
+  static const goldColor = Color(0xFFFFD700);
+  static const silverColor = Color(0xFFC0C0C0);
+  static const bronzeColor = Color(0xFFCD7F32);
+
   // ─── Runtime accessors (resolved via brightness) ───
   static Color primaryColor = _lightPrimary;
   static Color secondaryColor = _lightSecondary;

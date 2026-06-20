@@ -6,6 +6,7 @@ import '../../features/online/data/supabase_config.dart';
 import '../../providers/app_info_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/full_width_button.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -126,39 +127,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       const Spacer(flex: 2),
                       // ── Local play ──
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () =>
-                              _navigateWithLoading(context, '/setup'),
-                          icon: const Icon(Icons.play_arrow_rounded, size: 28),
-                          label: const Text('Juego r\u00e1pido'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                            textStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
+                      FullWidthButton(
+                        label: 'Juego r\u00e1pido',
+                        icon: Icons.play_arrow_rounded,
+                        onPressed: () =>
+                            _navigateWithLoading(context, '/setup'),
                       ),
                       const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () =>
-                              _navigateWithLoading(context, '/groups'),
-                          icon: const Icon(Icons.group, size: 24),
-                          label: const Text('Mis grupos'),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                            textStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
+                      FullWidthButton(
+                        label: 'Mis grupos',
+                        icon: Icons.group,
+                        outlined: true,
+                        onPressed: () =>
+                            _navigateWithLoading(context, '/groups'),
                       ),
                       const SizedBox(height: 20),
                       // ── Divider ──
@@ -196,27 +177,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       const SizedBox(height: 20),
                       // ── Online play ──
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () =>
-                              _navigateWithLoading(context, '/online'),
-                          icon: const Icon(Icons.wifi_rounded, size: 22),
-                          label: const Text('Jugar en l\u00ednea'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppTheme.primaryColor,
-                            side: BorderSide(
-                              color: AppTheme.primaryColor.withValues(
-                                alpha: 0.35,
-                              ),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            textStyle: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
+                      FullWidthButton(
+                        label: 'Jugar en l\u00ednea',
+                        icon: Icons.wifi_rounded,
+                        outlined: true,
+                        onPressed: () =>
+                            _navigateWithLoading(context, '/online'),
                       ),
                       const Spacer(flex: 1),
                       // How to play
