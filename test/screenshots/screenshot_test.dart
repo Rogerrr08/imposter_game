@@ -12,6 +12,7 @@ import 'package:imposter_game/screens/home/how_to_play_screen.dart';
 import 'package:imposter_game/screens/settings/settings_screen.dart';
 import 'package:imposter_game/theme/app_theme.dart';
 import 'package:imposter_game/widgets/app_badge.dart';
+import 'package:imposter_game/widgets/app_empty_state.dart';
 import 'package:imposter_game/widgets/full_width_button.dart';
 import 'package:imposter_game/widgets/player_row.dart';
 import 'package:imposter_game/widgets/result_hero.dart';
@@ -131,6 +132,32 @@ void main() {
     await expectLater(
       find.byType(_KitGalleryPreview),
       matchesGoldenFile('goldens/kit_gallery_dark.png'),
+    );
+  });
+
+  testWidgets('empty_state_dark', (tester) async {
+    await _pump(
+      tester,
+      _app(
+        Scaffold(
+          body: AppEmptyState(
+            icon: Icons.group_add_rounded,
+            title: 'No hay grupos aún',
+            message:
+                'Crea un grupo para guardar jugadores y llevar un historial '
+                'de partidas.',
+            action: ElevatedButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Crear grupo'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await expectLater(
+      find.byType(AppEmptyState),
+      matchesGoldenFile('goldens/empty_state_dark.png'),
     );
   });
 

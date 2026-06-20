@@ -4,10 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../database/database.dart';
-import '../../models/game_state.dart';
 import '../../providers/database_provider.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/app_empty_state.dart';
 import '../../widgets/category_filter_bar.dart';
 import '../../widgets/game_mode_filter_bar.dart';
 
@@ -142,40 +142,11 @@ class _GameHistoryScreenState extends ConsumerState<GameHistoryScreen> {
                 ),
                 data: (games) {
                   if (games.isEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.history_rounded,
-                              size: 80,
-                              color: AppTheme.successColor.withValues(
-                                alpha: 0.3,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            Text(
-                              'No hay partidas registradas',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
-                                color: AppTheme.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Las partidas jugadas con este grupo\naparecer\u00E1n aqu\u00ED.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: AppTheme.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    return const AppEmptyState(
+                      icon: Icons.history_rounded,
+                      title: 'No hay partidas registradas',
+                      message:
+                          'Las partidas jugadas con este grupo aparecer\u00E1n aqu\u00ED.',
                     );
                   }
 

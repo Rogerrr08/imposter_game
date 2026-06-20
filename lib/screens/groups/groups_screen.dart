@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../theme/app_theme.dart';
 import '../../providers/group_provider.dart';
+import '../../widgets/app_empty_state.dart';
 
 class GroupsScreen extends ConsumerWidget {
   const GroupsScreen({super.key});
@@ -87,43 +88,16 @@ class GroupsScreen extends ConsumerWidget {
           ),
           data: (groups) {
             if (groups.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.group_add_rounded,
-                        size: 80,
-                        color: AppTheme.primaryColor.withValues(alpha: 0.4),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'No hay grupos aún',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.textPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Crea un grupo para guardar jugadores\ny llevar un historial de partidas.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppTheme.textSecondary,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      ElevatedButton.icon(
-                        onPressed: () => _showCreateGroupDialog(context, ref),
-                        icon: const Icon(Icons.add_rounded),
-                        label: const Text('Crear Grupo'),
-                      ),
-                    ],
-                  ),
+              return AppEmptyState(
+                icon: Icons.group_add_rounded,
+                title: 'No hay grupos aún',
+                message:
+                    'Crea un grupo para guardar jugadores y llevar un '
+                    'historial de partidas.',
+                action: ElevatedButton.icon(
+                  onPressed: () => _showCreateGroupDialog(context, ref),
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('Crear grupo'),
                 ),
               );
             }
