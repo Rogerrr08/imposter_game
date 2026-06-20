@@ -146,7 +146,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
         ),
         title: const Text(
-          'Jugar en linea',
+          'Jugar en línea',
           style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),

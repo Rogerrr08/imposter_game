@@ -414,8 +414,8 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
     final playerNames = gameState.activePlayers.map((p) => p.name).toList();
     final isFirstStep = _step == 0;
     final stepTitle = isFirstStep
-        ? 'Quien esta votando?'
-        : 'A quien eliminamos?';
+        ? '¿Quién está votando?'
+        : '¿A quién eliminamos?';
     final stepSubtitle = isFirstStep
         ? 'Solo los civiles pueden votar.'
         : 'Votando: $_votedBy';

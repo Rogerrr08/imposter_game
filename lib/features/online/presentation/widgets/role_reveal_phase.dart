@@ -342,7 +342,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
                   _PulsingDots(color: accentColor),
                   const SizedBox(height: 12),
                   Text(
-                    'Esperando a los demas...',
+                    'Esperando a los demás...',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,

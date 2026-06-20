@@ -475,7 +475,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                           Icon(Icons.replay_rounded, size: 20),
                           SizedBox(width: 8),
                           Text(
-                            'Volver a jugar',
+                            '¡Otra ronda!',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,

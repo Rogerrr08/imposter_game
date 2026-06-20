@@ -57,7 +57,7 @@ class GameResultsScreen extends ConsumerWidget {
                     context.go('/setup', extra: groupId);
                   },
                   icon: const Icon(Icons.replay_rounded),
-                  label: const Text('Jugar de nuevo'),
+                  label: const Text('¡Otra ronda!'),
                 ),
               ),
               if (groupId != null) ...[
