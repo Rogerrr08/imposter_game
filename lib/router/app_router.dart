@@ -3,13 +3,12 @@ import 'package:go_router/go_router.dart';
 
 import '../screens/home/home_screen.dart';
 import '../screens/home/how_to_play_screen.dart';
+import '../screens/settings/settings_screen.dart';
 import '../screens/game_setup/game_setup_screen.dart';
 import '../screens/game_play/role_reveal_screen.dart';
-import '../screens/game_play/round_start_screen.dart';
 import '../screens/game_play/game_play_screen.dart';
 import '../screens/game_play/vote_screen.dart';
 import '../screens/game_play/impostor_guess_screen.dart';
-import '../screens/game_play/classic_impostor_choice_screen.dart';
 import '../screens/game_play/action_reveal_screen.dart';
 import '../screens/game_results/game_results_screen.dart';
 import '../screens/groups/groups_screen.dart';
@@ -17,7 +16,6 @@ import '../screens/groups/group_detail_screen.dart';
 import '../screens/rankings/rankings_screen.dart';
 import '../screens/rankings/game_history_screen.dart';
 import '../models/action_reveal.dart';
-import '../features/online/presentation/create_room_screen.dart';
 import '../features/online/presentation/display_name_screen.dart';
 import '../features/online/presentation/join_room_screen.dart';
 import '../features/online/presentation/online_home_screen.dart';
@@ -38,6 +36,11 @@ class AppRouter {
             _buildPage(state, const HowToPlayScreen()),
       ),
       GoRoute(
+        path: '/settings',
+        pageBuilder: (context, state) =>
+            _buildPage(state, const SettingsScreen()),
+      ),
+      GoRoute(
         path: '/setup',
         pageBuilder: (context, state) {
           final groupId = state.extra as int?;
@@ -48,10 +51,6 @@ class AppRouter {
         path: '/role-reveal',
         pageBuilder: (context, state) =>
             _buildPage(state, const RoleRevealScreen()),
-      ),
-      GoRoute(
-        path: '/round-start',
-        builder: (context, state) => const RoundStartScreen(),
       ),
       GoRoute(
         path: '/play',
@@ -66,11 +65,6 @@ class AppRouter {
         path: '/impostor-guess',
         pageBuilder: (context, state) =>
             _buildPage(state, const ImpostorGuessScreen()),
-      ),
-      GoRoute(
-        path: '/classic-impostor-choice',
-        pageBuilder: (context, state) =>
-            _buildPage(state, const ClassicImpostorChoiceScreen()),
       ),
       GoRoute(
         path: '/action-reveal',
@@ -88,11 +82,6 @@ class AppRouter {
         path: '/online',
         pageBuilder: (context, state) =>
             _buildPage(state, const OnlineHomeScreen()),
-      ),
-      GoRoute(
-        path: '/online/create-room',
-        pageBuilder: (context, state) =>
-            _buildPage(state, const CreateRoomScreen()),
       ),
       GoRoute(
         path: '/online/join-room',
@@ -114,7 +103,7 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: '/online/display-name',
+        path: '/online/perfil',
         pageBuilder: (context, state) =>
             _buildPage(state, const DisplayNameScreen()),
       ),

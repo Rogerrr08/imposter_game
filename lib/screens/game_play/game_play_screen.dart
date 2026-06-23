@@ -25,6 +25,19 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
   void initState() {
     super.initState();
     _startTimer();
+    // Banner de inicio de ronda (reemplaza la pantalla muerta RoundStartScreen).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final g = ref.read(gameProvider);
+      if (g == null) return;
+      final name = g.startingPlayerName ?? g.players.first.name;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Empieza: $name'),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    });
   }
 
   void _startTimer() {

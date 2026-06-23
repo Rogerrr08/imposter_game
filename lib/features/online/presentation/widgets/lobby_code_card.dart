@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../theme/app_theme.dart';
+import '../../../../widgets/app_badge.dart';
 import '../../application/room_lobby_notifier.dart';
 
 class LobbyCodeCard extends StatelessWidget {
@@ -138,21 +139,6 @@ class LobbyCodeCard extends StatelessWidget {
     );
   }
 
-  Widget _badge(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: color,
-        ),
-      ),
-    );
-  }
+  Widget _badge(String label, Color color) =>
+      AppBadge(label: label, color: color);
 }

@@ -93,7 +93,7 @@ class RoomLobbyScreen extends ConsumerWidget {
               final profile = lobbyState.profile;
               if (profile == null || !profile.hasDisplayName) {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (context.mounted) context.go('/online/display-name');
+                  if (context.mounted) context.go('/online/perfil');
                 });
                 return const SizedBox.shrink();
               }
@@ -197,13 +197,13 @@ class RoomLobbyScreen extends ConsumerWidget {
         ? 'Tu sala ya está lista para configurarse'
         : isReady
         ? 'Ya estás listo'
-        : 'Marca cuando estes listo';
+        : 'Marca cuando estés listo';
 
     final subtitle = isHost
         ? missingPlayers > 0
-              ? 'Faltan $missingPlayers jugador${missingPlayers == 1 ? '' : 'es'} para completar el minimo.'
+              ? 'Faltan $missingPlayers jugador${missingPlayers == 1 ? '' : 'es'} para completar el mínimo.'
               : missingReady > 0
-              ? 'Aun faltan $missingReady jugador${missingReady == 1 ? '' : 'es'} listos para empezar.'
+              ? 'Aún faltan $missingReady jugador${missingReady == 1 ? '' : 'es'} listos para empezar.'
               : 'La sala ya cumplió el mínimo de listos y queda preparada para el siguiente paso del online.'
         : isReady
         ? 'Puedes esperar mientras el host termina de ajustar la sala.'

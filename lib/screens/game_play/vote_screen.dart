@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -33,6 +34,7 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
   }
 
   void _onNameSelected(String name) {
+    HapticFeedback.selectionClick();
     if (_step == 0) {
       FocusManager.instance.primaryFocus?.unfocus();
       setState(() {
@@ -412,11 +414,8 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
     final playerNames = gameState.activePlayers.map((p) => p.name).toList();
     final isFirstStep = _step == 0;
     final stepTitle = isFirstStep
-        ? 'Quien esta votando?'
-        : 'A quien eliminamos?';
-    final stepHint = isFirstStep
-        ? 'Escribe tu nombre...'
-        : 'Nombre del sospechoso...';
+        ? '¿Quién está votando?'
+        : '¿A quién eliminamos?';
     final stepSubtitle = isFirstStep
         ? 'Solo los civiles pueden votar.'
         : 'Votando: $_votedBy';
@@ -437,29 +436,12 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
                 color: AppTheme.textSecondary,
               ),
             ),
-            const Spacer(),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (int i = 0; i < ActiveGame.maxLives; i++)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 2),
-                    child: Icon(
-                      i < gameState.livesRemaining
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color: i < gameState.livesRemaining
-                          ? AppTheme.secondaryColor
-                          : AppTheme.textSecondary.withValues(alpha: 0.3),
-                      size: 20,
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(width: 8),
+            // Las vidas no se muestran durante la votación: el contador
+            // filtraba el rol del eliminado (si bajaba, era civil). La
+            // mecánica sigue intacta (se cuentan internamente).
           ],
         ),
-        const Spacer(flex: 1),
+        const SizedBox(height: 8),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -490,13 +472,8 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
           style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: 32),
-        _buildAutocompleteField(
-          playerNames: availableNames,
-          hint: stepHint,
-          onSelected: _onNameSelected,
-        ),
-        const Spacer(flex: 3),
+        const SizedBox(height: 28),
+        _buildPlayerChips(availableNames),
       ],
     );
   }
@@ -515,123 +492,25 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
     );
   }
 
-  Widget _buildAutocompleteField({
-    required List<String> playerNames,
-    required String hint,
-    required ValueChanged<String> onSelected,
-  }) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Autocomplete<String>(
-          key: ValueKey('autocomplete_step_$_step'),
-          optionsBuilder: (textEditingValue) {
-            if (textEditingValue.text.isEmpty) return playerNames;
-            return playerNames.where(
-              (name) => name.toLowerCase().contains(
-                textEditingValue.text.toLowerCase(),
-              ),
-            );
-          },
-          onSelected: onSelected,
-          fieldViewBuilder: (context, controller, focusNode, onSubmitted) {
-            return TextField(
-              controller: controller,
-              focusNode: focusNode,
-              onSubmitted: (text) {
-                final trimmed = text.trim();
-                String? match;
-                for (final name in playerNames) {
-                  if (name.toLowerCase() == trimmed.toLowerCase()) {
-                    match = name;
-                    break;
-                  }
-                }
-                if (match != null) {
-                  onSelected(match);
-                }
-              },
-              style: TextStyle(color: AppTheme.textPrimary, fontSize: 18),
-              textCapitalization: TextCapitalization.words,
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: TextStyle(
-                  color: AppTheme.textSecondary.withValues(alpha: 0.5),
-                  fontSize: 16,
-                ),
-                filled: true,
-                fillColor: AppTheme.cardColor,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                    color: AppTheme.textSecondary.withValues(alpha: 0.15),
-                  ),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                    color: AppTheme.textSecondary.withValues(alpha: 0.15),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(
-                    color: AppTheme.primaryColor,
-                    width: 2,
-                  ),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 18,
-                ),
-              ),
-            );
-          },
-          optionsViewBuilder: (context, onSelected, options) {
-            return Align(
-              alignment: Alignment.topLeft,
-              child: Material(
-                color: AppTheme.cardColor,
-                borderRadius: BorderRadius.circular(14),
-                elevation: 4,
-                child: Container(
-                  width: constraints.maxWidth,
-                  constraints: const BoxConstraints(maxHeight: 240),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: AppTheme.textSecondary.withValues(alpha: 0.1),
-                    ),
-                  ),
-                  child: ListView.separated(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    shrinkWrap: true,
-                    itemCount: options.length,
-                    separatorBuilder: (_, __) => Divider(
-                      height: 1,
-                      color: AppTheme.textSecondary.withValues(alpha: 0.08),
-                    ),
-                    itemBuilder: (context, index) {
-                      final option = options.elementAt(index);
-                      return ListTile(
-                        dense: true,
-                        title: Text(
-                          option,
-                          style: TextStyle(
-                            color: AppTheme.textPrimary,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        onTap: () => onSelected(option),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
+  // Selección por chips tocables (antes era un campo de texto que obligaba a
+  // escribir el nombre). Más rápido y "de fiesta". La lógica de voto no cambia:
+  // al tocar un chip se llama a _onNameSelected con ese nombre.
+  Widget _buildPlayerChips(List<String> names) {
+    return Expanded(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Wrap(
+            alignment: WrapAlignment.center,
+            spacing: AppTheme.sp12,
+            runSpacing: AppTheme.sp12,
+            children: [
+              for (final name in names)
+                _PlayerChip(name: name, onTap: () => _onNameSelected(name)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -743,6 +622,67 @@ class _VoteScreenState extends ConsumerState<VoteScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Chip tocable con la inicial del jugador. Reemplaza el campo de texto de la
+/// votación Express: tocar = seleccionar (la lógica de voto no cambia).
+class _PlayerChip extends StatelessWidget {
+  const _PlayerChip({required this.name, required this.onTap});
+
+  final String name;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final trimmed = name.trim();
+    final initial = trimmed.isEmpty ? '?' : trimmed[0].toUpperCase();
+    final accent = AppTheme.primaryColor;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppTheme.rFull),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(8, 8, 18, 8),
+          decoration: BoxDecoration(
+            color: AppTheme.cardColor,
+            borderRadius: BorderRadius.circular(AppTheme.rFull),
+            border: Border.all(
+              color: accent.withValues(alpha: 0.4),
+              width: 1.5,
+            ),
+            boxShadow: AppTheme.glowSoft(accent),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: accent.withValues(alpha: 0.18),
+                child: Text(
+                  initial,
+                  style: TextStyle(
+                    color: accent,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                name,
+                style: TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

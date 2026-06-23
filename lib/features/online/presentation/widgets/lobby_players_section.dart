@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../screens/game_setup/widgets/section_header.dart';
 import '../../../../theme/app_theme.dart';
+import '../../../../widgets/app_badge.dart';
 import '../../domain/online_room.dart';
 import 'player_avatar.dart';
 
@@ -180,23 +181,8 @@ class _PlayerTile extends StatelessWidget {
     );
   }
 
-  Widget _badge(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: color,
-        ),
-      ),
-    );
-  }
+  Widget _badge(String label, Color color) =>
+      AppBadge(label: label, color: color, size: AppBadgeSize.sm);
 }
 
 class _KickButton extends StatelessWidget {

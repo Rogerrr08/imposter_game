@@ -1,12 +1,14 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../models/game_state.dart';
 import '../../providers/game_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/secret_word_card.dart';
 
 // Panel colors are resolved at runtime based on theme brightness
 // See AppTheme.panelColors(isDark)
@@ -58,6 +60,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
       // Enable button as soon as user drags up a little
       if (!_hasRevealed && _dragOffset < -40) {
         _hasRevealed = true;
+        HapticFeedback.mediumImpact();
       }
     });
   }
@@ -68,6 +71,7 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
     // Also enable on any upward flick
     if (!_hasRevealed && (velocity < -200 || _dragOffset < -40)) {
       setState(() => _hasRevealed = true);
+      HapticFeedback.mediumImpact();
     }
 
     _snapFrom = _dragOffset;
@@ -82,7 +86,8 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
         gameState.currentRevealIndex >= gameState.players.length - 1;
 
     if (isLastPlayer) {
-      context.go('/round-start');
+      ref.read(gameProvider.notifier).startPlaying();
+      context.go('/play');
       return;
     }
 
@@ -293,17 +298,25 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
       children: [
         // Push content toward the bottom so it's visible with a small drag
         const Spacer(flex: 1),
-        // Role image
-        Image.asset(
-          isImpostor
-              ? 'assets/images/player_impostor.webp'
-              : 'assets/images/player_civil.webp',
-          width: 110,
-          height: 110,
-          cacheWidth: 220,
-          cacheHeight: 220,
+        // Ilustraci\u00F3n del rol enmarcada + glow (assets con fondo claro).
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.backgroundColor.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.circular(AppTheme.r20),
+            boxShadow: AppTheme.glowSoft(roleColor),
+          ),
+          child: Image.asset(
+            isImpostor
+                ? 'assets/images/player_impostor.webp'
+                : 'assets/images/player_civil.webp',
+            width: 104,
+            height: 104,
+            cacheWidth: 208,
+            cacheHeight: 208,
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         // Role text
         Text(
           isImpostor ? 'IMPOSTOR' : 'CIVIL',
@@ -315,89 +328,15 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
           ),
         ),
         const SizedBox(height: 14),
-        // Word / hint card
+        // Civil: palabra secreta (componente compartido). Impostor: su pista.
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color: AppTheme.cardColor,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: roleColor.withValues(alpha: 0.3),
-                width: 1.5,
-              ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (!isImpostor) ...[
-                  Text(
-                    'La palabra secreta es:',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    gameState.secretWord,
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w800,
-                      color: AppTheme.textPrimary,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ] else ...[
-                  if (player.hint != null) ...[
-                    Text(
-                      'Tu pista:',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      player.hint!,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.warningColor,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ] else ...[
-                    Icon(
-                      Icons.block_rounded,
-                      size: 28,
-                      color: AppTheme.textSecondary.withValues(alpha: 0.5),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'No tienes pistas',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.textSecondary.withValues(alpha: 0.5),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Descubre la palabra escuchando a los dem\u00E1s',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppTheme.textSecondary.withValues(alpha: 0.3),
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ],
-              ],
-            ),
-          ),
+          child: isImpostor
+              ? _buildImpostorHintCard(player, roleColor)
+              : SecretWordCard(
+                  word: gameState.secretWord,
+                  category: gameState.wordCategory.displayName,
+                ),
         ),
         const SizedBox(height: 12),
         Text(
@@ -406,6 +345,63 @@ class _RoleRevealScreenState extends ConsumerState<RoleRevealScreen>
         ),
         const SizedBox(height: 8),
       ],
+    );
+  }
+
+  Widget _buildImpostorHintCard(GamePlayer player, Color roleColor) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: AppTheme.cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: roleColor.withValues(alpha: 0.3), width: 1.5),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (player.hint != null) ...[
+            Text(
+              'Tu pista:',
+              style: TextStyle(fontSize: 13, color: AppTheme.textSecondary),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              player.hint!,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: AppTheme.warningColor,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ] else ...[
+            Icon(
+              Icons.block_rounded,
+              size: 28,
+              color: AppTheme.textSecondary.withValues(alpha: 0.5),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'No tienes pistas',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textSecondary.withValues(alpha: 0.5),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              'Descubre la palabra escuchando a los dem\u00E1s',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.textSecondary.withValues(alpha: 0.3),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ],
+      ),
     );
   }
 }

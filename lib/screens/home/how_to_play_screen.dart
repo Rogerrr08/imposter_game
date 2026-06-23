@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../theme/app_theme.dart';
+import '../../widgets/neon_spotlight.dart';
 
 class HowToPlayScreen extends StatefulWidget {
   const HowToPlayScreen({super.key});
@@ -13,7 +14,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
   final _controller = PageController();
   int _currentPage = 0;
 
-  static const _totalPages = 8;
+  static const _totalPages = 3;
 
   @override
   void dispose() {
@@ -73,13 +74,8 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
                 onPageChanged: (page) => setState(() => _currentPage = page),
                 children: [
                   _buildConceptPage(),
-                  _buildSetupPage(),
-                  _buildExpressPage(),
-                  _buildExpressScoringPage(),
-                  _buildClassicPage(),
-                  _buildClassicScoringPage(),
-                  _buildOnlinePage(),
-                  _buildOnlineScoringPage(),
+                  _buildHowToPlayPage(),
+                  _buildScoringPage(),
                 ],
               ),
             ),
@@ -124,7 +120,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
                       child: Text(
                         _currentPage < _totalPages - 1
                             ? 'Siguiente'
-                            : '\u00A1A jugar!',
+                            : '¡A jugar!',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -141,22 +137,25 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
     );
   }
 
-  // ─── Page 1: Concept ───────────────────────────────────────
+  // ─── Página 1: Concepto ────────────────────────────────────
 
   Widget _buildConceptPage() {
     return _PageLayout(
-      image: Image.asset(
-        'assets/images/app_logo_no_bg.webp',
-        height: 200,
-        cacheHeight: 400,
-        fit: BoxFit.contain,
+      image: NeonSpotlight(
+        size: 260,
+        child: Image.asset(
+          'assets/images/app_logo_no_bg.webp',
+          height: 180,
+          cacheHeight: 360,
+          fit: BoxFit.contain,
+        ),
       ),
-      title: '\u00BFQu\u00E9 es Impostor?',
+      title: '¿Qué es Impostor?',
       children: [
         _bullet(
           Icons.group_rounded,
           AppTheme.primaryColor,
-          'Un juego de palabras y deducci\u00F3n para 3-20 jugadores.',
+          'Un juego de palabras y deducción para 3-20 jugadores.',
         ),
         _bullet(
           Icons.phone_android_rounded,
@@ -171,333 +170,92 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
         _bullet(
           Icons.chat_rounded,
           AppTheme.primaryColor,
-          'Hablen, pregunten y descubran qui\u00E9n NO conoce la palabra.',
+          'Hablen, pregunten y descubran quién NO conoce la palabra.',
         ),
       ],
     );
   }
 
-  // ─── Page 2: Setup ─────────────────────────────────────────
+  // ─── Página 2: Cómo se juega ───────────────────────────────
 
-  Widget _buildSetupPage() {
+  Widget _buildHowToPlayPage() {
     return _PageLayout(
-      icon: Icons.tune_rounded,
+      icon: Icons.sports_esports_rounded,
       iconColor: AppTheme.primaryColor,
-      title: 'Preparar la partida',
+      title: 'Cómo se juega',
       children: [
         _numberedStep(
           '1',
-          'Agrega los jugadores o selecciona un grupo guardado.',
+          'Arma los jugadores, elige categorías y cuántos impostores habrá.',
         ),
-        _numberedStep(
-          '2',
-          'Elige las categor\u00EDas de palabras que quieran jugar.',
-        ),
+        _numberedStep('2', 'Pasa el celular: cada quien ve su rol en secreto.'),
         _numberedStep(
           '3',
-          'Ajusta la cantidad de impostores y el tiempo de discusi\u00F3n.',
+          'Den pistas por turnos y discutan sobre la palabra.',
         ),
-        _numberedStep('4', 'Elige el modo de juego: Express o Cl\u00E1sico.'),
-        const SizedBox(height: 12),
-        _infoBadge(
-          '\u{1F4F1} Pasa el celular a cada jugador para que vea su rol en secreto.',
+        _numberedStep(
+          '4',
+          'Voten al sospechoso. Si era impostor, puede arriesgar e intentar adivinar la palabra.',
+        ),
+        const SizedBox(height: 14),
+        _sectionLabel('Modos'),
+        _bullet(
+          Icons.bolt_rounded,
+          AppTheme.warningColor,
+          'Express: rápido, con vidas y voto en cualquier momento.',
+        ),
+        _bullet(
+          Icons.gavel_rounded,
+          AppTheme.successColor,
+          'Clásico: votación anónima por rondas, ideal para grupos grandes.',
+        ),
+        _bullet(
+          Icons.wifi_rounded,
+          AppTheme.primaryColor,
+          'Online: cada quien desde su dispositivo, con un código de sala.',
         ),
       ],
     );
   }
 
-  // ─── Page 3: Express Mode ──────────────────────────────────
+  // ─── Página 3: Puntos (esencial) ───────────────────────────
 
-  Widget _buildExpressPage() {
+  Widget _buildScoringPage() {
     return _PageLayout(
-      icon: Icons.bolt_rounded,
+      icon: Icons.emoji_events_rounded,
       iconColor: AppTheme.warningColor,
-      title: 'Modo Express',
-      subtitle: 'R\u00E1pido y directo',
-      children: [
-        _bullet(
-          Icons.timer_rounded,
-          AppTheme.warningColor,
-          'El temporizador corre mientras discuten.',
-        ),
-        _bullet(
-          Icons.how_to_vote_rounded,
-          AppTheme.warningColor,
-          'Cualquier civil puede votar en cualquier momento.',
-        ),
-        _bullet(
-          Icons.favorite_rounded,
-          AppTheme.secondaryColor,
-          'Tienen 3 vidas. Si votan mal, pierden una vida.',
-        ),
-        _bullet(
-          Icons.psychology_rounded,
-          AppTheme.warningColor,
-          'Al eliminar un impostor, este puede intentar adivinar la palabra.',
-        ),
-        const SizedBox(height: 12),
-        _infoBadge(
-          '\u26A1 Ideal para partidas r\u00E1pidas y din\u00E1micas con pocos jugadores.',
-        ),
-      ],
-    );
-  }
-
-  // ─── Page 4: Classic Mode ──────────────────────────────────
-
-  Widget _buildClassicPage() {
-    return _PageLayout(
-      icon: Icons.gavel_rounded,
-      iconColor: AppTheme.successColor,
-      title: 'Modo Cl\u00E1sico',
-      subtitle: 'Votaci\u00F3n por rondas',
-      children: [
-        _bullet(
-          Icons.timer_rounded,
-          AppTheme.successColor,
-          'El temporizador marca el tiempo de discusi\u00F3n.',
-        ),
-        _bullet(
-          Icons.people_rounded,
-          AppTheme.successColor,
-          'Al terminar, TODOS votan de forma an\u00F3nima, uno por uno.',
-        ),
-        _bullet(
-          Icons.bar_chart_rounded,
-          AppTheme.successColor,
-          'Se cuentan los votos y el m\u00E1s votado queda eliminado.',
-        ),
-        _bullet(
-          Icons.balance_rounded,
-          AppTheme.warningColor,
-          'Si hay empate, se vota de nuevo solo entre los empatados.',
-        ),
-        _bullet(
-          Icons.psychology_rounded,
-          AppTheme.successColor,
-          'Si eliminan a un impostor, este puede adivinar la palabra.',
-        ),
-        const SizedBox(height: 12),
-        _infoBadge(
-          '\u{1F3AF} Ideal para grupos grandes. M\u00E1s estrat\u00E9gico y social.',
-        ),
-      ],
-    );
-  }
-
-  // ─── Page 4: Express Scoring ────────────────────────────────
-
-  Widget _buildExpressScoringPage() {
-    return _PageLayout(
-      icon: Icons.bolt_rounded,
-      iconColor: AppTheme.warningColor,
-      title: 'Puntos Express',
-      subtitle: '\u26A1 Se reparten al final de la partida',
+      title: 'Puntos',
+      subtitle: 'Se acumulan en el ranking del grupo',
       children: [
         _sectionLabel('Impostores'),
         _scoreRow(
           '+5',
-          'Sobrevive hasta el final sin ser descubierto',
+          'Sobreviven hasta el final sin ser descubiertos',
           AppTheme.secondaryColor,
         ),
-        _scoreRow('+3', 'Adivina la palabra secreta', AppTheme.secondaryColor),
-        _scoreRow(
-          '+1',
-          'Eliminado por votaci\u00F3n (si ganan impostores)',
-          AppTheme.secondaryColor,
-        ),
-        _scoreRow(
-          '\u00A00',
-          'Eliminado por adivinar mal',
-          AppTheme.textSecondary,
-        ),
-        const SizedBox(height: 14),
+        _scoreRow('+3', 'Adivinan la palabra secreta', AppTheme.secondaryColor),
+        const SizedBox(height: 12),
         _sectionLabel('Civiles'),
         _scoreRow(
           '+3',
-          'Vota correctamente a un impostor',
+          'Atrapan a un impostor con su voto',
           AppTheme.primaryColor,
         ),
+        _scoreRow('+1', 'Su equipo gana la partida', AppTheme.primaryColor),
         _scoreRow(
-          '+1',
-          'Equipo ganador (sin haber votado mal)',
-          AppTheme.primaryColor,
-        ),
-        _scoreRow(
-          '\u00A00',
-          'Vot\u00F3 mal \u2014 pierde una vida y no recibe bonus',
-          AppTheme.textSecondary,
-        ),
-        const SizedBox(height: 14),
-        _infoBadge('\u{1F4CA} Los puntos se acumulan en el ranking del grupo.'),
-      ],
-    );
-  }
-
-  // ─── Page 6: Classic Scoring ───────────────────────────────
-
-  Widget _buildClassicScoringPage() {
-    return _PageLayout(
-      icon: Icons.gavel_rounded,
-      iconColor: AppTheme.successColor,
-      title: 'Puntos Cl\u00E1sico',
-      subtitle: '\u{1F3DB}\uFE0F Se acumulan ronda a ronda',
-      children: [
-        _sectionLabel('Impostores'),
-        _scoreRow(
-          '+5',
-          'Sobrevive hasta el final sin ser descubierto',
-          AppTheme.secondaryColor,
-        ),
-        _scoreRow(
-          '+3',
-          'Adivina la palabra secreta al ser eliminado',
-          AppTheme.secondaryColor,
-        ),
-        _scoreRow(
-          '+1',
-          'Eliminado por votaci\u00F3n (si ganan impostores)',
-          AppTheme.secondaryColor,
-        ),
-        _scoreRow(
-          '\u00A00',
-          'Eliminado por adivinar mal',
-          AppTheme.textSecondary,
-        ),
-        const SizedBox(height: 14),
-        _sectionLabel('Civiles (por ronda)'),
-        _scoreRow(
-          '+2',
-          'Vota correctamente a un impostor',
-          AppTheme.primaryColor,
-        ),
-        _scoreRow(' \u20131', 'Vota a un civil inocente', AppTheme.errorColor),
-        const SizedBox(height: 14),
-        _sectionLabel('Civiles (bonus final)'),
-        _scoreRow(
-          '+2',
-          'Equipo ganador \u2014 nunca vot\u00F3 mal',
-          AppTheme.primaryColor,
-        ),
-        _scoreRow(
-          '\u00A00',
-          'Equipo ganador \u2014 pero vot\u00F3 mal alguna vez',
+          ' 0',
+          'Votan mal — pierden el bonus (y una vida en Express)',
           AppTheme.textSecondary,
         ),
         const SizedBox(height: 14),
         _infoBadge(
-          '\u{2757} En cl\u00E1sico, votar mal tiene doble costo: pierdes 1 punto en la ronda y pierdes el bonus final.',
+          '\u{1F3C6} Cada modo tiene sus matices en los puntos — los irás viendo al jugar.',
         ),
       ],
     );
   }
 
-  // ─── Page 7: Online Mode ────────────────────────────────────
-
-  Widget _buildOnlinePage() {
-    return _PageLayout(
-      icon: Icons.wifi_rounded,
-      iconColor: AppTheme.primaryColor,
-      title: 'Modo Online',
-      subtitle: 'Cada quien en su dispositivo',
-      children: [
-        _bullet(
-          Icons.add_circle_outline_rounded,
-          AppTheme.primaryColor,
-          'El host crea una sala privada y comparte el c\u00F3digo con los dem\u00E1s.',
-        ),
-        _bullet(
-          Icons.people_rounded,
-          AppTheme.primaryColor,
-          'Cada jugador se une desde su propio celular o navegador.',
-        ),
-        _bullet(
-          Icons.check_circle_outline_rounded,
-          AppTheme.successColor,
-          'Todos marcan "Listo" y el host inicia la partida.',
-        ),
-        _bullet(
-          Icons.visibility_off_rounded,
-          AppTheme.secondaryColor,
-          'Cada uno ve su rol en secreto en su pantalla.',
-        ),
-        _bullet(
-          Icons.edit_rounded,
-          AppTheme.primaryColor,
-          'Se dan pistas por turnos, escribi\u00E9ndolas en la app.',
-        ),
-        _bullet(
-          Icons.how_to_vote_rounded,
-          AppTheme.warningColor,
-          'Todos votan de forma an\u00F3nima. El m\u00E1s votado queda eliminado.',
-        ),
-        _bullet(
-          Icons.psychology_rounded,
-          AppTheme.secondaryColor,
-          'Si eliminan a un impostor, puede arriesgar e intentar adivinar la palabra.',
-        ),
-        const SizedBox(height: 12),
-        _infoBadge(
-          '\u{1F310} Juega con amigos a distancia. Solo necesitan conexi\u00F3n a internet.',
-        ),
-      ],
-    );
-  }
-
-  // ─── Page 8: Online Scoring ────────────────────────────────
-
-  Widget _buildOnlineScoringPage() {
-    return _PageLayout(
-      icon: Icons.wifi_rounded,
-      iconColor: AppTheme.primaryColor,
-      title: 'Puntos Online',
-      subtitle: '\u{1F310} Se calculan al finalizar la partida',
-      children: [
-        _sectionLabel('Si ganan los civiles'),
-        _scoreRow(
-          '+3',
-          'Civil que nunca vot\u00F3 mal (+1 base + 2 bonus)',
-          AppTheme.primaryColor,
-        ),
-        _scoreRow(
-          '+1',
-          'Civil que vot\u00F3 mal al menos una vez',
-          AppTheme.primaryColor,
-        ),
-        _scoreRow(
-          '\u00A00',
-          'Impostores (no reciben puntos)',
-          AppTheme.textSecondary,
-        ),
-        const SizedBox(height: 14),
-        _sectionLabel('Si ganan los impostores (sin adivinar)'),
-        _scoreRow(
-          '+5',
-          'Impostor que sobrevivi\u00F3 sin ser descubierto',
-          AppTheme.secondaryColor,
-        ),
-        const SizedBox(height: 14),
-        _sectionLabel('Si un impostor adivina la palabra'),
-        _scoreRow(
-          '+3',
-          'El impostor que adivin\u00F3 correctamente',
-          AppTheme.secondaryColor,
-        ),
-        _scoreRow('+1', 'Los dem\u00E1s impostores', AppTheme.secondaryColor),
-        _scoreRow(
-          '\u00A00',
-          'Civiles (no reciben puntos)',
-          AppTheme.textSecondary,
-        ),
-        const SizedBox(height: 14),
-        _infoBadge(
-          '\u{1F3C6} Si el impostor adivina la palabra de forma verbal, cualquier jugador puede darle la victoria desde la pantalla de resultados.',
-        ),
-      ],
-    );
-  }
-
-  // ─── Shared Widgets ────────────────────────────────────────
+  // ─── Widgets compartidos ───────────────────────────────────
 
   Widget _bullet(IconData icon, Color color, String text) {
     return Padding(
@@ -644,7 +402,7 @@ class _HowToPlayScreenState extends State<HowToPlayScreen> {
   }
 }
 
-// ─── Page Layout Shell ─────────────────────────────────────────
+// ─── Shell de página ───────────────────────────────────────────
 
 class _PageLayout extends StatelessWidget {
   final Widget? image;
@@ -671,7 +429,7 @@ class _PageLayout extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 16),
-          // Hero image or icon
+          // Imagen o ícono hero
           if (image != null)
             Center(child: image!)
           else if (icon != null)
@@ -693,7 +451,7 @@ class _PageLayout extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 24),
-          // Title
+          // Título
           Text(
             title,
             style: TextStyle(
@@ -714,7 +472,7 @@ class _PageLayout extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 20),
-          // Content
+          // Contenido
           ...children,
           const SizedBox(height: 16),
         ],

@@ -4,8 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../features/online/data/supabase_config.dart';
 import '../../providers/app_info_provider.dart';
-import '../../providers/theme_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/full_width_button.dart';
+import '../../widgets/neon_spotlight.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -42,25 +43,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final appVersionLabel = ref.watch(appVersionLabelProvider);
-    final isDark = ref.watch(isDarkModeProvider);
 
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
-            // Dark mode toggle (top right)
-            Positioned(
-              top: 12,
-              right: 16,
-              child: IconButton(
-                onPressed: () => ref.read(isDarkModeProvider.notifier).toggle(),
-                icon: Icon(
-                  isDark ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
-                  color: AppTheme.textSecondary,
-                ),
-                tooltip: isDark ? 'Modo claro' : 'Modo oscuro',
-              ),
-            ),
             // Scrollable para que no haya overflow en pantallas cortas o con
             // text scaling grande; los Spacers centran cuando sí hay espacio.
             LayoutBuilder(
@@ -86,164 +73,150 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                      const Spacer(flex: 2),
-                      // Logo / Title
-                      Image.asset(
-                        'assets/images/app_logo_no_bg.webp',
-                        width: 240,
-                        height: 240,
-                        cacheWidth: 480,
-                        cacheHeight: 480,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(height: 28),
-                      Text(
-                        'YEISON',
-                        style: TextStyle(
-                          fontSize: 42,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 6,
-                          color: AppTheme.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        'Impostor',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: AppTheme.primaryColor,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'El juego de la palabra secreta',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.textSecondary,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      const Spacer(flex: 2),
-                      // ── Local play ──
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () =>
-                              _navigateWithLoading(context, '/setup'),
-                          icon: const Icon(Icons.play_arrow_rounded, size: 28),
-                          label: const Text('Juego r\u00e1pido'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppTheme.primaryColor,
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                            textStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () =>
-                              _navigateWithLoading(context, '/groups'),
-                          icon: const Icon(Icons.group, size: 24),
-                          label: const Text('Mis grupos'),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 18),
-                            textStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      // ── Divider ──
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              color: AppTheme.textSecondary.withValues(
-                                alpha: 0.15,
+                            const Spacer(flex: 2),
+                            // Logo con spotlight neón (momento de marca).
+                            NeonSpotlight(
+                              size: 300,
+                              child: Image.asset(
+                                'assets/images/app_logo_no_bg.webp',
+                                width: 210,
+                                height: 210,
+                                cacheWidth: 420,
+                                cacheHeight: 420,
+                                fit: BoxFit.contain,
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            child: Text(
-                              'o',
+                            const SizedBox(height: 20),
+                            Text(
+                              'YEISON',
+                              style: TextStyle(
+                                fontSize: 42,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 6,
+                                color: AppTheme.textPrimary,
+                              ),
+                            ),
+                            Text(
+                              'Impostor',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.primaryColor,
+                                letterSpacing: 2,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'El juego de la palabra secreta',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: AppTheme.textSecondary.withValues(
-                                  alpha: 0.6,
+                                color: AppTheme.textSecondary,
+                                letterSpacing: 1,
+                              ),
+                            ),
+                            const Spacer(flex: 2),
+                            // ── Local play ──
+                            FullWidthButton(
+                              label: 'Juego r\u00e1pido',
+                              icon: Icons.play_arrow_rounded,
+                              onPressed: () =>
+                                  _navigateWithLoading(context, '/setup'),
+                            ),
+                            const SizedBox(height: 12),
+                            FullWidthButton(
+                              label: 'Mis grupos',
+                              icon: Icons.group,
+                              outlined: true,
+                              onPressed: () =>
+                                  _navigateWithLoading(context, '/groups'),
+                            ),
+                            const SizedBox(height: 20),
+                            // ── Divider ──
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    height: 1,
+                                    color: AppTheme.textSecondary.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                  ),
                                 ),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                  ),
+                                  child: Text(
+                                    'o',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: AppTheme.textSecondary.withValues(
+                                        alpha: 0.6,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Container(
+                                    height: 1,
+                                    color: AppTheme.textSecondary.withValues(
+                                      alpha: 0.15,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            // ── Online play ──
+                            FullWidthButton(
+                              label: 'Jugar en l\u00ednea',
+                              icon: Icons.wifi_rounded,
+                              outlined: true,
+                              onPressed: () =>
+                                  _navigateWithLoading(context, '/online'),
+                            ),
+                            const Spacer(flex: 1),
+                            // How to play
+                            TextButton.icon(
+                              onPressed: () => context.push('/how-to-play'),
+                              icon: const Icon(Icons.help_outline, size: 20),
+                              label: Text(
+                                'C\u00F3mo jugar',
+                                style: TextStyle(color: AppTheme.textSecondary),
                               ),
                             ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              height: 1,
-                              color: AppTheme.textSecondary.withValues(
-                                alpha: 0.15,
+                            const SizedBox(height: 4),
+                            Text(
+                              appVersionLabel,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.textSecondary.withValues(
+                                  alpha: 0.5,
+                                ),
+                                letterSpacing: 0.4,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      // ── Online play ──
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () =>
-                              _navigateWithLoading(context, '/online'),
-                          icon: const Icon(Icons.wifi_rounded, size: 22),
-                          label: const Text('Jugar en l\u00ednea'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: AppTheme.primaryColor,
-                            side: BorderSide(
-                              color: AppTheme.primaryColor.withValues(
-                                alpha: 0.35,
-                              ),
-                            ),
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            textStyle: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const Spacer(flex: 1),
-                      // How to play
-                      TextButton.icon(
-                        onPressed: () => context.push('/how-to-play'),
-                        icon: const Icon(Icons.help_outline, size: 20),
-                        label: Text(
-                          'C\u00F3mo jugar',
-                          style: TextStyle(color: AppTheme.textSecondary),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        appVersionLabel,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.textSecondary.withValues(alpha: 0.5),
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
+                            const SizedBox(height: 16),
                           ],
                         ),
                       ),
                     ),
                   ),
                 ),
+              ),
+            ),
+            // Ajustes — al final del Stack para quedar ENCIMA del scroll y
+            // recibir el tap (antes el scroll lo tapaba y no respondía).
+            Positioned(
+              top: 12,
+              right: 16,
+              child: IconButton(
+                onPressed: () => context.push('/settings'),
+                icon: Icon(
+                  Icons.settings_rounded,
+                  color: AppTheme.textSecondary,
+                ),
+                tooltip: 'Ajustes',
               ),
             ),
           ],

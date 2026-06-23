@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../theme/app_theme.dart';
+import '../../../../widgets/player_row.dart';
+import '../../../../widgets/result_hero.dart';
+import '../../../../widgets/secret_word_card.dart';
 import '../../application/online_match_provider.dart';
 import '../../application/online_rooms_provider.dart';
 import '../../data/supabase_config.dart';
@@ -57,6 +61,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
           _scores = result;
           _loading = false;
         });
+        HapticFeedback.heavyImpact();
       }
     } catch (e) {
       if (mounted) {
@@ -114,6 +119,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
         );
         _loading = false;
       });
+      HapticFeedback.heavyImpact();
     });
   }
 
@@ -279,8 +285,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
     }
 
     final civilsWon = scores.civilsWon;
-    final winnerColor =
-        civilsWon ? AppTheme.successColor : AppTheme.secondaryColor;
 
     // Impostor guess attempts (only show if any impostor tried to guess)
     final guessAttempts = scores.scores
@@ -298,81 +302,22 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                 children: [
                   const SizedBox(height: 8),
 
-                  // ─── Winner announcement ─────────────────────────
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 28, horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: winnerColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                          color: winnerColor.withValues(alpha: 0.3)),
-                    ),
-                    child: Column(
-                      children: [
-                        Image.asset(
-                          civilsWon
-                              ? 'assets/images/player_civil.webp'
-                              : 'assets/images/player_impostor.webp',
-                          width: 120,
-                          height: 120,
-                          cacheWidth: 240,
-                          cacheHeight: 240,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          civilsWon
-                              ? '¡Los civiles ganan!'
-                              : '¡Los impostores ganan!',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w900,
-                            color: winnerColor,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Secret word revealed
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 20, vertical: 12),
-                          decoration: BoxDecoration(
-                            color: AppTheme.cardColor,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                'La palabra era',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTheme.textSecondary,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                scores.word,
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppTheme.textPrimary,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              _badge(_capitalize(scores.category),
-                                  AppTheme.textSecondary),
-                            ],
-                          ),
-                        ),
-                        // Override button (inside winner card)
-                        if (civilsWon) ...[
-                          const SizedBox(height: 16),
-                          _buildImpostorOverrideButton(),
-                        ],
-                      ],
-                    ),
+                  // ─── Hero + palabra (componentes compartidos) ────
+                  ResultHero(
+                    civilsWon: civilsWon,
+                    title: civilsWon
+                        ? '¡Los civiles ganan!'
+                        : '¡Los impostores ganan!',
                   ),
+                  const SizedBox(height: 20),
+                  SecretWordCard(
+                    word: scores.word,
+                    category: _capitalize(scores.category),
+                  ),
+                  if (civilsWon) ...[
+                    const SizedBox(height: 16),
+                    _buildImpostorOverrideButton(),
+                  ],
 
                   // ─── Impostor guess attempts ─────────────────────
                   if (guessAttempts.isNotEmpty) ...[
@@ -533,7 +478,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                           Icon(Icons.replay_rounded, size: 20),
                           SizedBox(width: 8),
                           Text(
-                            'Volver a jugar',
+                            '¡Otra ronda!',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
@@ -633,145 +578,24 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
   }
 
   Widget _buildPlayerRow(int index, PlayerScore player) {
-    final isCurrentUser = player.userId == _currentUserId;
     final isImpostor = player.isImpostor;
-    final roleColor =
-        isImpostor ? AppTheme.secondaryColor : AppTheme.primaryColor;
+    final roleColor = isImpostor
+        ? AppTheme.secondaryColor
+        : AppTheme.primaryColor;
 
-    // Position color for top 3
-    final posColor = index == 0
-        ? const Color(0xFFFFD700) // Gold
-        : index == 1
-            ? const Color(0xFFC0C0C0) // Silver
-            : index == 2
-                ? const Color(0xFFCD7F32) // Bronze
-                : AppTheme.textSecondary;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: isCurrentUser
-            ? AppTheme.primaryColor.withValues(alpha: 0.08)
-            : AppTheme.cardColor,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isCurrentUser
-              ? AppTheme.primaryColor.withValues(alpha: 0.3)
-              : AppTheme.textSecondary.withValues(alpha: 0.08),
-          width: isCurrentUser ? 2 : 1,
-        ),
-      ),
-      child: Row(
-        children: [
-          // Position
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: posColor.withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                '${index + 1}',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  color: posColor,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          // Avatar
-          PlayerAvatar(
-            displayName: player.displayName,
-            avatarUrl: player.avatarUrl,
-            size: 36,
-            backgroundColor: roleColor.withValues(alpha: 0.15),
-            textColor: roleColor,
-          ),
-          const SizedBox(width: 12),
-          // Name + role
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  player.displayName,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: player.isEliminated
-                        ? AppTheme.textSecondary
-                        : AppTheme.textPrimary,
-                    decoration: player.isEliminated
-                        ? TextDecoration.lineThrough
-                        : null,
-                  ),
-                ),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: roleColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        isImpostor ? 'Impostor' : 'Civil',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: roleColor,
-                        ),
-                      ),
-                    ),
-                    if (player.isEliminated) ...[
-                      const SizedBox(width: 4),
-                      Text(
-                        'Eliminado',
-                        style: TextStyle(
-                          fontSize: 10,
-                          color: AppTheme.textSecondary,
-                        ),
-                      ),
-                    ],
-                    if (isCurrentUser) ...[
-                      const SizedBox(width: 4),
-                      Text(
-                        '(Tú)',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: AppTheme.primaryColor,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // Points
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: AppTheme.warningColor.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(999),
-            ),
-            child: Text(
-              '${player.points} pts',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w800,
-                color: AppTheme.warningColor,
-              ),
-            ),
-          ),
-        ],
+    return PlayerRow(
+      position: index + 1,
+      name: player.displayName,
+      isImpostor: isImpostor,
+      points: player.points,
+      isEliminated: player.isEliminated,
+      isCurrentUser: player.userId == _currentUserId,
+      avatar: PlayerAvatar(
+        displayName: player.displayName,
+        avatarUrl: player.avatarUrl,
+        size: 36,
+        backgroundColor: roleColor.withValues(alpha: 0.15),
+        textColor: roleColor,
       ),
     );
   }
@@ -1048,22 +872,4 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
 
   String _capitalize(String s) =>
       s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
-
-  Widget _badge(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          color: color,
-        ),
-      ),
-    );
-  }
 }

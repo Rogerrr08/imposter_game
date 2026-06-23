@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -40,6 +41,8 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
 
     _statusListener = (status) {
       if (status == AnimationStatus.completed && mounted) {
+        // Golpe háptico en el clímax: la revelación se siente, no solo se ve.
+        HapticFeedback.heavyImpact();
         setState(() {
           _showResult = true;
         });
@@ -85,7 +88,7 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         widget.reveal.type == ActionRevealType.vote &&
         widget.reveal.success &&
         gameState.awaitingClassicGuessDecision) {
-      context.go('/classic-impostor-choice');
+      _showClassicImpostorChoice(gameState.pendingClassicGuesserName);
       return;
     }
 
@@ -94,6 +97,101 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
     } else {
       context.go('/play');
     }
+  }
+
+  /// Decisión del impostor eliminado en Modo Clásico (¿arriesgar y adivinar?).
+  /// Antes era una pantalla completa (ClassicImpostorChoiceScreen); ahora es un
+  /// bottom sheet sobre el action-reveal — una decisión binaria no merece ruta.
+  void _showClassicImpostorChoice(String? guesserName) {
+    if (guesserName == null) {
+      context.go('/play');
+      return;
+    }
+    showModalBottomSheet<void>(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (sheetContext) => PopScope(
+        canPop: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'assets/images/player_impostor.webp',
+                width: 120,
+                height: 120,
+                cacheWidth: 240,
+                cacheHeight: 240,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                '$guesserName fue eliminado',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Como era impostor, ahora puede intentar adivinar la palabra secreta.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    context.go('/impostor-guess');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.secondaryColor,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    'Arriesgar e intentar adivinar',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.of(sheetContext).pop();
+                    ref.read(gameProvider.notifier).skipClassicImpostorGuess();
+                    context.go(
+                      '/action-reveal',
+                      extra: ActionRevealData(
+                        type: ActionRevealType.guessSkipped,
+                        success: false,
+                        subjectText: guesserName,
+                        actorText: guesserName,
+                      ),
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primaryColor,
+                    side: BorderSide(color: AppTheme.primaryColor),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text(
+                    'No arriesgar',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -109,76 +207,84 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
   }
 
   Widget _buildLoadingView() {
+    // Suspenso temático SIN porcentaje ni barra determinista: el ojo crece y
+    // su glow se intensifica hacia el clímax, y tres puntos se encienden en
+    // secuencia. La tensión se siente, no se mide.
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 96,
-            height: 96,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.12),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppTheme.primaryColor.withValues(alpha: 0.45),
-                width: 2,
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, _) {
+          final t = Curves.easeInOut.transform(_controller.value);
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Transform.scale(
+                scale: 0.9 + 0.2 * t,
+                child: Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.45),
+                      width: 2,
+                    ),
+                    boxShadow: AppTheme.glow(
+                      AppTheme.primaryColor,
+                      intensity: t,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.visibility_rounded,
+                    color: AppTheme.primaryColor,
+                    size: 44,
+                  ),
+                ),
               ),
-            ),
-            child: Icon(
-              Icons.visibility_rounded,
-              color: AppTheme.primaryColor,
-              size: 44,
-            ),
-          ),
-          const SizedBox(height: 28),
-          Text(
-            'Revelando resultado...',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.textPrimary,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Un poco de suspenso antes de mostrar lo que pasó',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
-          ),
-          const SizedBox(height: 28),
-          SizedBox(
-            width: 280,
-            child: AnimatedBuilder(
-              animation: _controller,
-              builder: (context, _) {
-                return Column(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(999),
-                      child: LinearProgressIndicator(
-                        minHeight: 12,
-                        value: _controller.value,
-                        backgroundColor: AppTheme.surfaceColor,
-                        valueColor: AlwaysStoppedAnimation<Color>(
+              const SizedBox(height: 28),
+              Text(
+                'Revelando resultado',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Un poco de suspenso antes de mostrar lo que pasó',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
+              ),
+              const SizedBox(height: 28),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: List.generate(3, (i) {
+                  final fill = ((_controller.value - i / 3) * 3).clamp(
+                    0.0,
+                    1.0,
+                  );
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    child: Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color.lerp(
+                          AppTheme.surfaceColor,
                           AppTheme.primaryColor,
+                          fill,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      '${(_controller.value * 100).round()}%',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
+                  );
+                }),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -242,29 +348,8 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
           style: TextStyle(fontSize: 15, color: AppTheme.textSecondary),
           textAlign: TextAlign.center,
         ),
-        if (widget.reveal.type == ActionRevealType.vote &&
-            !widget.reveal.success &&
-            widget.reveal.livesRemaining != null) ...[
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (int i = 0; i < ActiveGame.maxLives; i++)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 3),
-                  child: Icon(
-                    i < widget.reveal.livesRemaining!
-                        ? Icons.favorite
-                        : Icons.favorite_border,
-                    color: i < widget.reveal.livesRemaining!
-                        ? AppTheme.secondaryColor
-                        : AppTheme.textSecondary.withValues(alpha: 0.3),
-                    size: 28,
-                  ),
-                ),
-            ],
-          ),
-        ],
+        // Las vidas no se muestran en el reveal: el contador filtraba el rol
+        // del eliminado a los civiles. La mecánica sigue intacta.
         if (widget.reveal.voteTallies.isNotEmpty) ...[
           const SizedBox(height: 24),
           _buildVoteTallies(config.color),
@@ -462,10 +547,10 @@ class _ActionRevealScreenState extends ConsumerState<ActionRevealScreen>
         final actor = reveal.actorText == null
             ? 'La mayor\u00EDa del grupo'
             : reveal.actorText!;
-        final lives = reveal.livesRemaining ?? 0;
+        // No se revela el conteo de vidas: filtraba el rol del eliminado.
         final subtitle = reveal.livesRemaining == null
             ? '$actor vot\u00F3 a un civil y queda eliminado.'
-            : '$actor fall\u00F3 y queda eliminado.\n$lives vida${lives == 1 ? '' : 's'} restante${lives == 1 ? '' : 's'}';
+            : '$actor fall\u00F3 y queda eliminado.';
         return _RevealVisualConfig(
           color: AppTheme.successColor,
           imagePath: 'assets/images/civil_lose_life.webp',
