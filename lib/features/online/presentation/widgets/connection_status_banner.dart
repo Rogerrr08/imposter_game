@@ -61,7 +61,7 @@ class _ConnectionStatusBannerState extends State<ConnectionStatusBanner>
           const SizedBox(width: 8),
           Text(
             'Reconectando...',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: AppTheme.warningColor,

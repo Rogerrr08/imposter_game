@@ -78,10 +78,11 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
         leading: IconButton(
           onPressed: _joining ? null : () => context.go('/online'),
           icon: const Icon(Icons.arrow_back_rounded),
+          tooltip: 'Volver',
         ),
         title: const Text(
           'Unirse por código',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       body: profileAsync.when(
@@ -93,7 +94,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
             padding: const EdgeInsets.all(24),
             child: Text(
               'No pudimos cargar tu perfil online.',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textPrimary,
@@ -133,7 +134,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
                   const SizedBox(height: 18),
                   Text(
                     'Entrar a sala privada',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w800,
                       color: AppTheme.textPrimary,
@@ -142,7 +143,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
                   const SizedBox(height: 8),
                   Text(
                     'Pide el código al host y escríbelo aquí para unirte al lobby.',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 15,
                       height: 1.45,
                       color: AppTheme.textSecondary,
@@ -157,7 +158,7 @@ class _JoinRoomScreenState extends ConsumerState<JoinRoomScreen> {
                     textCapitalization: TextCapitalization.characters,
                     maxLength: 6,
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 6,

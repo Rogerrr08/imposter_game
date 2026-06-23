@@ -24,7 +24,6 @@ class SpectatorBanner extends StatelessWidget {
           Text(
             label ?? 'Estas observando la partida',
             style: TextStyle(
-              fontFamily: 'Nunito',
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: AppTheme.textSecondary,

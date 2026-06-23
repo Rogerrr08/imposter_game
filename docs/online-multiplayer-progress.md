@@ -5,6 +5,82 @@ El plan vigente está en [online-multiplayer-plan.md](online-multiplayer-plan.md
 
 ---
 
+## 2026-06-17 — Confiabilidad online (rama `feature/online-reliability`)
+
+Refactor de confiabilidad pre-publicación (ver auditoría en
+[ui-ux-audit.md](ui-ux-audit.md) y plan consolidado en el chat).
+
+- **Fase 1 — resync en resume** (commit `cf31593`): `OnlineMatchChannel` y
+  `OnlineRoomChannel` ahora exponen `resync()` (recarga snapshot por HTTPS +
+  recrea el canal subyacente, porque `subscribe()` es one-shot por instancia).
+  Se llama desde el lifecycle `resumed` de la pantalla de partida y del lobby
+  (vía un `_LifecycleResync` mínimo). Cubre la muerte silenciosa del WebSocket
+  al volver de segundo plano. El refresh de token al socket ya lo maneja
+  `supabase_flutter` (setAuth en `tokenRefreshed`); `heartbeatCallback` no
+  existe en `realtime_client` 2.7.1.
+- **Fase 2.2 — quitar invalidates redundantes**: eliminados 4
+  `ref.invalidate(onlineMatchProvider)` (impostor_choice, impostor_guess ×2,
+  clue_writing). El canal ya propaga `match-updated`; invalidar solo causaba
+  re-suscripción inútil del canal.
+- **Fase 2.1 — DIFERIDA**: reducir la "tormenta" de RPCs `get_my_match_state`
+  (un RPC por cliente por version-bump) se difiere. Motivo: a 4-8 jugadores el
+  volumen es trivial para el free tier (optimización prematura / YAGNI), y el
+  fix correcto recablea la detección de turno de `clue_writing`
+  (`myState.currentTurnIndex` → stream del match), tocando gameplay activo con
+  riesgo real. Revisitar solo si el juego escala a cientos de concurrentes.
+
+- **Selección de palabra — bolsa de categorías** (local + online): `WordBank
+  .pickWordWithDecay` ahora elige primero la **categoría** desde un shuffle-bag
+  (no repite categoría hasta agotar todas las seleccionadas) y luego la
+  **palabra** dentro de esa categoría con el mismo soft-decay de antes (sin
+  cambios en la aleatoriedad de la palabra). Ambos modos lo usan, así que
+  queda cubierto de una. Bag en memoria (por conjunto de categorías). Smoke
+  test en `test/word_bank_test.dart`.
+
+- **Fase 3 — pulido visual + ortografía** (quick wins de la auditoría):
+  - **Íconos Material → ilustraciones `.webp`** en los momentos clímax del
+    impostor: `impostor_result_hold` (risk/no_risk → `player_impostor`,
+    wrong_guess → `impostor_failed_guess`), `impostor_choice_phase`
+    (waiting), `impostor_guess_phase` (guesser + waiting) y la espera del
+    espectador en `online_match_screen`. Cierra la brecha visual local↔online.
+  - **Ortografía/tildes y signos de apertura** en todo `features/online`:
+    decidió, arriesgar, adivinó, adivinar, Intentó, continúa, ¡…ganan!,
+    ¡Empate!, ¡Era Impostor!, Votó, (Tú), ¿Qué impostor adivinó?,
+    se cambiará/recibirá/demás/recibirán.
+  - **Imagen neutra para espectadores** en `vote_result_phase` (late-join
+    neutral → `tie_after_voting` en vez de la del bando civil).
+  - **`MediaQuery.of` → `.sizeOf`/`.paddingOf`** en `impostor_guess_phase` y
+    `display_name_screen` (evita rebuild completo por size/padding).
+  - **Home scrollable** (`LayoutBuilder` + `SingleChildScrollView` +
+    `IntrinsicHeight`): sin overflow en pantallas cortas / text scaling alto,
+    conservando el centrado con Spacers cuando hay espacio.
+  - **Barrier color** de los loadings de `groups_screen` unificado con home
+    (`Colors.black @ 0.16`).
+  - `flutter analyze`: 27 issues (baseline, cero nuevos).
+
+- **Fase 4 — arco narrativo + mantenibilidad + a11y básica**:
+  - **Pantalla "¡El impostor adivinó la palabra!"** (#7): nuevo tipo
+    `correct_guess` en `ImpostorResultHold` (con `impostor_correct_guess.webp`
+    y la palabra). En `_detectImpostorTransition` se infiere el acierto SIN
+    tocar SQL: el RPC marca `eliminated_by_failed_guess` solo en fallo, así que
+    si el adivinador tiene `guessWord` y NO ese flag, acertó. El hold tiene
+    prioridad sobre el reveal countdown final (guard `!_holdingImpostorResult`).
+    De paso se consolidaron `_findImpostorName`/`_findImpostorGuessWord` en
+    `_captureImpostorInfo`.
+  - **Limpieza de `fontFamily: 'Nunito'` inline** (#2): 186 ocurrencias
+    eliminadas en 23 archivos de `features/online` (el `ThemeData` ya aplica
+    Nunito global → render idéntico). Sin `dart format` para no inflar el diff.
+  - **Accesibilidad básica** (#4, subconjunto): `tooltip` en los 6 botones
+    "atrás"/salir de solo-ícono y en el botón de enviar pista (da label a
+    TalkBack). Las ilustraciones de rol/resultado ya tienen texto acompañante,
+    así que no se les añadió `semanticLabel` (sería redundante). Pendiente
+    (requiere QA con TalkBack en dispositivo): `Semantics`/live-region en
+    contadores y timers, y prueba con text scaling 130-150%.
+  - Test stale `widget_test.dart` actualizado al copy real del home.
+  - `flutter analyze`: 27 issues (baseline). `flutter test`: verde.
+
+---
+
 ## 2026-04-19 — Plan de optimización local/offline
 
 Creado [local-performance-refactor-plan.md](local-performance-refactor-plan.md).

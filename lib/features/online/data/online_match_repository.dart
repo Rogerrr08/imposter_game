@@ -18,20 +18,57 @@ class OnlineMatchRepository {
     required OnlineRoom room,
     required List<OnlineRoomPlayer> players,
   }) async {
-    // 1. Pick word from the room's configured categories
-    final wordEntry = WordBank.getRandomWordFromCategories(room.categories);
+    // 1. Pre-fetch el histórico de palabras del host (con timestamps) para
+    //    el algoritmo Spotify-style con decay. Espejo de la lógica local,
+    //    scoped al host_user_id en BD.
+    Map<String, DateTime> lastSeenAt = const <String, DateTime>{};
+    try {
+      final result = await _client.rpc(
+        'get_word_freshness_for_host',
+        params: {
+          'input_categories':
+              room.categories.map((category) => category.name).toList(),
+        },
+      );
+      if (result is List) {
+        final map = <String, DateTime>{};
+        for (final entry in result) {
+          if (entry is Map) {
+            final word = entry['word'];
+            final pickedAt = entry['picked_at'];
+            if (word is String && pickedAt is String) {
+              final parsed = DateTime.tryParse(pickedAt);
+              if (parsed != null) map[word] = parsed;
+            }
+          }
+        }
+        lastSeenAt = map;
+      }
+    } catch (_) {
+      // Degradación graciosa: si falla el RPC seguimos con scoring uniforme.
+      lastSeenAt = const <String, DateTime>{};
+    }
 
-    // 2. Pick impostor indices (0-based, referencing seat_order - 1)
+    // 2. Pick word con scoring por decay temporal.
+    final pickResult = WordBank.pickWordWithDecay(
+      categories: room.categories,
+      lastSeenAt: lastSeenAt,
+    );
+    final wordEntry = pickResult.word;
+
+    // 3. Pick impostor indices (0-based, referencing seat_order - 1)
     final indices = List.generate(players.length, (i) => i)..shuffle(_random);
     final impostorIndices = indices.take(room.impostorCount).toList();
 
-    // 3. Get hints using the same logic as local game
-    final hints = WordBank.getHardHints(
+    // 4. Get hints using the same logic as local game
+    final hints = WordBank.getImpostorHints(
       wordEntry,
       count: room.impostorCount,
     );
 
     try {
+      // El RPC `start_match` registra la palabra en `match_word_history`
+      // para que la próxima partida del mismo host la excluya.
       final matchId = await _client.rpc(
         'start_match',
         params: {

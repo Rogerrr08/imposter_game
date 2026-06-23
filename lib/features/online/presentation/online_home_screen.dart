@@ -113,7 +113,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
         ),
         title: const Text(
           'Jugar en linea',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
       body: authAsync.when(
@@ -288,7 +288,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
                     const SizedBox(width: 8),
                     Text(
                       profile.displayName!,
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.primaryColor,
@@ -308,7 +308,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           const SizedBox(height: 18),
           Text(
             'Yeison Impostor online',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w900,
               color: AppTheme.textPrimary,
@@ -318,7 +318,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           Text(
             'Juega con tus amigos en tiempo real. '
             'Crea una sala privada o únete con un código.',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 15,
               height: 1.45,
               color: AppTheme.textSecondary,
@@ -366,7 +366,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           const SizedBox(height: 14),
           Text(
             title,
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
@@ -375,7 +375,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
           const SizedBox(height: 8),
           Text(
             description,
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 14,
               height: 1.45,
               color: AppTheme.textSecondary,
@@ -416,7 +416,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -426,7 +426,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 14,
                 height: 1.45,
                 color: AppTheme.textSecondary,
@@ -459,7 +459,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -469,7 +469,7 @@ class _OnlineHomeScreenState extends ConsumerState<OnlineHomeScreen> {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 14,
                 height: 1.45,
                 color: AppTheme.textSecondary,

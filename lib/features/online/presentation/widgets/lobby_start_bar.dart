@@ -107,7 +107,7 @@ class LobbyStartBar extends StatelessWidget {
         children: [
           Text(
             subtitle,
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 12,
               height: 1.35,
               color: AppTheme.textSecondary,
@@ -148,7 +148,7 @@ class LobbyStartBar extends StatelessWidget {
                   const SizedBox(width: 10),
                   Text(
                     buttonText,
-                    style: const TextStyle(fontFamily: 'Nunito',
+                    style: const TextStyle(
                       fontSize: 17,
                       fontWeight: FontWeight.w700,
                     ),

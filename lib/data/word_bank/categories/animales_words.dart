@@ -3,7 +3,7 @@ import '../word_bank_models.dart';
 const List<WordEntry> animalesWords = [
     WordEntry(
       word: 'Delfín',
-      hints: ['Sonar', 'Manada', 'Salto'],
+      hints: ['Manada', 'Salto', 'Acrobacia'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -13,12 +13,12 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Tortuga',
-      hints: ['Escudo', 'Lenta', 'Centenaria'],
+      hints: ['Caparazón', 'Lenta', 'Longeva'],
       category: WordCategory.animales,
     ),
     WordEntry(
       word: 'Mariposa',
-      hints: ['Capullo', 'Migración', 'Polvo'],
+      hints: ['Néctar', 'Migración', 'Colorida'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -28,12 +28,12 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Caballo',
-      hints: ['Herradura', 'Galope', 'Crin'],
+      hints: ['Galope', 'Establo', 'Carrera'],
       category: WordCategory.animales,
     ),
     WordEntry(
       word: 'Pulpo',
-      hints: ['Tinta', 'Ventosa', 'Camuflaje'],
+      hints: ['Tinta', 'Camuflaje', 'Tentáculo'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -48,7 +48,7 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Pingüino',
-      hints: ['Colonia', 'Tobogán', 'Esmoquin'],
+      hints: ['Colonia', 'Témpano', 'Aleta'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -68,22 +68,22 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Canguro',
-      hints: ['Bolsa', 'Rebote', 'Estepa'],
+      hints: ['Bolsa', 'Salto', 'Estepa'],
       category: WordCategory.animales,
     ),
     WordEntry(
       word: 'Búho',
-      hints: ['Girar', 'Silencio', 'Pelota'],
+      hints: ['Silencio', 'Girar', 'Penumbra'],
       category: WordCategory.animales,
     ),
     WordEntry(
       word: 'Tiburón',
-      hints: ['Aleta', 'Sensor', 'Depredador'],
+      hints: ['Aleta', 'Acecho', 'Depredador'],
       category: WordCategory.animales,
     ),
     WordEntry(
       word: 'Abeja',
-      hints: ['Panal', 'Danza', 'Polen'],
+      hints: ['Polen', 'Néctar', 'Enjambre'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -98,7 +98,7 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Flamenco',
-      hints: ['Rosado', 'Equilibrio', 'Filtro'],
+      hints: ['Rosado', 'Equilibrio', 'Laguna'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -108,7 +108,7 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Rana',
-      hints: ['Croar', 'Metamorfosis', 'Lengua'],
+      hints: ['Croar', 'Metamorfosis', 'Estanque'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -123,12 +123,12 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Jirafa',
-      hints: ['Manchas', 'Torre', 'Acacia'],
+      hints: ['Manchas', 'Cuello', 'Acacia'],
       category: WordCategory.animales,
     ),
     WordEntry(
       word: 'Escorpión',
-      hints: ['Veneno', 'Ultravioleta', 'Pinza'],
+      hints: ['Veneno', 'Pinza', 'Desierto'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -208,7 +208,7 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Camello',
-      hints: ['Joroba', 'Desierto', 'Caravana'],
+      hints: ['Desierto', 'Caravana', 'Oasis'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -218,12 +218,12 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Foca',
-      hints: ['Bigote', 'Iceberg', 'Aplauso'],
+      hints: ['Bigote', 'Témpano', 'Costa'],
       category: WordCategory.animales,
     ),
     WordEntry(
       word: 'Lechuza',
-      hints: ['Campanario', 'Disco', 'Ratón'],
+      hints: ['Campanario', 'Nocturna', 'Ratón'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -238,7 +238,7 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Koala',
-      hints: ['Eucalipto', 'Bolsa', 'Dormilón'],
+      hints: ['Bolsa', 'Dormilón', 'Trepar'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -268,12 +268,12 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Nutria',
-      hints: ['Piedra', 'Flotar', 'Juguetona'],
+      hints: ['Flotar', 'Juguetona', 'Río'],
       category: WordCategory.animales,
     ),
     WordEntry(
       word: 'Loro',
-      hints: ['Imitar', 'Tropical', 'Percha'],
+      hints: ['Tropical', 'Percha', 'Colorido'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -293,7 +293,7 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Castor',
-      hints: ['Presa', 'Madera', 'Cola'],
+      hints: ['Madera', 'Cola', 'Río'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -313,7 +313,7 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Salamanquesa',
-      hints: ['Pared', 'Adhesión', 'Nocturna'],
+      hints: ['Nocturna', 'Trepar', 'Insecto'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -323,12 +323,12 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Caballito de mar',
-      hints: ['Bolsa', 'Ancla', 'Vertical'],
+      hints: ['Vertical', 'Ancla', 'Coral'],
       category: WordCategory.animales,
     ),
     WordEntry(
       word: 'Mapache',
-      hints: ['Antifaz', 'Nocturno', 'Lavar'],
+      hints: ['Nocturno', 'Trepar', 'Astuto'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -343,22 +343,22 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Pez payaso',
-      hints: ['Anémona', 'Arrecife', 'Rayas'],
+      hints: ['Arrecife', 'Rayas', 'Coral'],
       category: WordCategory.animales,
     ),
     WordEntry(
       word: 'Pantera',
-      hints: ['Melanismo', 'Sigilo', 'Nocturna'],
+      hints: ['Acecho', 'Sigilo', 'Nocturna'],
       category: WordCategory.animales,
     ),
     WordEntry(
       word: 'Mantis',
-      hints: ['Oración', 'Emboscada', 'Girar'],
+      hints: ['Acecho', 'Emboscada', 'Girar'],
       category: WordCategory.animales,
     ),
     WordEntry(
       word: 'Suricata',
-      hints: ['Vigía', 'Centinela', 'Madriguera'],
+      hints: ['Vigía', 'Madriguera', 'Desierto'],
       category: WordCategory.animales,
     ),
     WordEntry(
@@ -373,7 +373,7 @@ const List<WordEntry> animalesWords = [
     ),
     WordEntry(
       word: 'Halcón',
-      hints: ['Picada', 'Velocidad', 'Cetrería'],
+      hints: ['Picada', 'Velocidad', 'Vista'],
       category: WordCategory.animales,
     ),
 ];

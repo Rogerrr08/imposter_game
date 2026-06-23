@@ -239,7 +239,7 @@ class GroupsScreen extends ConsumerWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: AppTheme.textSecondary,
+      barrierColor: Colors.black.withValues(alpha: 0.16),
       builder: (_) => Center(
         child: CircularProgressIndicator(color: AppTheme.primaryColor),
       ),
@@ -413,7 +413,7 @@ class _GroupCard extends ConsumerWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: AppTheme.textSecondary,
+      barrierColor: Colors.black.withValues(alpha: 0.16),
       builder: (_) => Center(
         child: CircularProgressIndicator(color: AppTheme.primaryColor),
       ),

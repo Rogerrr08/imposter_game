@@ -197,7 +197,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
                       opacity: _roleTextOpacity.value.clamp(0.0, 1.0),
                       child: Text(
                         isImpostor ? 'Eres el Impostor' : 'Eres Civil',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
                           color: accentColor,
@@ -248,7 +248,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
           },
           child: Text(
             text,
-            style: const TextStyle(fontFamily: 'Nunito',
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
               color: Colors.white,
@@ -291,7 +291,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
                   // Role text
                   Text(
                     isImpostor ? 'Eres el Impostor' : 'Eres Civil',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w900,
                       color: accentColor,
@@ -324,7 +324,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
                         ? 'No conoces la palabra. Intenta pasar desapercibido con las pistas que des.'
                         : 'Da pistas que demuestren que conoces la palabra, pero sin ser demasiado obvio.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 13,
                       height: 1.4,
                       color: AppTheme.textSecondary,
@@ -342,7 +342,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
                   const SizedBox(height: 12),
                   Text(
                     'Esperando a los demas...',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textPrimary,
@@ -351,7 +351,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
                   const SizedBox(height: 4),
                   Text(
                     '$confirmedCount/$totalActive listos',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textSecondary,
@@ -382,7 +382,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
         children: [
           Text(
             isImpostor ? 'Tu pista' : 'La palabra secreta',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: AppTheme.textSecondary,
@@ -394,7 +394,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
                 ? (widget.myState.myHint ?? 'Sin pista')
                 : (widget.myState.word ?? '???'),
             textAlign: TextAlign.center,
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w900,
               color: AppTheme.textPrimary,
@@ -432,7 +432,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
               )
             : const Text(
                 'Entendido',
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
                 ),
@@ -453,7 +453,7 @@ class _RoleRevealPhaseState extends ConsumerState<RoleRevealPhase>
       ),
       child: Text(
         label,
-        style: TextStyle(fontFamily: 'Nunito',
+        style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w700,
           color: color,

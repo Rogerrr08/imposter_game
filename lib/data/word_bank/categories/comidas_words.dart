@@ -23,7 +23,7 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Burrito',
-    hints: ['Envuelto', 'Cilindro', 'Relleno'],
+    hints: ['Envuelto', 'Relleno', 'Almuerzo'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -33,7 +33,7 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Espagueti',
-    hints: ['Hebras', 'Enredo', 'Plato'],
+    hints: ['Hebras', 'Enredo', 'Tenedor'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -63,7 +63,7 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Ensalada',
-    hints: ['Taz\u00F3n', 'Aderezo', 'Fr\u00EDa'],
+    hints: ['Tazón', 'Aderezo', 'Fresca'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -73,22 +73,22 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Arroz',
-    hints: ['Granos', 'Olla', 'Guarnici\u00F3n'],
+    hints: ['Granos', 'Olla', 'Guarnición'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Frijoles',
-    hints: ['Granos', 'Olla', 'Cuchara'],
+    hints: ['Granos', 'Hervidos', 'Guarnición'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Lentejas',
-    hints: ['Legumbre', 'Olla', 'Hogar'],
+    hints: ['Caldo', 'Olla', 'Caliente'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Pan',
-    hints: ['Panader\u00EDa', 'Miga', 'Corteza'],
+    hints: ['Panadería', 'Miga', 'Corteza'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -103,32 +103,32 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Pastel',
-    hints: ['Velas', 'Celebraci\u00F3n', 'Rebanada'],
+    hints: ['Velas', 'Celebración', 'Rebanada'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Helado',
-    hints: ['Cono', 'Freezer', 'Derretir'],
+    hints: ['Sabor', 'Congelador', 'Derretir'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Yogur',
-    hints: ['Fr\u00EDo', 'Fermento', 'Cuchara'],
+    hints: ['Frío', 'Fruta', 'Cuchara'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Queso',
-    hints: ['Tabla', 'Rallado', 'Maduraci\u00F3n'],
+    hints: ['Tabla', 'Rallado', 'Maduración'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Huevo',
-    hints: ['C\u00E1scara', 'Sart\u00E9n', 'Desayuno'],
+    hints: ['Cáscara', 'Sartén', 'Desayuno'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Tortilla',
-    hints: ['Volteo', 'Sart\u00E9n', 'Porci\u00F3n'],
+    hints: ['Volteo', 'Sartén', 'Porción'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -138,22 +138,22 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Avena',
-    hints: ['Hojuelas', 'Caliente', 'Desayuno'],
+    hints: ['Caliente', 'Desayuno', 'Cremosa'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Panqueque',
-    hints: ['Jarabe', 'Sart\u00E9n', 'Torre'],
+    hints: ['Jarabe', 'Sartén', 'Torre'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Waffle',
-    hints: ['Cuadr\u00EDcula', 'Jarabe', 'Brunch'],
+    hints: ['Jarabe', 'Desayuno', 'Crujiente'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Donut',
-    hints: ['Anillo', 'Glaseado', 'Vitrina'],
+    hints: ['Glaseado', 'Redondo', 'Vitrina'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -163,7 +163,7 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Croissant',
-    hints: ['Capas', 'Mantequilla', 'Panader\u00EDa'],
+    hints: ['Capas', 'Mantequilla', 'Panadería'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -173,22 +173,22 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Cupcake',
-    hints: ['Bet\u00FAn', 'Fiesta', 'Molde'],
+    hints: ['Glaseado', 'Fiesta', 'Molde'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Pudin',
-    hints: ['Postre', 'Fr\u00EDo', 'Cuchara'],
+    hints: ['Postre', 'Frío', 'Cuchara'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Gelatina',
-    hints: ['Temblor', 'Molde', 'Fr\u00EDa'],
+    hints: ['Temblor', 'Molde', 'Postre'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Palomitas',
-    hints: ['Cine', 'Ma\u00EDz', 'Ruido'],
+    hints: ['Cine', 'Maíz', 'Ruido'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -218,27 +218,27 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Mostaza',
-    hints: ['Amarilla', 'Aderezo', 'Picor'],
+    hints: ['Amarilla', 'Aderezo', 'Picante'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Ketchup',
-    hints: ['Roja', 'Botella', 'Papas'],
+    hints: ['Roja', 'Botella', 'Aderezo'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Guacamole',
-    hints: ['Machacado', 'Dip', 'Totopos'],
+    hints: ['Machacado', 'Salsa', 'Verde'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Hummus',
-    hints: ['Garbanzo', 'Dip', 'Untar'],
+    hints: ['Cremoso', 'Untable', 'Garbanzo'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Falafel',
-    hints: ['Bolitas', 'Fritura', 'Garbanzo'],
+    hints: ['Bolitas', 'Frito', 'Crujiente'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -252,13 +252,13 @@ const List<WordEntry> comidasWords = [
     category: WordCategory.comidas,
   ),
   WordEntry(
-    word: 'Alb\u00F3ndiga',
-    hints: ['Esfera', 'Salsa', 'Plato'],
+    word: 'Albóndiga',
+    hints: ['Esfera', 'Salsa', 'Carne'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Salchicha',
-    hints: ['Embutido', 'Parrilla', 'Pan'],
+    hints: ['Parrilla', 'Pan', 'Embutido'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -267,8 +267,8 @@ const List<WordEntry> comidasWords = [
     category: WordCategory.comidas,
   ),
   WordEntry(
-    word: 'Jam\u00F3n',
-    hints: ['Lonchas', 'Charcuter\u00EDa', 'S\u00E1ndwich'],
+    word: 'Jamón',
+    hints: ['Lonchas', 'Rebanada', 'Sándwich'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -278,7 +278,7 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Carne',
-    hints: ['Corte', 'Parrilla', 'T\u00E9rmino'],
+    hints: ['Corte', 'Parrilla', 'Término'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -287,17 +287,17 @@ const List<WordEntry> comidasWords = [
     category: WordCategory.comidas,
   ),
   WordEntry(
-    word: 'Camar\u00F3n',
-    hints: ['Mar', 'Coctel', 'Cola'],
+    word: 'Camarón',
+    hints: ['Mar', 'Parrilla', 'Cola'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Pulpo',
-    hints: ['Tent\u00E1culos', 'Mar', 'Parrilla'],
+    hints: ['Tentáculos', 'Mar', 'Parrilla'],
     category: WordCategory.comidas,
   ),
   WordEntry(
-    word: 'At\u00FAn',
+    word: 'Atún',
     hints: ['Lata', 'Mar', 'Ensalada'],
     category: WordCategory.comidas,
   ),
@@ -308,17 +308,17 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Banana',
-    hints: ['Racimo', 'C\u00E1scara', 'Batido'],
+    hints: ['Racimo', 'Cáscara', 'Batido'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Naranja',
-    hints: ['Gajos', 'Jugo', 'C\u00E1scara'],
+    hints: ['Gajos', 'Jugo', 'Cáscara'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Uva',
-    hints: ['Racimo', 'Vi\u00F1edo', 'Peque\u00F1a'],
+    hints: ['Racimo', 'Viñedo', 'Pequeña'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -332,7 +332,7 @@ const List<WordEntry> comidasWords = [
     category: WordCategory.comidas,
   ),
   WordEntry(
-    word: 'Sand\u00EDa',
+    word: 'Sandía',
     hints: ['Verano', 'Tajada', 'Semillas'],
     category: WordCategory.comidas,
   ),
@@ -348,12 +348,12 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Papa',
-    hints: ['Tub\u00E9rculo', 'Pur\u00E9', 'Frita'],
+    hints: ['Tubérculo', 'Puré', 'Frita'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Zanahoria',
-    hints: ['Naranja', 'Conejo', 'Crujiente'],
+    hints: ['Naranja', 'Crujiente', 'Huerto'],
     category: WordCategory.comidas,
   ),
   WordEntry(
@@ -363,17 +363,17 @@ const List<WordEntry> comidasWords = [
   ),
   WordEntry(
     word: 'Cebolla',
-    hints: ['Capas', 'L\u00E1grimas', 'Sart\u00E9n'],
+    hints: ['Capas', 'Lágrimas', 'Sartén'],
     category: WordCategory.comidas,
   ),
   WordEntry(
-    word: 'Ma\u00EDz',
-    hints: ['Mazorca', 'Granos', 'Amarillo'],
+    word: 'Maíz',
+    hints: ['Granos', 'Amarillo', 'Cosecha'],
     category: WordCategory.comidas,
   ),
   WordEntry(
     word: 'Aceituna',
-    hints: ['Hueso', 'Tapas', 'Salmuera'],
+    hints: ['Hueso', 'Salmuera', 'Aceite'],
     category: WordCategory.comidas,
   ),
 ];

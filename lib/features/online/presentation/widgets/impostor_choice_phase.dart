@@ -72,7 +72,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             Text(
               'Fuiste eliminado',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -82,7 +82,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             Text(
               'Como eras impostor, puedes intentar adivinar la palabra secreta.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 15,
                 color: AppTheme.textSecondary,
               ),
@@ -114,7 +114,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                       child: Text.rich(
                         TextSpan(
                           text: 'Tu pista: ',
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.textSecondary,
@@ -122,7 +122,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                           children: [
                             TextSpan(
                               text: widget.myState.myHint!,
-                              style: TextStyle(fontFamily: 'Nunito',
+                              style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w800,
                                 color: AppTheme.warningColor,
@@ -163,7 +163,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                       )
                     : const Text(
                         'Arriesgar e intentar adivinar',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
                         ),
@@ -187,7 +187,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                 ),
                 child: const Text(
                   'No arriesgar',
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
                   ),
@@ -221,7 +221,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
           children: [
             const Spacer(flex: 2),
 
-            // Pulsing icon
+            // Ilustración del impostor con pulso
             AnimatedBuilder(
               animation: _pulseController,
               builder: (context, child) {
@@ -231,22 +231,12 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                   child: child,
                 );
               },
-              child: Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: AppTheme.secondaryColor.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppTheme.secondaryColor.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
-                child: Icon(
-                  Icons.psychology_rounded,
-                  size: 48,
-                  color: AppTheme.secondaryColor,
-                ),
+              child: Image.asset(
+                'assets/images/player_impostor.webp',
+                width: 120,
+                height: 120,
+                cacheWidth: 240,
+                cacheHeight: 240,
               ),
             ),
             const SizedBox(height: 28),
@@ -254,7 +244,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             Text(
               'El impostor está decidiendo...',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -264,7 +254,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             Text(
               'Está eligiendo si arriesgar e intentar adivinar la palabra secreta o no.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 15,
                 color: AppTheme.textSecondary,
               ),
@@ -299,7 +289,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                       children: [
                         Text(
                           impostorName,
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: AppTheme.textPrimary,
@@ -307,7 +297,7 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
                         ),
                         Text(
                           'Impostor eliminado',
-                          style: TextStyle(fontFamily: 'Nunito',
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: AppTheme.secondaryColor,
@@ -347,8 +337,9 @@ class _ImpostorChoicePhaseState extends ConsumerState<ImpostorChoicePhase>
             choice: choice,
           );
       if (mounted) {
+        // El cambio de fase llega solo por el canal broadcast (match-updated);
+        // solo refrescamos el estado propio (secreto) tras nuestra acción.
         ref.invalidate(myMatchStateProvider(widget.matchId));
-        ref.invalidate(onlineMatchProvider(widget.matchId));
       }
     } catch (e) {
       if (mounted) {

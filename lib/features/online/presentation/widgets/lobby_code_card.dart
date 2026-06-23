@@ -54,7 +54,7 @@ class LobbyCodeCard extends StatelessWidget {
           const SizedBox(height: 18),
           Text(
             'Sala privada',
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: AppTheme.textSecondary,
@@ -64,7 +64,7 @@ class LobbyCodeCard extends StatelessWidget {
           Text(
             room.code,
             textAlign: TextAlign.center,
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.w900,
               letterSpacing: 4,
@@ -77,7 +77,7 @@ class LobbyCodeCard extends StatelessWidget {
                 ? 'Comparte este código para que los demás entren a tu sala.'
                 : 'Ya estás dentro del lobby. Espera a que el host termine de prepararlo.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 14,
               height: 1.4,
               color: AppTheme.textSecondary,
@@ -115,7 +115,7 @@ class LobbyCodeCard extends StatelessWidget {
                 ? 'Ya hay suficientes jugadores listos para arrancar.'
                 : 'Se necesitan ${room.minPlayers} jugadores listos para empezar.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontFamily: 'Nunito',
+            style: TextStyle(
               fontSize: 13,
               color: AppTheme.textSecondary,
             ),
@@ -134,7 +134,7 @@ class LobbyCodeCard extends StatelessWidget {
   void _copyCode(BuildContext context, String code) {
     Clipboard.setData(ClipboardData(text: code));
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Código copiado: $code', style: const TextStyle(fontFamily: 'Nunito',))),
+      SnackBar(content: Text('Código copiado: $code')),
     );
   }
 
@@ -147,7 +147,7 @@ class LobbyCodeCard extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(fontFamily: 'Nunito',
+        style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
           color: color,

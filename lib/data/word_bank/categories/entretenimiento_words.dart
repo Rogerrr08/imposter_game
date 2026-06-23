@@ -28,32 +28,32 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Shakira',
-      hints: ['Barranquilla', 'Loba', 'Grammy'],
+      hints: ['Caderas', 'Colombia', 'Grammy'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Spider-Man',
-      hints: ['Máscara', 'Trepar', 'Queens'],
+      hints: ['Máscara', 'Trepar', 'Telaraña'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Frozen',
-      hints: ['Arendelle', 'Invierno', 'Deshielo'],
+      hints: ['Nieve', 'Invierno', 'Deshielo'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Pikachu',
-      hints: ['Mejillas', 'Trueno', 'Pokébola'],
+      hints: ['Amarillo', 'Trueno', 'Mascota'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Bad Bunny',
-      hints: ['Benito', 'Conejo', 'Trap'],
+      hints: ['Urbano', 'Conejo', 'Trap'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Toy Story',
-      hints: ['Andy', 'Vaquero', 'Guardián'],
+      hints: ['Vaquero', 'Juguetes', 'Guardián'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -68,7 +68,7 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Stranger Things',
-      hints: ['Hawkins', 'Demogorgon', 'Laboratorio'],
+      hints: ['Ochentas', 'Misterio', 'Pueblo'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -78,12 +78,12 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Taylor Swift',
-      hints: ['Eras', 'Nashville', 'Grammy'],
+      hints: ['Giras', 'Pop', 'Grammy'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Los Simpson',
-      hints: ['Springfield', 'Donas', 'Nuclear'],
+      hints: ['Familia', 'Donas', 'Caricatura'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -103,7 +103,7 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Encanto',
-      hints: ['Casita', 'Milagro', 'Mariposas'],
+      hints: ['Familia', 'Magia', 'Mariposas'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -113,7 +113,7 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Elsa',
-      hints: ['Arendelle', 'Nieve', 'Coronación'],
+      hints: ['Hielo', 'Nieve', 'Poderes'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -128,7 +128,7 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Indiana Jones',
-      hints: ['Látigo', 'Ruinas', 'Arca'],
+      hints: ['Látigo', 'Ruinas', 'Aventura'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -153,12 +153,12 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'El Señor de los Anillos',
-      hints: ['Comarca', 'Mordor', 'Forja'],
+      hints: ['Hobbits', 'Oscuro', 'Forja'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Rihanna',
-      hints: ['Barbados', 'Moda', 'Diamante'],
+      hints: ['Caribeña', 'Moda', 'Diamante'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -168,22 +168,22 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Juego de Tronos',
-      hints: ['Poniente', 'Dragones', 'Tronos'],
+      hints: ['Dragones', 'Reinos', 'Traición'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Buzz Lightyear',
-      hints: ['Galaxia', 'Andy', 'Infinito'],
+      hints: ['Galaxia', 'Astronauta', 'Infinito'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Coco',
-      hints: ['Ofrenda', 'Alebrije', 'Guitarra'],
+      hints: ['Ofrenda', 'Música', 'Guitarra'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'GTA',
-      hints: ['Rockstar', 'Atraco', 'Misión'],
+      hints: ['Atraco', 'Misión', 'Ciudad'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -193,32 +193,32 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'El Chavo del 8',
-      hints: ['Vecindad', 'Barril', 'Tortas'],
+      hints: ['Vecindad', 'Barril', 'Travieso'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Avatar',
-      hints: ['Pandora', 'Selva', 'Clan'],
+      hints: ['Clan', 'Selva', 'Aliens'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Sonic',
-      hints: ['Erizo', 'Velocidad', 'Esmeraldas'],
+      hints: ['Erizo', 'Velocidad', 'Anillos'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Aladdin',
-      hints: ['Genio', 'Jazmín', 'Lámpara'],
+      hints: ['Genio', 'Princesa', 'Lámpara'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'The Beatles',
-      hints: ['Liverpool', 'Cuarteto', 'Abbey'],
+      hints: ['Banda', 'Pop', 'Clásico'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Squid Game',
-      hints: ['Corea', 'Muñeca', 'Premio'],
+      hints: ['Juegos', 'Deudas', 'Premio'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -238,17 +238,17 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Tetris',
-      hints: ['Tetrominos', 'Matriz', 'Líneas'],
+      hints: ['Piezas', 'Bloques', 'Líneas'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Wolverine',
-      hints: ['Adamantium', 'Garras', 'Mutante'],
+      hints: ['Garras', 'Mutante', 'Regenerar'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Moana',
-      hints: ['Océano', 'Polinesia', 'Semidiós'],
+      hints: ['Océano', 'Isla', 'Aventura'],
       category: WordCategory.entretenimiento,
     ),
     // --- 25 new entries (51-75) ---
@@ -259,17 +259,17 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Zelda',
-      hints: ['Hyrule', 'Triángulos', 'Espada'],
+      hints: ['Espada', 'Aventura', 'Reino'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Breaking Bad',
-      hints: ['Albuquerque', 'Química', 'Desierto'],
+      hints: ['Química', 'Desierto', 'Drogas'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
       word: 'Freddie Mercury',
-      hints: ['Wembley', 'Bigote', 'Ópera'],
+      hints: ['Escenario', 'Bigote', 'Rock'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -279,7 +279,7 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'El Padrino',
-      hints: ['Sicilia', 'Corleone', 'Oferta'],
+      hints: ['Familia', 'Poder', 'Oferta'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -294,7 +294,7 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Roblox',
-      hints: ['Robux', 'Plataforma', 'Avatares'],
+      hints: ['Monedas', 'Plataforma', 'Avatares'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -304,7 +304,7 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Michael Jackson',
-      hints: ['Guante', 'Moonwalk', 'Thriller'],
+      hints: ['Guante', 'Baile', 'Thriller'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -314,7 +314,7 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Thor',
-      hints: ['Martillo', 'Asgard', 'Relámpago'],
+      hints: ['Martillo', 'Dios', 'Relámpago'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -334,7 +334,7 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Elvis Presley',
-      hints: ['Memphis', 'Patillas', 'Caderas'],
+      hints: ['Rock', 'Caderas', 'Ícono'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -349,7 +349,7 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Bob Ross',
-      hints: ['Lienzo', 'Afro', 'Árboles'],
+      hints: ['Pintura', 'Paisaje', 'Árboles'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -359,7 +359,7 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Lilo y Stitch',
-      hints: ['Hawái', 'Experimento', 'Ohana'],
+      hints: ['Tropical', 'Experimento', 'Familia'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(
@@ -369,7 +369,7 @@ const List<WordEntry> entretenimientoWords = [
     ),
     WordEntry(
       word: 'Ratatouille',
-      hints: ['París', 'Cocina', 'Roedor'],
+      hints: ['Cocina', 'Roedor', 'Chef'],
       category: WordCategory.entretenimiento,
     ),
     WordEntry(

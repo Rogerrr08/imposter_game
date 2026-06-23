@@ -98,7 +98,7 @@ class _ActiveRoomDialogState extends State<_ActiveRoomDialog> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -110,7 +110,7 @@ class _ActiveRoomDialogState extends State<_ActiveRoomDialog> {
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 14,
                 height: 1.45,
                 color: AppTheme.textSecondary,

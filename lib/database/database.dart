@@ -66,19 +66,32 @@ class GamePlayersTable extends Table {
       boolean().withDefault(const Constant(false))();
 }
 
+/// Anti-repetición de palabras: registra qué palabras ha jugado cada grupo
+/// recientemente para excluirlas en la siguiente elección. `groupId == null`
+/// se usa para el modo "Juego rápido" (sin grupo asociado), tratándolo como
+/// un bucket virtual compartido. Se mantiene un trailing window de 25
+/// entradas por (group_id, category); las más viejas se podan.
+class WordHistory extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  IntColumn get groupId => integer().references(Groups, #id).nullable()();
+  TextColumn get category => text()();
+  TextColumn get word => text()();
+  DateTimeColumn get pickedAt => dateTime().withDefault(currentDateAndTime)();
+}
+
 // ---------------------------------------------------------------------------
 // Database
 // ---------------------------------------------------------------------------
 
 @DriftDatabase(
-  tables: [Groups, GroupPlayers, Games, GamePlayersTable],
+  tables: [Groups, GroupPlayers, Games, GamePlayersTable, WordHistory],
   daos: [GroupDao, GameDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -98,6 +111,9 @@ class AppDatabase extends _$AppDatabase {
             );
             await _rebuildPlayerStatsFromHistory();
             await _setMetaValue(_playerStatsInitializedKey, '1');
+          }
+          if (from < 5) {
+            await m.createTable(wordHistory);
           }
         },
         beforeOpen: (details) async {
@@ -136,6 +152,18 @@ class AppDatabase extends _$AppDatabase {
         PRIMARY KEY (group_id, scope, player_name)
       )
     ''');
+    // Fix defensivo: aunque la migración v5 cree esta tabla en `onUpgrade`,
+    // si por alguna razón falló (DB en estado inconsistente) la próxima
+    // apertura la recrea acá. IF NOT EXISTS la hace idempotente.
+    await customStatement('''
+      CREATE TABLE IF NOT EXISTS word_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        group_id INTEGER REFERENCES groups(id),
+        category TEXT NOT NULL,
+        word TEXT NOT NULL,
+        picked_at INTEGER NOT NULL
+      )
+    ''');
     await customStatement('''
       CREATE TABLE IF NOT EXISTS app_meta (
         key TEXT NOT NULL PRIMARY KEY,
@@ -159,6 +187,9 @@ class AppDatabase extends _$AppDatabase {
     );
     await customStatement(
       'CREATE INDEX IF NOT EXISTS idx_player_stats_lookup ON player_stats (group_id, scope, total_points DESC, player_name COLLATE NOCASE)',
+    );
+    await customStatement(
+      'CREATE INDEX IF NOT EXISTS idx_word_history_group_category_picked ON word_history (group_id, category, picked_at DESC, id DESC)',
     );
   }
 
@@ -416,9 +447,98 @@ class GroupDao extends DatabaseAccessor<AppDatabase> with _$GroupDaoMixin {
   }
 }
 
-@DriftAccessor(tables: [Games, GamePlayersTable, Groups])
+@DriftAccessor(tables: [Games, GamePlayersTable, Groups, WordHistory])
 class GameDao extends DatabaseAccessor<AppDatabase> with _$GameDaoMixin {
   GameDao(super.db);
+
+  /// Profundidad de historial que mantenemos por (grupo, categoría). 35 ≈
+  /// 47% del tamaño de categoría (75): industria recomienda 30–50% para que
+  /// se sienta fresco. El selector usa este histórico en dos capas:
+  /// (1) un hard floor de las 10 más recientes (nunca se repiten), y
+  /// (2) soft scoring por decay temporal para las restantes — palabras vistas
+  /// hace mucho tiempo tienen score cercano a 1, vistas hace poco cercano a 0.
+  /// Ver [WordBank.pickWordWithDecay].
+  static const int _wordHistoryWindow = 35;
+
+  /// Devuelve un mapa `palabra → última vez que se eligió` para las últimas
+  /// `_wordHistoryWindow` palabras jugadas por este grupo en las categorías
+  /// indicadas. Si la misma palabra aparece varias veces, se queda el
+  /// timestamp más reciente.
+  ///
+  /// `groupId == null` representa el modo Juego rápido (todos los quick
+  /// games comparten un mismo bucket virtual: si juegas 5 quick games
+  /// seguidos, no quieres que la 6ª te repita la palabra de hace 2 minutos).
+  Future<Map<String, DateTime>> wordTimestampsForCategories({
+    required int? groupId,
+    required List<String> categories,
+    int? limit,
+  }) async {
+    if (categories.isEmpty) return const <String, DateTime>{};
+
+    final query = select(wordHistory)
+      ..where((tbl) => groupId == null
+          ? tbl.groupId.isNull()
+          : tbl.groupId.equals(groupId))
+      ..where((tbl) => tbl.category.isIn(categories))
+      ..orderBy([(tbl) => OrderingTerm.desc(tbl.pickedAt)])
+      ..limit(limit ?? _wordHistoryWindow * categories.length);
+
+    final rows = await query.get();
+    final result = <String, DateTime>{};
+    for (final row in rows) {
+      // ORDER BY DESC: la primera vez que vemos cada palabra es la más
+      // reciente. putIfAbsent preserva ese timestamp.
+      result.putIfAbsent(row.word, () => row.pickedAt);
+    }
+    return result;
+  }
+
+  /// Registra una palabra recién elegida y poda entries viejas para que
+  /// la cola por (group_id, category) no crezca indefinidamente.
+  Future<void> recordWordPick({
+    required int? groupId,
+    required String category,
+    required String word,
+  }) async {
+    await transaction(() async {
+      await into(wordHistory).insert(
+        WordHistoryCompanion.insert(
+          groupId: Value(groupId),
+          category: category,
+          word: word,
+        ),
+      );
+      // Mantener solo las _wordHistoryWindow más recientes para este
+      // (group, category). Cola FIFO con DELETE por subselect.
+      await customStatement(
+        '''
+        DELETE FROM word_history
+        WHERE id IN (
+          SELECT id FROM word_history
+          WHERE category = ?
+            AND ${groupId == null ? 'group_id IS NULL' : 'group_id = ?'}
+          ORDER BY picked_at DESC, id DESC
+          LIMIT -1 OFFSET ?
+        )
+        ''',
+        [
+          category,
+          ?groupId,
+          _wordHistoryWindow,
+        ],
+      );
+    });
+  }
+
+  /// Diagnóstico: cuenta cuántas filas hay en `word_history` total. Útil para
+  /// verificar que la tabla existe y que los inserts están aplicándose.
+  /// Solo se invoca en debug builds desde `game_provider`.
+  Future<int> debugWordHistoryRowCount() async {
+    final row = await customSelect(
+      'SELECT COUNT(*) AS count FROM word_history',
+    ).getSingle();
+    return row.read<int>('count');
+  }
 
   /// Persist a completed game together with all its player results.
   ///

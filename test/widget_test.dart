@@ -8,7 +8,7 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: ImpostorApp()));
     await tester.pumpAndSettle();
 
-    expect(find.text('IMPOSTOR'), findsOneWidget);
-    expect(find.text('Juego Rápido'), findsOneWidget);
+    expect(find.text('YEISON'), findsOneWidget);
+    expect(find.text('Juego rápido'), findsOneWidget);
   });
 }

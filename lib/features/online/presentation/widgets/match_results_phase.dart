@@ -240,7 +240,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
             const SizedBox(height: 16),
             Text(
               'Calculando puntuación...',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textSecondary,
@@ -262,7 +262,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
             const SizedBox(height: 16),
             Text(
               'No se pudo cargar el resultado',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.textPrimary,
@@ -323,10 +323,9 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                         const SizedBox(height: 16),
                         Text(
                           civilsWon
-                              ? 'Los civiles ganan!'
-                              : 'Los impostores ganan!',
+                              ? '¡Los civiles ganan!'
+                              : '¡Los impostores ganan!',
                           style: TextStyle(
-                            fontFamily: 'Nunito',
                             fontSize: 24,
                             fontWeight: FontWeight.w900,
                             color: winnerColor,
@@ -346,7 +345,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                               Text(
                                 'La palabra era',
                                 style: TextStyle(
-                                  fontFamily: 'Nunito',
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: AppTheme.textSecondary,
@@ -356,7 +354,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                               Text(
                                 scores.word,
                                 style: TextStyle(
-                                  fontFamily: 'Nunito',
                                   fontSize: 28,
                                   fontWeight: FontWeight.w900,
                                   color: AppTheme.textPrimary,
@@ -391,7 +388,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                     child: Text(
                       'Ranking',
                       style: TextStyle(
-                        fontFamily: 'Nunito',
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         color: AppTheme.textPrimary,
@@ -438,7 +434,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                     child: Text(
                       'Volver a la sala',
                       style: TextStyle(
-                        fontFamily: 'Nunito',
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: AppTheme.textSecondary,
@@ -486,7 +481,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                   SizedBox(width: 12),
                   Text(
                     'Iniciando partida...',
-                    style: TextStyle(fontFamily: 'Nunito',
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -503,7 +498,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                       const SizedBox(width: 10),
                       const Text(
                         'No hay suficientes jugadores',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                         ),
@@ -525,7 +520,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                           const SizedBox(width: 12),
                           Text(
                             'Esperando jugadores... ($readyCount/$totalCount)',
-                            style: const TextStyle(fontFamily: 'Nunito',
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w700,
                             ),
@@ -539,7 +534,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                           SizedBox(width: 8),
                           Text(
                             'Volver a jugar',
-                            style: TextStyle(fontFamily: 'Nunito',
+                            style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
                             ),
@@ -578,7 +573,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
           Text(
             'Intentos de adivinanza',
             style: TextStyle(
-              fontFamily: 'Nunito',
               fontSize: 14,
               fontWeight: FontWeight.w800,
               color: AppTheme.textPrimary,
@@ -604,7 +598,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                           Text(
                             a.displayName,
                             style: TextStyle(
-                              fontFamily: 'Nunito',
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
                               color: AppTheme.textPrimary,
@@ -613,7 +606,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                           Text(
                             '"${a.guessWord}"',
                             style: TextStyle(
-                              fontFamily: 'Nunito',
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               fontStyle: FontStyle.italic,
@@ -683,7 +675,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
             child: Center(
               child: Text(
                 '${index + 1}',
-                style: TextStyle(fontFamily: 'Nunito',
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   color: posColor,
@@ -708,7 +700,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
               children: [
                 Text(
                   player.displayName,
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: player.isEliminated
@@ -730,7 +722,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                       ),
                       child: Text(
                         isImpostor ? 'Impostor' : 'Civil',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           color: roleColor,
@@ -741,7 +733,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                       const SizedBox(width: 4),
                       Text(
                         'Eliminado',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 10,
                           color: AppTheme.textSecondary,
                         ),
@@ -750,8 +742,8 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                     if (isCurrentUser) ...[
                       const SizedBox(width: 4),
                       Text(
-                        '(Tu)',
-                        style: TextStyle(fontFamily: 'Nunito',
+                        '(Tú)',
+                        style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.primaryColor,
@@ -772,7 +764,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
             ),
             child: Text(
               '${player.points} pts',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.warningColor,
@@ -825,7 +817,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                 child: Text(
                   '-',
                   style: TextStyle(
-                    fontFamily: 'Nunito',
                     fontSize: 14,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.textSecondary,
@@ -851,7 +842,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                   Text(
                     player.displayName,
                     style: TextStyle(
-                      fontFamily: 'Nunito',
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.textSecondary,
@@ -869,7 +859,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                         child: Text(
                           'Se unió',
                           style: TextStyle(
-                            fontFamily: 'Nunito',
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: AppTheme.textSecondary,
@@ -879,9 +868,8 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                       if (isCurrentUser) ...[
                         const SizedBox(width: 4),
                         Text(
-                          '(Tu)',
+                          '(Tú)',
                           style: TextStyle(
-                            fontFamily: 'Nunito',
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                             color: AppTheme.primaryColor,
@@ -903,7 +891,6 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
               child: Text(
                 '0 pts',
                 style: TextStyle(
-                  fontFamily: 'Nunito',
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
                   color: AppTheme.textSecondary,
@@ -931,7 +918,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
         ),
         label: const Text(
           'Darle la victoria al impostor',
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -955,8 +942,8 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text(
-          'Que impostor adivino?',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          '¿Qué impostor adivinó?',
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -977,7 +964,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
                   ),
                   child: Text(
                     impostor.displayName,
-                    style: const TextStyle(fontFamily: 'Nunito',
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -992,7 +979,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ),
         ],
@@ -1006,20 +993,20 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
       builder: (dialogContext) => AlertDialog(
         title: const Text(
           'Confirmar cambio',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Text(
-          'Se cambiara el resultado a victoria de impostores. '
-          '$impostorName recibira 3 pts y los demas impostores 1 pt. '
-          'Los civiles no recibiran puntos.',
-          style: const TextStyle(fontFamily: 'Nunito',fontSize: 14),
+          'Se cambiará el resultado a victoria de impostores. '
+          '$impostorName recibirá 3 pts y los demás impostores 1 pt. '
+          'Los civiles no recibirán puntos.',
+          style: const TextStyle(fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancelar',
-              style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+              style: TextStyle(color: AppTheme.textSecondary),
             ),
           ),
           ElevatedButton(
@@ -1051,7 +1038,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
             ),
             child: const Text(
               'Confirmar',
-              style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w600),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -1071,7 +1058,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
       ),
       child: Text(
         label,
-        style: TextStyle(fontFamily: 'Nunito',
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: color,

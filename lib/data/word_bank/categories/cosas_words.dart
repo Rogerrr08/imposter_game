@@ -3,37 +3,37 @@ import '../word_bank_models.dart';
 const List<WordEntry> cosasWords = [
     WordEntry(
       word: 'Paraguas',
-      hints: ['Varillas', 'Plegado', 'Tela'],
+      hints: ['Plegado', 'Tela', 'Lluvia'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Reloj',
-      hints: ['Cuarzo', 'Esfera', 'Alarma'],
+      hints: ['Esfera', 'Alarma', 'Pulsera'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Espejo',
-      hints: ['Marco', 'Cristal', 'Imagen'],
+      hints: ['Marco', 'Reflejo', 'Cristal'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Vela',
-      hints: ['Pabilo', 'Parafina', 'Titilar'],
+      hints: ['Mecha', 'Cera', 'Llama'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Tijeras',
-      hints: ['Bisagra', 'Hojas', 'Recorte'],
+      hints: ['Hojas', 'Recorte', 'Filo'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Almohada',
-      hints: ['Funda', 'Siesta', 'Cabecera'],
+      hints: ['Funda', 'Siesta', 'Relleno'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Llave',
-      hints: ['Pestillo', 'Duplicado', 'Giro'],
+      hints: ['Giro', 'Ranura', 'Duplicado'],
       category: WordCategory.cosas,
     ),
     WordEntry(
@@ -43,12 +43,12 @@ const List<WordEntry> cosasWords = [
     ),
     WordEntry(
       word: 'Escalera',
-      hints: ['Peldaños', 'Descanso', 'Pasamanos'],
+      hints: ['Peldaños', 'Pasamanos', 'Subir'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Sombrero',
-      hints: ['Ala', 'Copa', 'Moda'],
+      hints: ['Ala', 'Copa', 'Cabeza'],
       category: WordCategory.cosas,
     ),
     WordEntry(
@@ -58,7 +58,7 @@ const List<WordEntry> cosasWords = [
     ),
     WordEntry(
       word: 'Lámpara',
-      hints: ['Pantalla', 'Filamento', 'Base'],
+      hints: ['Pantalla', 'Luz', 'Enchufe'],
       category: WordCategory.cosas,
     ),
     WordEntry(
@@ -68,22 +68,22 @@ const List<WordEntry> cosasWords = [
     ),
     WordEntry(
       word: 'Guitarra',
-      hints: ['Trastes', 'Mástil', 'Afinación'],
+      hints: ['Trastes', 'Mástil', 'Cuerdas'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Bicicleta',
-      hints: ['Cadena', 'Asiento', 'Piñón'],
+      hints: ['Cadena', 'Asiento', 'Rueda'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Cámara',
-      hints: ['Obturador', 'Enfoque', 'Diafragma'],
+      hints: ['Lente', 'Disparo', 'Imagen'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Libro',
-      hints: ['Lomo', 'Índice', 'Tapa'],
+      hints: ['Lomo', 'Tapa', 'Página'],
       category: WordCategory.cosas,
     ),
     WordEntry(
@@ -93,42 +93,42 @@ const List<WordEntry> cosasWords = [
     ),
     WordEntry(
       word: 'Televisor',
-      hints: ['Antena', 'Sintonía', 'Señal'],
+      hints: ['Pantalla', 'Canal', 'Señal'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Silla',
-      hints: ['Patas', 'Tapizado', 'Comedor'],
+      hints: ['Patas', 'Tapizado', 'Asiento'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Cepillo de dientes',
-      hints: ['Cerdas', 'Encías', 'Enjuague'],
+      hints: ['Cerdas', 'Encías', 'Pasta'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Gafas',
-      hints: ['Bisagra', 'Miopía', 'Aumento'],
+      hints: ['Cristales', 'Marco', 'Montura'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Nevera',
-      hints: ['Compresor', 'Escarcha', 'Congelar'],
+      hints: ['Frío', 'Congelar', 'Estante'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Zapatos',
-      hints: ['Suela', 'Horma', 'Tacón'],
+      hints: ['Suela', 'Cordones', 'Tacón'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Computadora',
-      hints: ['Cursor', 'Procesador', 'Escritorio'],
+      hints: ['Cursor', 'Teclado', 'Pantalla'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Jabón',
-      hints: ['Barra', 'Aroma', 'Enjuague'],
+      hints: ['Espuma', 'Aroma', 'Barra'],
       category: WordCategory.cosas,
     ),
     WordEntry(
@@ -138,32 +138,32 @@ const List<WordEntry> cosasWords = [
     ),
     WordEntry(
       word: 'Anillo',
-      hints: ['Aro', 'Engaste', 'Alianza'],
+      hints: ['Aro', 'Dedo', 'Metal'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Calendario',
-      hints: ['Bisiesto', 'Anual', 'Casillas'],
+      hints: ['Fecha', 'Casillas', 'Anual'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Globo',
-      hints: ['Helio', 'Látex', 'Flotar'],
+      hints: ['Helio', 'Flotar', 'Atado'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Martillo',
-      hints: ['Mango', 'Clavo', 'Carpintería'],
+      hints: ['Mango', 'Clavo', 'Golpe'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Bufanda',
-      hints: ['Lana', 'Vuelta', 'Tejido'],
+      hints: ['Lana', 'Vuelta', 'Cuello'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Peine',
-      hints: ['Dientes', 'Raya', 'Barbero'],
+      hints: ['Dientes', 'Raya', 'Cabello'],
       category: WordCategory.cosas,
     ),
     WordEntry(
@@ -173,32 +173,32 @@ const List<WordEntry> cosasWords = [
     ),
     WordEntry(
       word: 'Corbata',
-      hints: ['Etiqueta', 'Oficina', 'Nudo'],
+      hints: ['Nudo', 'Etiqueta', 'Formal'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Mapa',
-      hints: ['Escala', 'Cartografía', 'Frontera'],
+      hints: ['Escala', 'Ruta', 'Frontera'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Batería',
-      hints: ['Ánodo', 'Voltio', 'Recargable'],
+      hints: ['Carga', 'Recargable', 'Energía'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Candado',
-      hints: ['Arco', 'Casillero', 'Grillete'],
+      hints: ['Combinación', 'Cerrar', 'Llave'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Bolígrafo',
-      hints: ['Clip', 'Punta', 'Trazo'],
+      hints: ['Punta', 'Trazo', 'Tinta'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Ventilador',
-      hints: ['Oscilación', 'Hélice', 'Motor'],
+      hints: ['Aspas', 'Brisa', 'Girar'],
       category: WordCategory.cosas,
     ),
     WordEntry(
@@ -208,42 +208,42 @@ const List<WordEntry> cosasWords = [
     ),
     WordEntry(
       word: 'Dado',
-      hints: ['Arista', 'Lanzada', 'Fortuna'],
+      hints: ['Lanzar', 'Azar', 'Puntos'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Plancha',
-      hints: ['Suela', 'Pliegue', 'Almidón'],
+      hints: ['Vapor', 'Calor', 'Ropa'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Casco',
-      hints: ['Visera', 'Hebilla', 'Impacto'],
+      hints: ['Visera', 'Proteger', 'Cabeza'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Taza',
-      hints: ['Porcelana', 'Infusión', 'Asa'],
+      hints: ['Asa', 'Infusión', 'Porcelana'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Imán',
-      hints: ['Polo', 'Ferrita', 'Atracción'],
+      hints: ['Polo', 'Metal', 'Atracción'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Moneda',
-      hints: ['Metal', 'Acuñar', 'Cara'],
+      hints: ['Metal', 'Cara', 'Acuñar'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Pegamento',
-      hints: ['Resina', 'Secado', 'Fijación'],
+      hints: ['Pegar', 'Secar', 'Unir'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Brújula',
-      hints: ['Cardinal', 'Rumbo', 'Imantada'],
+      hints: ['Norte', 'Rumbo', 'Aguja'],
       category: WordCategory.cosas,
     ),
     WordEntry(
@@ -254,52 +254,52 @@ const List<WordEntry> cosasWords = [
     // --- 25 new entries (51-75) ---
     WordEntry(
       word: 'Cuchillo',
-      hints: ['Filo', 'Sierra', 'Cortar'],
+      hints: ['Filo', 'Hoja', 'Cortar'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Toalla',
-      hints: ['Algodón', 'Rizo', 'Secado'],
+      hints: ['Algodón', 'Secado', 'Baño'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Cartera',
-      hints: ['Solapa', 'Bandolera', 'Hebilla'],
+      hints: ['Bolsillo', 'Bandolera', 'Hebilla'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Cojín',
-      hints: ['Relleno', 'Sofá', 'Terciopelo'],
+      hints: ['Relleno', 'Sofá', 'Descanso'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Sartén',
-      hints: ['Antiadherente', 'Mango', 'Aceite'],
+      hints: ['Mango', 'Aceite', 'Fuego'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Cortina',
-      hints: ['Barra', 'Ojales', 'Oscurecer'],
+      hints: ['Barra', 'Tela', 'Ventana'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Alfombra',
-      hints: ['Fibra', 'Tejida', 'Pisada'],
+      hints: ['Tejida', 'Piso', 'Suave'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Enchufe',
-      hints: ['Clavija', 'Pared', 'Corriente'],
+      hints: ['Corriente', 'Pared', 'Conectar'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Termómetro',
-      hints: ['Mercurio', 'Graduación', 'Fiebre'],
+      hints: ['Fiebre', 'Temperatura', 'Escala'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Destornillador',
-      hints: ['Cruceta', 'Mangos', 'Tornillo'],
+      hints: ['Girar', 'Tuerca', 'Herramienta'],
       category: WordCategory.cosas,
     ),
     WordEntry(
@@ -309,17 +309,17 @@ const List<WordEntry> cosasWords = [
     ),
     WordEntry(
       word: 'Linterna',
-      hints: ['Bombilla', 'Pilas', 'Oscuridad'],
+      hints: ['Pilas', 'Haz', 'Oscuridad'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Cerradura',
-      hints: ['Tambor', 'Mecanismo', 'Ranura'],
+      hints: ['Ranura', 'Llave', 'Puerta'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Sacacorchos',
-      hints: ['Espiral', 'Palanca', 'Descorchar'],
+      hints: ['Girar', 'Palanca', 'Botella'],
       category: WordCategory.cosas,
     ),
     WordEntry(
@@ -329,37 +329,37 @@ const List<WordEntry> cosasWords = [
     ),
     WordEntry(
       word: 'Regadera',
-      hints: ['Roseta', 'Riego', 'Jardín'],
+      hints: ['Plantas', 'Riego', 'Aspersor'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Báscula',
-      hints: ['Platillo', 'Calibrar', 'Gramos'],
+      hints: ['Peso', 'Equilibrio', 'Medición'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Pinza',
-      hints: ['Resorte', 'Presión', 'Sujetar'],
+      hints: ['Presión', 'Sujetar', 'Ropa'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Servilleta',
-      hints: ['Doblada', 'Papel', 'Mesa'],
+      hints: ['Papel', 'Mesa', 'Doblada'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Esponja',
-      hints: ['Porosa', 'Absorber', 'Lavar'],
+      hints: ['Absorber', 'Poros', 'Lavar'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Cinturón',
-      hints: ['Hebilla', 'Ojal', 'Cuero'],
+      hints: ['Hebilla', 'Cuero', 'Ajustar'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Cenicero',
-      hints: ['Ceniza', 'Recipiente', 'Colilla'],
+      hints: ['Recipiente', 'Vidrio', 'Mesa'],
       category: WordCategory.cosas,
     ),
     WordEntry(
@@ -369,12 +369,12 @@ const List<WordEntry> cosasWords = [
     ),
     WordEntry(
       word: 'Despertador',
-      hints: ['Campana', 'Madrugada', 'Snooze'],
+      hints: ['Alarma', 'Madrugada', 'Timbre'],
       category: WordCategory.cosas,
     ),
     WordEntry(
       word: 'Cinta',
-      hints: ['Adhesiva', 'Rollo', 'Envolver'],
+      hints: ['Rollo', 'Pegar', 'Envolver'],
       category: WordCategory.cosas,
     ),
 ];

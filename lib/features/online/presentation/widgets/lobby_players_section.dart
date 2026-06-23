@@ -31,7 +31,7 @@ class LobbyPlayersSection extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           'El orden de esta lista será la base para revelar turnos y acciones online.',
-          style: TextStyle(fontFamily: 'Nunito',
+          style: TextStyle(
             fontSize: 12,
             height: 1.35,
             color: AppTheme.textSecondary,
@@ -107,7 +107,7 @@ class _PlayerTile extends StatelessWidget {
                     Flexible(
                       child: Text(
                         player.displayName,
-                        style: TextStyle(fontFamily: 'Nunito',
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w800,
                           color: AppTheme.textPrimary,
@@ -123,7 +123,7 @@ class _PlayerTile extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Jugador ${player.seatOrder}',
-                  style: TextStyle(fontFamily: 'Nunito',
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppTheme.textSecondary,
                   ),
@@ -144,7 +144,7 @@ class _PlayerTile extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       player.isConnected ? 'Conectado' : 'Desconectado',
-                      style: TextStyle(fontFamily: 'Nunito',
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: player.isConnected
@@ -189,7 +189,7 @@ class _PlayerTile extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(fontFamily: 'Nunito',
+        style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
           color: color,
@@ -229,7 +229,7 @@ class _KickButton extends StatelessWidget {
             const SizedBox(width: 4),
             Text(
               'Expulsar',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: AppTheme.secondaryColor,
@@ -247,11 +247,11 @@ class _KickButton extends StatelessWidget {
       builder: (dialogContext) => AlertDialog(
         title: const Text(
           'Expulsar jugador',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Quieres expulsar a $playerName de la sala?',
-          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(

@@ -3,32 +3,32 @@ import '../word_bank_models.dart';
 const List<WordEntry> geografiaWords = [
     WordEntry(
       word: 'Brasil',
-      hints: ['Lusófono', 'Carnaval', 'Amazonas'],
+      hints: ['Carnaval', 'Tropical', 'Samba'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Torre Eiffel',
-      hints: ['Celosía', 'Sena', 'Mirador'],
+      hints: ['Hierro', 'Mirador', 'Romántica'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Japón',
-      hints: ['Archipiélago', 'Yen', 'Samurái'],
+      hints: ['Archipiélago', 'Oriente', 'Tradición'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Río Amazonas',
-      hints: ['Afluentes', 'Caudal', 'Selva'],
+      hints: ['Caudal', 'Selva', 'Afluentes'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Egipto',
-      hints: ['Nilo', 'Papiro', 'Desierto'],
+      hints: ['Desierto', 'Faraón', 'Reliquia'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Monte Everest',
-      hints: ['Nepal', 'Cumbre', 'Oxígeno'],
+      hints: ['Cumbre', 'Oxígeno', 'Expedición'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -38,7 +38,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Gran Muralla China',
-      hints: ['Bastiones', 'Dinastía', 'Frontera'],
+      hints: ['Dinastía', 'Frontera', 'Piedra'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -53,7 +53,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Italia',
-      hints: ['Península', 'Renacimiento', 'Vaticano'],
+      hints: ['Península', 'Renacimiento', 'Bota'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -63,12 +63,12 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Canadá',
-      hints: ['Arce', 'Boreal', 'Quebec'],
+      hints: ['Arce', 'Boreal', 'Glaciar'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Sahara',
-      hints: ['Dunas', 'Sahel', 'Aridez'],
+      hints: ['Dunas', 'Aridez', 'Caravana'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -83,7 +83,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'India',
-      hints: ['Monzones', 'Hindi', 'Taj'],
+      hints: ['Monzones', 'Especias', 'Subcontinente'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -98,7 +98,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Río Nilo',
-      hints: ['Delta', 'Crecidas', 'Sudán'],
+      hints: ['Delta', 'Crecidas', 'Antiguo'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -113,7 +113,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Grecia',
-      hints: ['Helénica', 'Egeo', 'Acrópolis'],
+      hints: ['Antigüedad', 'Egeo', 'Acrópolis'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -123,22 +123,22 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Himalaya',
-      hints: ['Ochomiles', 'Glaciares', 'Cordillera'],
+      hints: ['Cumbres', 'Glaciares', 'Cordillera'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Cuba',
-      hints: ['Malecón', 'Son', 'Caribe'],
+      hints: ['Malecón', 'Caribe', 'Tropical'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Gran Cañón',
-      hints: ['Estratos', 'Colorado', 'Abismo'],
+      hints: ['Estratos', 'Abismo', 'Roca'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Rusia',
-      hints: ['Siberia', 'Kremlin', 'Taiga'],
+      hints: ['Taiga', 'Estepa', 'Extensión'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -158,7 +158,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Noruega',
-      hints: ['Fiordos', 'Aurora', 'Oslo'],
+      hints: ['Fiordos', 'Aurora', 'Nórdica'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -168,7 +168,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Tokio',
-      hints: ['Shibuya', 'Neón', 'Metrópoli'],
+      hints: ['Neón', 'Metrópoli', 'Tecnológica'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -178,7 +178,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Alemania',
-      hints: ['Baviera', 'Industria', 'Rin'],
+      hints: ['Baviera', 'Industria', 'Central'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -188,12 +188,12 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Francia',
-      hints: ['Hexágono', 'Louvre', 'Viñedos'],
+      hints: ['Hexágono', 'Viñedos', 'Gastronomía'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Volcán Vesubio',
-      hints: ['Pompeya', 'Cráter', 'Ceniza'],
+      hints: ['Cráter', 'Ceniza', 'Antigua'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -203,7 +203,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Taj Mahal',
-      hints: ['Mármol', 'Mausoleo', 'Agra'],
+      hints: ['Mármol', 'Mausoleo', 'Cúpula'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -213,7 +213,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Venezuela',
-      hints: ['Tepuyes', 'Orinoco', 'Llanos'],
+      hints: ['Llanos', 'Tropical', 'Petróleo'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -233,7 +233,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Océano Atlántico',
-      hints: ['Corrientes', 'Azores', 'Navegantes'],
+      hints: ['Corrientes', 'Navegantes', 'Travesía'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -254,22 +254,22 @@ const List<WordEntry> geografiaWords = [
     // --- 25 nuevas entradas (51-75) ---
     WordEntry(
       word: 'Turquía',
-      hints: ['Otomano', 'Bósforo', 'Bazares'],
+      hints: ['Otomano', 'Bazares', 'Cruce'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Lago Baikal',
-      hints: ['Profundidad', 'Dulceacuícola', 'Siberiano'],
+      hints: ['Profundidad', 'Dulce', 'Helado'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Cataratas Victoria',
-      hints: ['Zambeze', 'Cortina', 'Estruendo'],
+      hints: ['Cortina', 'Estruendo', 'Abismo'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Marruecos',
-      hints: ['Bereber', 'Medinas', 'Especias'],
+      hints: ['Medinas', 'Especias', 'Bereber'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -284,7 +284,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Tailandia',
-      hints: ['Budismo', 'Monzón', 'Seda'],
+      hints: ['Budismo', 'Monzón', 'Templos'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -299,7 +299,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Lago Ness',
-      hints: ['Leyenda', 'Oscuridad', 'Escocés'],
+      hints: ['Leyenda', 'Oscuridad', 'Brumoso'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -309,17 +309,17 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Barrera de Coral',
-      hints: ['Arrecife', 'Buceo', 'Atolones'],
+      hints: ['Arrecife', 'Buceo', 'Colorida'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Portugal',
-      hints: ['Fado', 'Navegación', 'Azulejos'],
+      hints: ['Fado', 'Navegación', 'Atlántico'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Río Danubio',
-      hints: ['Valse', 'Europeo', 'Desembocadura'],
+      hints: ['Europeo', 'Desembocadura', 'Navegable'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -329,7 +329,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Mar Negro',
-      hints: ['Profundo', 'Cerrado', 'Anóxico'],
+      hints: ['Profundo', 'Cerrado', 'Salobre'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -339,7 +339,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Chichén Itzá',
-      hints: ['Maya', 'Equinoccio', 'Serpiente'],
+      hints: ['Maya', 'Equinoccio', 'Pirámide'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -349,12 +349,12 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Nueva Zelanda',
-      hints: ['Maorí', 'Kiwi', 'Geotérmica'],
+      hints: ['Maorí', 'Insular', 'Geotérmica'],
       category: WordCategory.geografia,
     ),
     WordEntry(
       word: 'Petra',
-      hints: ['Tallada', 'Nabateos', 'Rosada'],
+      hints: ['Tallada', 'Rosada', 'Desierto'],
       category: WordCategory.geografia,
     ),
     WordEntry(
@@ -374,7 +374,7 @@ const List<WordEntry> geografiaWords = [
     ),
     WordEntry(
       word: 'Salto Ángel',
-      hints: ['Caída', 'Tepuy', 'Canaima'],
+      hints: ['Caída', 'Niebla', 'Selva'],
       category: WordCategory.geografia,
     ),
 ];

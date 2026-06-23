@@ -114,8 +114,13 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       _setConnected(false);
     } else if (state == AppLifecycleState.resumed) {
       _setConnected(true);
+      // Reconciliar tras posible muerte silenciosa del socket en segundo
+      // plano: recarga el snapshot por HTTPS y recrea el canal para forzar
+      // la reconexión del WebSocket. Reemplaza al viejo invalidate del
+      // provider (que solo re-leía el estado cacheado en memoria sin tocar
+      // el socket ni recargar el snapshot).
+      unawaited(ref.read(onlineMatchChannelProvider(widget.matchId)).resync());
       ref.invalidate(myMatchStateProvider(widget.matchId));
-      ref.invalidate(onlineMatchProvider(widget.matchId));
       // Only show reconnecting banner if actually backgrounded for >1 second
       final wasPausedAt = _pausedAt;
       _pausedAt = null;
@@ -209,67 +214,67 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     }
 
     // Listen for match changes via Realtime — refresh myMatchState on phase/version change
-    ref.listen<AsyncValue<OnlineMatch?>>(
-      onlineMatchProvider(widget.matchId),
-      (prev, next) {
-        final prevMatch = prev?.value;
-        final nextMatch = next.value;
-        if (nextMatch == null) return;
+    ref.listen<AsyncValue<OnlineMatch?>>(onlineMatchProvider(widget.matchId), (
+      prev,
+      next,
+    ) {
+      final prevMatch = prev?.value;
+      final nextMatch = next.value;
+      if (nextMatch == null) return;
 
-        if (nextMatch.status == OnlineMatchStatus.cancelled) {
-          _showCancelledAndLeave();
-          return;
-        }
+      if (nextMatch.status == OnlineMatchStatus.cancelled) {
+        _showCancelledAndLeave();
+        return;
+      }
 
-        // Refresh myMatchState when phase or version changes
-        if (prevMatch != null &&
-            (prevMatch.currentPhase != nextMatch.currentPhase ||
-                prevMatch.stateVersion != nextMatch.stateVersion)) {
-          // Catch fast vote_result → next transitions (Realtime may skip rendering vote_result)
-          if (prevMatch.currentPhase == OnlineMatchPhase.voteResult &&
-              nextMatch.currentPhase != OnlineMatchPhase.voteResult &&
-              !_holdingVoteResult) {
-            _holdingVoteResult = true;
-            _heldVoteResultState = _isLateJoinSpectator && prevMatch != null
-                ? MyMatchState.spectator(prevMatch)
-                : myStateAsync.value;
-            _voteResultTimer?.cancel();
-            _voteResultTimer = Timer(const Duration(seconds: 5), () {
-              if (mounted) {
-                setState(() {
-                  _holdingVoteResult = false;
-                  _heldVoteResultState = null;
-                });
-                if (_pendingElimination) {
-                  _pendingElimination = false;
-                  _showEliminatedAndLeave();
-                }
+      // Refresh myMatchState when phase or version changes
+      if (prevMatch != null &&
+          (prevMatch.currentPhase != nextMatch.currentPhase ||
+              prevMatch.stateVersion != nextMatch.stateVersion)) {
+        // Catch fast vote_result → next transitions (Realtime may skip rendering vote_result)
+        if (prevMatch.currentPhase == OnlineMatchPhase.voteResult &&
+            nextMatch.currentPhase != OnlineMatchPhase.voteResult &&
+            !_holdingVoteResult) {
+          _holdingVoteResult = true;
+          _heldVoteResultState = _isLateJoinSpectator && prevMatch != null
+              ? MyMatchState.spectator(prevMatch)
+              : myStateAsync.value;
+          _voteResultTimer?.cancel();
+          _voteResultTimer = Timer(const Duration(seconds: 5), () {
+            if (mounted) {
+              setState(() {
+                _holdingVoteResult = false;
+                _heldVoteResultState = null;
+              });
+              if (_pendingElimination) {
+                _pendingElimination = false;
+                _showEliminatedAndLeave();
               }
-            });
-          }
-
-          // Reset reveal countdown target when entering a new round
-          if (nextMatch.currentPhase == OnlineMatchPhase.clueWriting ||
-              nextMatch.currentPhase == OnlineMatchPhase.voting) {
-            _revealTarget = null;
-          }
-
-          // Catch clue_writing → voting: hold clues for 5s countdown
-          if (prevMatch.currentPhase == OnlineMatchPhase.clueWriting &&
-              nextMatch.currentPhase == OnlineMatchPhase.voting &&
-              !_holdingPreVote) {
-            _startPreVoteCountdown();
-          }
-
-          // Impostor choice/guess → next phase: show intermediate screen
-          _detectImpostorTransition(prevMatch, nextMatch);
-
-          if (!_isLateJoinSpectator) {
-            ref.invalidate(myMatchStateProvider(widget.matchId));
-          }
+            }
+          });
         }
-      },
-    );
+
+        // Reset reveal countdown target when entering a new round
+        if (nextMatch.currentPhase == OnlineMatchPhase.clueWriting ||
+            nextMatch.currentPhase == OnlineMatchPhase.voting) {
+          _revealTarget = null;
+        }
+
+        // Catch clue_writing → voting: hold clues for 5s countdown
+        if (prevMatch.currentPhase == OnlineMatchPhase.clueWriting &&
+            nextMatch.currentPhase == OnlineMatchPhase.voting &&
+            !_holdingPreVote) {
+          _startPreVoteCountdown();
+        }
+
+        // Impostor choice/guess → next phase: show intermediate screen
+        _detectImpostorTransition(prevMatch, nextMatch);
+
+        if (!_isLateJoinSpectator) {
+          ref.invalidate(myMatchStateProvider(widget.matchId));
+        }
+      }
+    });
 
     // Listen for other players leaving (show snackbar notification)
     ref.listen<AsyncValue<List<OnlineMatchPlayer>>>(
@@ -282,22 +287,28 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
         // Find players who were active before but are now eliminated
         // Only show "left" notification if it's not a vote elimination
         final currentPhase = match?.currentPhase;
-        final isVoteElimination = currentPhase == OnlineMatchPhase.voteResult ||
+        final isVoteElimination =
+            currentPhase == OnlineMatchPhase.voteResult ||
             currentPhase == OnlineMatchPhase.impostorChoice ||
             currentPhase == OnlineMatchPhase.impostorGuess;
         if (!isVoteElimination) {
           for (final prevPlayer in prevPlayers) {
             if (prevPlayer.isEliminated) continue;
             // Skip self
-            if (!_isLateJoinSpectator && myState != null && prevPlayer.id == myState.myPlayerId) continue;
-            final nextPlayer = nextPlayers.where((p) => p.id == prevPlayer.id).firstOrNull;
+            if (!_isLateJoinSpectator &&
+                myState != null &&
+                prevPlayer.id == myState.myPlayerId) {
+              continue;
+            }
+            final nextPlayer = nextPlayers
+                .where((p) => p.id == prevPlayer.id)
+                .firstOrNull;
             if (nextPlayer != null && nextPlayer.isEliminated) {
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(
                       '${prevPlayer.displayName} salió de la partida',
-                      style: const TextStyle(fontFamily: 'Nunito'),
                     ),
                     duration: const Duration(seconds: 3),
                     behavior: SnackBarBehavior.floating,
@@ -346,10 +357,11 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
           leading: IconButton(
             onPressed: _confirmLeave,
             icon: const Icon(Icons.arrow_back_rounded),
+            tooltip: 'Salir de la partida',
           ),
           title: const Text(
             'Partida online',
-            style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+            style: TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
         body: Column(
@@ -370,7 +382,8 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
                   : myStateAsync.when(
                       loading: () => Center(
                         child: CircularProgressIndicator(
-                            color: AppTheme.primaryColor),
+                          color: AppTheme.primaryColor,
+                        ),
                       ),
                       error: (e, _) => _buildError(e.toString()),
                       data: (myState) {
@@ -400,11 +413,11 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       builder: (dialogContext) => AlertDialog(
         title: const Text(
           'Salir de la partida',
-          style: TextStyle(fontFamily: 'Nunito',fontWeight: FontWeight.w700),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
         content: Text(
           'Si sales ahora serás eliminado de la partida. Si no quedan suficientes jugadores, la partida se cancelará.',
-          style: TextStyle(fontFamily: 'Nunito',color: AppTheme.textSecondary),
+          style: TextStyle(color: AppTheme.textSecondary),
         ),
         actions: [
           TextButton(
@@ -454,9 +467,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       if (mounted) {
         setState(() => _roleConfirmed = false); // Revert on error
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString().replaceFirst('Exception: ', '')),
-          ),
+          SnackBar(content: Text(e.toString().replaceFirst('Exception: ', ''))),
         );
       }
     } finally {
@@ -496,7 +507,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     // impostor_choice → impostor_guess = decided to risk
     if (prevPhase == OnlineMatchPhase.impostorChoice &&
         nextPhase == OnlineMatchPhase.impostorGuess) {
-      _findImpostorName();
+      _captureImpostorInfo();
       _startImpostorHold('risk', 3);
       return;
     }
@@ -505,56 +516,53 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     if (prevPhase == OnlineMatchPhase.impostorChoice &&
         (nextPhase == OnlineMatchPhase.clueWriting ||
             nextPhase == OnlineMatchPhase.finished)) {
-      _findImpostorName();
+      _captureImpostorInfo();
       _startImpostorHold('no_risk', 3);
       return;
     }
 
-    // impostor_guess → clue_writing or finished = guessed wrong
-    // (If guess was correct, match goes to finished with impostors winning —
-    //  but skip also goes to clue_writing/finished. We show wrong_guess for
-    //  any impostor_guess → non-finished transition, and for finished when
-    //  civils win. If impostors win from guess, go straight to results.)
+    // impostor_guess → otra fase: el impostor adivinó (bien o mal).
+    // Inferimos el resultado SIN tocar SQL: el RPC marca
+    // `eliminated_by_failed_guess = true` solo en adivinanza incorrecta. Si el
+    // adivinador tiene `guessWord` y NO ese flag, acertó (los impostores ganan).
     if (prevPhase == OnlineMatchPhase.impostorGuess &&
         nextPhase != OnlineMatchPhase.impostorGuess) {
-      // If impostors won → skip intermediate, go to results
-      if (nextPhase == OnlineMatchPhase.finished &&
+      final guesser = _findImpostorGuesser();
+      final guessedCorrectly = guesser != null &&
+          guesser.guessWord != null &&
+          !guesser.eliminatedByFailedGuess;
+
+      _captureImpostorInfo(guesser);
+
+      if (guessedCorrectly) {
+        // Cierra el arco: celebración antes de los resultados finales.
+        _startImpostorHold('correct_guess', 4);
+      } else if (nextPhase == OnlineMatchPhase.finished &&
           nextMatch.status == OnlineMatchStatus.finished) {
-        // Check if impostors won — we'll need to load this from match state.
-        // For now, we can infer: if match finished from impostor_guess,
-        // and winner_override is not set, we need to check.
-        // Simplification: always show wrong_guess unless the phase goes to finished
-        // AND state says impostors won. We'll let the results screen handle the win.
-        // Actually the simplest: fetch guess_word from players to show it.
-        // But we can't easily know winner here. Let's always show wrong_guess
-        // for impostor_guess → finished where civils win, and skip for impostor win.
-        // Since we can't easily determine winner in the listener, let's just
-        // not hold when going to finished — the results screen will tell the story.
+        // Adivinó mal y se acabó (civiles ganan): la pantalla de resultados
+        // cuenta la historia, no holdeamos.
         return;
+      } else {
+        _startImpostorHold('wrong_guess', 4);
       }
-      _findImpostorName();
-      _findImpostorGuessWord();
-      _startImpostorHold('wrong_guess', 4);
       return;
     }
   }
 
-  void _findImpostorName() {
+  /// El impostor eliminado que adivinó (último impostor eliminado).
+  OnlineMatchPlayer? _findImpostorGuesser() {
     final players =
         ref.read(onlineMatchPlayersProvider(widget.matchId)).value ?? [];
-    final impostor = players
+    return players
         .where((p) => p.isImpostor && p.isEliminated)
         .lastOrNull;
-    _impostorName = impostor?.displayName ?? 'Impostor';
-    _impostorAvatarUrl = impostor?.avatarUrl;
   }
 
-  void _findImpostorGuessWord() {
-    final players =
-        ref.read(onlineMatchPlayersProvider(widget.matchId)).value ?? [];
-    final impostor = players
-        .where((p) => p.isImpostor && p.isEliminated)
-        .lastOrNull;
+  /// Captura nombre/avatar/palabra del impostor que adivinó para el hold.
+  void _captureImpostorInfo([OnlineMatchPlayer? guesser]) {
+    final impostor = guesser ?? _findImpostorGuesser();
+    _impostorName = impostor?.displayName ?? 'Impostor';
+    _impostorAvatarUrl = impostor?.avatarUrl;
     _impostorGuessWord = impostor?.guessWord;
   }
 
@@ -582,13 +590,21 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     final phase = myState.currentPhase;
 
     // Show reveal countdown before vote_result
-    if (phase == OnlineMatchPhase.voteResult && !_holdingVoteResult && !_showingRevealCountdown && _revealTarget != 'vote_result_done') {
+    if (phase == OnlineMatchPhase.voteResult &&
+        !_holdingVoteResult &&
+        !_showingRevealCountdown &&
+        _revealTarget != 'vote_result_done') {
       _showingRevealCountdown = true;
       _revealTarget = 'vote_result';
     }
 
-    // Show reveal countdown before finished (final results)
-    if (phase == OnlineMatchPhase.finished && !_showingRevealCountdown && _revealTarget != 'finished_done') {
+    // Show reveal countdown before finished (final results).
+    // Si estamos holdeando el resultado del impostor (p.ej. adivinó correcto),
+    // ese hold va primero; el countdown se dispara al terminar.
+    if (phase == OnlineMatchPhase.finished &&
+        !_showingRevealCountdown &&
+        !_holdingImpostorResult &&
+        _revealTarget != 'finished_done') {
       _showingRevealCountdown = true;
       _revealTarget = 'finished';
     }
@@ -631,7 +647,9 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     }
 
     // When entering vote_result (after countdown), hold it for 5 seconds
-    if (phase == OnlineMatchPhase.voteResult && !_holdingVoteResult && _revealTarget == 'vote_result_done') {
+    if (phase == OnlineMatchPhase.voteResult &&
+        !_holdingVoteResult &&
+        _revealTarget == 'vote_result_done') {
       _holdingVoteResult = true;
       _heldVoteResultState = myState;
       _voteResultTimer?.cancel();
@@ -724,14 +742,30 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     }
 
     // Trigger reveal countdown for spectator
-    if (phase == OnlineMatchPhase.voteResult && !_holdingVoteResult && !_showingRevealCountdown && _revealTarget != 'vote_result_done') {
+    if (phase == OnlineMatchPhase.voteResult &&
+        !_holdingVoteResult &&
+        !_showingRevealCountdown &&
+        _revealTarget != 'vote_result_done') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() { _showingRevealCountdown = true; _revealTarget = 'vote_result'; });
+        if (mounted) {
+          setState(() {
+            _showingRevealCountdown = true;
+            _revealTarget = 'vote_result';
+          });
+        }
       });
     }
-    if (phase == OnlineMatchPhase.finished && !_showingRevealCountdown && _revealTarget != 'finished_done') {
+    if (phase == OnlineMatchPhase.finished &&
+        !_showingRevealCountdown &&
+        !_holdingImpostorResult &&
+        _revealTarget != 'finished_done') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() { _showingRevealCountdown = true; _revealTarget = 'finished'; });
+        if (mounted) {
+          setState(() {
+            _showingRevealCountdown = true;
+            _revealTarget = 'finished';
+          });
+        }
       });
     }
 
@@ -792,14 +826,23 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.hourglass_top_rounded, size: 56,
-                    color: AppTheme.primaryColor.withValues(alpha: 0.5)),
+                Image.asset(
+                  'assets/images/player_impostor.webp',
+                  width: 110,
+                  height: 110,
+                  cacheWidth: 220,
+                  cacheHeight: 220,
+                ),
                 const SizedBox(height: 16),
-                Text('El impostor está tomando una decisión...',
+                Text(
+                  'El impostor está tomando una decisión...',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontFamily: 'Nunito',
-                    fontSize: 18, fontWeight: FontWeight.w800,
-                    color: AppTheme.textPrimary)),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -847,24 +890,15 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
   }
 
   Widget _buildImpostorChoice(MyMatchState myState) {
-    return ImpostorChoicePhase(
-      matchId: widget.matchId,
-      myState: myState,
-    );
+    return ImpostorChoicePhase(matchId: widget.matchId, myState: myState);
   }
 
   Widget _buildImpostorGuess(MyMatchState myState) {
-    return ImpostorGuessPhase(
-      matchId: widget.matchId,
-      myState: myState,
-    );
+    return ImpostorGuessPhase(matchId: widget.matchId, myState: myState);
   }
 
   Widget _buildMatchResults(MyMatchState myState) {
-    return MatchResultsPhase(
-      matchId: widget.matchId,
-      myState: myState,
-    );
+    return MatchResultsPhase(matchId: widget.matchId, myState: myState);
   }
 
   Widget _buildRoleReveal(MyMatchState myState) {
@@ -895,7 +929,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             const SizedBox(height: 20),
             Text(
               'Partida cancelada',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -905,7 +939,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             Text(
               'No quedaron suficientes jugadores para continuar la partida.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 14,
                 height: 1.45,
                 color: AppTheme.textSecondary,
@@ -915,7 +949,9 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => context.go(_roomId != null ? '/online/room/$_roomId' : '/online'),
+                onPressed: () => context.go(
+                  _roomId != null ? '/online/room/$_roomId' : '/online',
+                ),
                 child: const Text('Volver a la sala'),
               ),
             ),
@@ -940,7 +976,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             const SizedBox(height: 16),
             Text(
               'Error al cargar la partida',
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w800,
                 color: AppTheme.textPrimary,
@@ -950,7 +986,7 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             Text(
               error.replaceFirst('Exception: ', ''),
               textAlign: TextAlign.center,
-              style: TextStyle(fontFamily: 'Nunito',
+              style: TextStyle(
                 fontSize: 14,
                 color: AppTheme.textSecondary,
               ),
@@ -960,5 +996,4 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       ),
     );
   }
-
 }
