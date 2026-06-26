@@ -96,18 +96,15 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
 
     setState(() => _submitting = true);
     try {
-      final nextPhase = await ref.read(onlineMatchRepositoryProvider).submitClue(
+      await ref.read(onlineMatchRepositoryProvider).submitClue(
             matchId: widget.matchId,
             clue: clue,
           );
       if (mounted) {
         _clueController.clear();
         setState(() => _myClueWritten = true);
-        // If phase advanced to voting, force immediate refresh of my own
-        // (secret) state. El cambio de fase del match llega por el canal.
-        if (nextPhase == 'voting') {
-          ref.invalidate(myMatchStateProvider(widget.matchId));
-        }
+        // El cambio de fase (a 'voting') llega por el stream del match; ya no
+        // hace falta invalidar el RPC (Fase 1: fuente única de verdad).
       }
     } catch (e) {
       if (mounted) {

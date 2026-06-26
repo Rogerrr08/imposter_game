@@ -163,41 +163,53 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       _isLateJoinSpectator = true;
     }
 
-    // Build effective myState: real or spectator
+    // Fuente única de verdad (Fase 1): la identidad inmutable (rol/palabra/
+    // pista/seat) viene del RPC una sola vez; el PROGRESO vivo (fase/turno/
+    // ronda/eliminado/puntos) sale SIEMPRE de los streams del canal realtime.
+    // Construimos un MyMatchState "efectivo" mezclando ambos, así las pantallas
+    // no cambian de firma pero nunca renderizan una fase/turno viejos del RPC.
+    final identity = myStateAsync.value;
+    final players =
+        ref.watch(onlineMatchPlayersProvider(widget.matchId)).value ??
+        const <OnlineMatchPlayer>[];
+
     MyMatchState? myState;
     if (_isLateJoinSpectator && match != null) {
       myState = MyMatchState.spectator(match);
+    } else if (identity != null && match != null) {
+      // Mi jugador vivo (eliminado/puntos/rol confirmado) del stream.
+      final mine = players
+          .where((p) => p.id == identity.myPlayerId)
+          .firstOrNull;
+      final eliminated = mine?.isEliminated ?? identity.myIsEliminated;
+      myState = MyMatchState(
+        matchId: identity.matchId,
+        roomId: identity.roomId,
+        status: match.status,
+        category: identity.category,
+        hintsEnabled: identity.hintsEnabled,
+        impostorCount: identity.impostorCount,
+        durationSeconds: identity.durationSeconds,
+        // Progreso: SIEMPRE del stream del match.
+        currentPhase: match.currentPhase,
+        currentRound: match.currentRound,
+        currentTurnIndex: match.currentTurnIndex,
+        stateVersion: match.stateVersion,
+        // Identidad: inmutable, del RPC.
+        myPlayerId: identity.myPlayerId,
+        myRole: identity.myRole,
+        myHint: identity.myHint,
+        mySeatOrder: identity.mySeatOrder,
+        // Estado vivo: del stream de jugadores.
+        myIsEliminated: eliminated,
+        myPoints: mine?.points ?? identity.myPoints,
+        myRoleConfirmed: mine?.roleConfirmed ?? identity.myRoleConfirmed,
+        // El impostor ve la palabra recién al ser eliminado.
+        word: identity.word ?? (eliminated ? match.word : null),
+      );
     } else {
-      myState = myStateAsync.value;
-      // Supplement word from match stream for eliminated impostors
-      // (the RPC returns word=null for impostors, but eliminated players
-      // should see the word since they're now spectating)
-      if (myState != null &&
-          myState.myIsEliminated &&
-          myState.word == null &&
-          match?.word != null) {
-        myState = MyMatchState(
-          matchId: myState.matchId,
-          roomId: myState.roomId,
-          status: myState.status,
-          category: myState.category,
-          hintsEnabled: myState.hintsEnabled,
-          impostorCount: myState.impostorCount,
-          durationSeconds: myState.durationSeconds,
-          currentPhase: myState.currentPhase,
-          currentRound: myState.currentRound,
-          currentTurnIndex: myState.currentTurnIndex,
-          stateVersion: myState.stateVersion,
-          myPlayerId: myState.myPlayerId,
-          myRole: myState.myRole,
-          myHint: myState.myHint,
-          mySeatOrder: myState.mySeatOrder,
-          myIsEliminated: myState.myIsEliminated,
-          myPoints: myState.myPoints,
-          myRoleConfirmed: myState.myRoleConfirmed,
-          word: match!.word,
-        );
-      }
+      // Streams aún cargando: usar el snapshot del RPC como respaldo inicial.
+      myState = identity;
     }
 
     // Cache roomId for lifecycle callbacks & start heartbeat
@@ -236,9 +248,9 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             nextMatch.currentPhase != OnlineMatchPhase.voteResult &&
             !_holdingVoteResult) {
           _holdingVoteResult = true;
-          _heldVoteResultState = _isLateJoinSpectator && prevMatch != null
+          _heldVoteResultState = _isLateJoinSpectator
               ? MyMatchState.spectator(prevMatch)
-              : myStateAsync.value;
+              : myState;
           _voteResultTimer?.cancel();
           _voteResultTimer = Timer(const Duration(seconds: 5), () {
             if (mounted) {
@@ -269,10 +281,6 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
 
         // Impostor choice/guess → next phase: show intermediate screen
         _detectImpostorTransition(prevMatch, nextMatch);
-
-        if (!_isLateJoinSpectator) {
-          ref.invalidate(myMatchStateProvider(widget.matchId));
-        }
       }
     });
 
@@ -326,17 +334,24 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
       },
     );
 
-    // Listen for self-elimination (another device, or server-side)
-    if (!_isLateJoinSpectator) {
-      ref.listen<AsyncValue<MyMatchState>>(
-        myMatchStateProvider(widget.matchId),
+    // Listen for self-elimination (voto, otro dispositivo, o server-side).
+    // Antes se detectaba invalidando el RPC; ahora sale del stream de jugadores
+    // (fuente única de verdad), buscando mi propio jugador por id.
+    if (!_isLateJoinSpectator && myState != null) {
+      final myId = myState.myPlayerId;
+      ref.listen<AsyncValue<List<OnlineMatchPlayer>>>(
+        onlineMatchPlayersProvider(widget.matchId),
         (prev, next) {
-          final prevState = prev?.value;
-          final nextState = next.value;
-          if (prevState != null &&
-              nextState != null &&
-              !prevState.myIsEliminated &&
-              nextState.myIsEliminated) {
+          final prevMine = prev?.value
+              ?.where((p) => p.id == myId)
+              .firstOrNull;
+          final nextMine = next.value
+              ?.where((p) => p.id == myId)
+              .firstOrNull;
+          if (prevMine != null &&
+              nextMine != null &&
+              !prevMine.isEliminated &&
+              nextMine.isEliminated) {
             if (_holdingVoteResult) {
               _pendingElimination = true;
             } else {
@@ -379,21 +394,19 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
             Expanded(
               child: _isLateJoinSpectator && myState != null
                   ? _buildSpectatorContent(myState)
-                  : myStateAsync.when(
-                      loading: () => Center(
-                        child: CircularProgressIndicator(
-                          color: AppTheme.primaryColor,
-                        ),
-                      ),
-                      error: (e, _) => _buildError(e.toString()),
-                      data: (myState) {
-                        if (match != null &&
-                            match.status == OnlineMatchStatus.cancelled) {
-                          return _buildCancelled();
-                        }
-                        return _buildMatchContent(myState);
-                      },
-                    ),
+                  : myState == null
+                  // Identidad aún cargando (o error): respaldo loading/error.
+                  ? (myStateAsync.hasError
+                        ? _buildError(myStateAsync.error.toString())
+                        : Center(
+                            child: CircularProgressIndicator(
+                              color: AppTheme.primaryColor,
+                            ),
+                          ))
+                  : (match != null &&
+                        match.status == OnlineMatchStatus.cancelled)
+                  ? _buildCancelled()
+                  : _buildMatchContent(myState),
             ),
           ],
         ),
