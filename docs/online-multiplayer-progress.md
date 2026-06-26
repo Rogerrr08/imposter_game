@@ -21,9 +21,15 @@ espectador colgado, desconexión que no saca de la sala). Plan por fases en
   auto-eliminación se detecta desde el stream de jugadores. **Esto realiza la
   "Fase 2.1" que estaba DIFERIDA** abajo (recablear `clue_writing` del RPC al
   stream). Baseline analyze 23 → 22; tests verdes.
-- Pendiente: Fase 2 (timer por `turn_ends_at` del servidor), Fase 3 (presence en
-  vivo), Fase 4 (espectador robusto), Fase 5 (polling fallback), Fase 0
-  (auditar SQL aplicado — a cargo del dueño).
+- **Fase 2 — timer autoritativo por timestamp** (commit `9b7f898`): nueva
+  `matches.turn_ends_at` (deadline del turno) + trigger `stamp_turn_deadline`
+  (32s) + `server_now()` + `skip_clue_turn(uuid,int)` con compare-and-swap
+  (arregla el over-skip "se salta a las personas"). Cliente: el contador deja de
+  ser local y se calcula desde `turn_ends_at` + offset de reloj (countdown igual
+  para todos; un reconectado ve el tiempo correcto). SQL en
+  `queries/16-online-reliability.sql` (**aplicar a mano antes de probar**).
+- Pendiente: Fase 3 (presence en vivo), Fase 4 (espectador robusto), Fase 5
+  (polling fallback), Fase 0 (auditar SQL aplicado — a cargo del dueño).
 
 ---
 
