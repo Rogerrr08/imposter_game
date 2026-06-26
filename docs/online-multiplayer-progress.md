@@ -2,6 +2,28 @@
 
 Historial cronológico de los cambios más relevantes del modo online.
 El plan vigente está en [online-multiplayer-plan.md](online-multiplayer-plan.md).
+Plan v2 (en curso): [online-reliability-plan.md](online-reliability-plan.md).
+
+---
+
+## 2026-06-22 — Confiabilidad v2 (rama `feature/online-reliability-v2`)
+
+Tras feedback real de juego (desync, "es mi turno pero no es", timer en 5s,
+espectador colgado, desconexión que no saca de la sala). Plan por fases en
+[online-reliability-plan.md](online-reliability-plan.md).
+
+- **Fase 1 — fuente única de verdad** (commit `47f76fa`): la fase/turno que se
+  renderizan ahora salen SIEMPRE del stream del match, no del RPC
+  `get_my_match_state` (que pasa a usarse solo para la identidad inmutable:
+  rol/palabra/pista/seat). `online_match_screen` construye un `MyMatchState`
+  efectivo = identidad (RPC) + progreso vivo (streams de match/jugadores). Se
+  quitan los `invalidate` de cambio de fase y submit de pista; la
+  auto-eliminación se detecta desde el stream de jugadores. **Esto realiza la
+  "Fase 2.1" que estaba DIFERIDA** abajo (recablear `clue_writing` del RPC al
+  stream). Baseline analyze 23 → 22; tests verdes.
+- Pendiente: Fase 2 (timer por `turn_ends_at` del servidor), Fase 3 (presence en
+  vivo), Fase 4 (espectador robusto), Fase 5 (polling fallback), Fase 0
+  (auditar SQL aplicado — a cargo del dueño).
 
 ---
 
