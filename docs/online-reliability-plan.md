@@ -166,9 +166,24 @@ y se salta a las personas.
    de `_handleTimeout`. (Backstop opcional en servidor: un sweep que avanza turnos
    con `turn_ends_at < now()`, disparable por cualquier `submit/skip` o por cron.)
 
+**Manejo de skew y latencia (importante):**
+- **Skew de reloj → se anula con el offset.** El reloj del server es uno solo;
+  cada cliente mide `offset = server_now − local_now` (restando ~RTT/2) y calcula
+  `restante = turn_ends_at − (local_now + offset)`. Da igual si el reloj local
+  está adelantado o atrasado.
+- **Latencia → colchón.** Estampar `turn_ends_at = now() + 30s + ~2s` para
+  absorber la propagación del aviso "es tu turno", así el jugador del turno tiene
+  ~30s usables aunque el delta tarde 2–3s en llegarle.
+- **Mostrar desde el deadline, no desde un "30 local".** El `Timer.periodic(1s)`
+  es solo para mover el número suave; la verdad es el timestamp. Esto hace que
+  todos los clientes **converjan al mismo 0** (vs. el bug actual, donde el timer
+  local arranca en 30 al renderizar y cada uno diverge).
+- No es necesario tick-sync completo (overkill para por-turnos) ni confiar en el
+  reloj del cliente (los relojes locales no son fuente de verdad).
+
 **Verificación:** los 3 clientes muestran el mismo número (±1s); un cliente que
-entra/refresca a mitad de turno ve el tiempo restante correcto; nadie salta el
-turno antes de que el timestamp venza.
+entra/refresca a mitad de turno ve el tiempo restante correcto; todos llegan a 0
+en el mismo instante real; nadie salta el turno antes de que el timestamp venza.
 
 **Riesgo/rollback:** medio. La columna es aditiva (no rompe clientes viejos).
 
