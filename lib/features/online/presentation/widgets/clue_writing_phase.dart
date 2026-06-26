@@ -33,7 +33,8 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
   bool _myClueWritten = false;
   bool _autoSkipping = false;
   int? _autoSkippedTurnIndex; // Track which turn we already skipped
-  Timer? _turnTimer;
+  int? _timedOutForTurn; // Solo disparamos el timeout una vez por turno
+  Timer? _turnTimer; // Ticker de 1s: solo refresca el número en pantalla
   int _secondsLeft = 30;
 
   @override
@@ -47,10 +48,9 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
   @override
   void didUpdateWidget(ClueWritingPhase oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Reset timer when turn changes
     if (oldWidget.myState.currentTurnIndex !=
         widget.myState.currentTurnIndex) {
-      _resetTurnTimer();
+      // El nuevo turno trae su propio turn_ends_at; solo limpiamos input/flags.
       _clueController.clear();
       _autoSkipping = false;
       _autoSkippedTurnIndex = null;
@@ -65,25 +65,19 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
     super.dispose();
   }
 
+  // Ticker de 1s: solo fuerza un rebuild para refrescar el número. Los segundos
+  // restantes se calculan en build desde `turn_ends_at` (servidor) + el offset
+  // de reloj, así todos los clientes ven el mismo número y un reconectado ve el
+  // tiempo correcto. El timeout se dispara desde build (una vez por turno).
   void _startTurnTimer() {
-    _secondsLeft = 30;
     _turnTimer?.cancel();
     _turnTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
-      setState(() => _secondsLeft--);
-      if (_secondsLeft <= 0) {
-        timer.cancel();
-        _handleTimeout();
-      }
+      setState(() {});
     });
-  }
-
-  void _resetTurnTimer() {
-    _turnTimer?.cancel();
-    _startTurnTimer();
   }
 
   bool get _isMyTurn =>
@@ -121,12 +115,14 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
 
   Future<void> _handleTimeout() async {
     if (widget.isSpectator) return;
+    final turnIndex = widget.myState.currentTurnIndex;
     if (!_isMyTurn) {
-      // Any player can trigger skip when they detect timeout
+      // Cualquier jugador puede disparar el skip al vencer el deadline; el
+      // compare-and-swap del servidor (expected_turn_index) evita el over-skip.
       try {
         await ref
             .read(onlineMatchRepositoryProvider)
-            .skipClueTurn(widget.matchId);
+            .skipClueTurn(widget.matchId, expectedTurnIndex: turnIndex);
       } catch (_) {}
       return;
     }
@@ -140,7 +136,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
       try {
         await ref
             .read(onlineMatchRepositoryProvider)
-            .skipClueTurn(widget.matchId);
+            .skipClueTurn(widget.matchId, expectedTurnIndex: turnIndex);
       } catch (_) {}
     }
   }
@@ -160,11 +156,34 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
     final currentTurnPlayer = activePlayers
         .where((p) => p.seatOrder == (match?.currentTurnIndex ?? 0))
         .firstOrNull;
+    final turnIndex = match?.currentTurnIndex ?? 0;
+
+    // Segundos restantes desde el deadline del servidor (turn_ends_at), con
+    // corrección del offset de reloj → countdown sincronizado entre clientes.
+    // Si todavía no hay deadline (SQL sin aplicar), mostramos 30 sin timeout.
+    final offset =
+        ref.watch(serverClockOffsetProvider).value ?? Duration.zero;
+    final turnEndsAt = match?.turnEndsAt;
+    final hasDeadline = turnEndsAt != null && widget.countdownSeconds == null;
+    if (hasDeadline) {
+      final remaining = turnEndsAt.difference(
+        DateTime.now().toUtc().add(offset),
+      );
+      _secondsLeft = (remaining.inMilliseconds / 1000).round().clamp(0, 30);
+    }
+
+    // Disparar el timeout una sola vez por turno cuando el deadline venció.
+    if (hasDeadline &&
+        _secondsLeft <= 0 &&
+        _timedOutForTurn != turnIndex &&
+        !widget.isSpectator) {
+      _timedOutForTurn = turnIndex;
+      Future.microtask(_handleTimeout);
+    }
 
     // Auto-skip when the current turn player was eliminated (abandoned).
     // Guard: only skip once per turn index to prevent loops caused by
     // Realtime lag (the RPC completes but the stream hasn't updated yet).
-    final turnIndex = match?.currentTurnIndex ?? 0;
     final turnPlayerEliminated = currentTurnPlayer == null &&
         players.any((p) => p.seatOrder == turnIndex && p.isEliminated);
 
@@ -179,7 +198,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
         try {
           await ref
               .read(onlineMatchRepositoryProvider)
-              .skipClueTurn(widget.matchId);
+              .skipClueTurn(widget.matchId, expectedTurnIndex: turnIndex);
         } catch (_) {}
         if (mounted) _autoSkipping = false;
       });

@@ -152,16 +152,31 @@ class OnlineMatchRepository {
     }
   }
 
-  /// Skip the current clue turn (timeout expired).
-  Future<void> skipClueTurn(String matchId) async {
+  /// Skip the current clue turn (timeout expired). Pasa el índice de turno
+  /// esperado para el compare-and-swap del servidor (evita el over-skip cuando
+  /// varios clientes detectan el timeout a la vez).
+  Future<void> skipClueTurn(
+    String matchId, {
+    required int expectedTurnIndex,
+  }) async {
     try {
       await _client.rpc(
         'skip_clue_turn',
-        params: {'input_match_id': matchId},
+        params: {
+          'input_match_id': matchId,
+          'expected_turn_index': expectedTurnIndex,
+        },
       );
     } on PostgrestException catch (error) {
       throw Exception(_friendlyMessage(error));
     }
+  }
+
+  /// Hora del servidor (UTC). El cliente la usa para medir su offset de reloj
+  /// y mostrar el countdown del turno sincronizado entre todos.
+  Future<DateTime> getServerTime() async {
+    final result = await _client.rpc('server_now');
+    return DateTime.parse(result as String).toUtc();
   }
 
   /// Submit a vote for a target player.
