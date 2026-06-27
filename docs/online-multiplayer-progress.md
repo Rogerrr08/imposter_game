@@ -35,7 +35,13 @@ espectador colgado, desconexión que no saca de la sala). Plan por fases en
 - **Fase 3 — presence en vivo** (commit `bea11c0`): `matchPresenceProvider`
   (canal `match-presence:<id>`) detecta desconexión en ~12s; el indicador de
   `clue_writing` usa la presence en vivo; heartbeat 60s→30s. Sin SQL nuevo.
-- Pendiente: Fase 4 (espectador robusto + reingreso), Fase 5 (polling fallback).
+- **Fase 4 — espectador robusto** (commit `4493f43`): el espectador no podía
+  cargar el snapshot ni suscribirse al broadcast (gate `is_match_player`).
+  Nuevo `is_match_room_member`; `get_match_snapshot` y la RLS de
+  `realtime.messages` ahora dejan entrar a miembros de la sala
+  (`queries/18`, aplicado por MCP). `_loadScoresForSpectator` con reintentos.
+  `start_match` ya seatea room_players → reingreso/próxima OK.
+- Pendiente: Fase 5 (polling fallback + holds resilientes).
 
 ---
 
