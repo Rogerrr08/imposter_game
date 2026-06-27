@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../theme/app_theme.dart';
+import '../../application/match_presence_provider.dart';
 import '../../application/online_match_provider.dart';
 import '../../domain/online_match.dart';
 import 'player_avatar.dart';
@@ -36,6 +37,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
   int? _timedOutForTurn; // Solo disparamos el timeout una vez por turno
   Timer? _turnTimer; // Ticker de 1s: solo refresca el número en pantalla
   int _secondsLeft = 30;
+  Set<String> _present = const {}; // user_ids presentes (presence en vivo)
 
   @override
   void initState() {
@@ -83,6 +85,11 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
   bool get _isMyTurn =>
       !widget.isSpectator &&
       widget.myState.mySeatOrder == widget.myState.currentTurnIndex;
+
+  // Conexión en vivo desde presence (Fase 3); cae al flag de BD si presence aún
+  // no cargó (set vacío). Si está activa, siempre me incluye al menos a mí.
+  bool _connected(OnlineMatchPlayer p) =>
+      _present.isNotEmpty ? _present.contains(p.userId) : p.isConnected;
 
   Future<void> _handleSubmitClue() async {
     final clue = _clueController.text.trim();
@@ -146,6 +153,8 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
     final matchAsync = ref.watch(onlineMatchProvider(widget.matchId));
     final playersAsync = ref.watch(onlineMatchPlayersProvider(widget.matchId));
     final cluesAsync = ref.watch(onlineMatchCluesProvider(widget.matchId));
+    _present =
+        ref.watch(matchPresenceProvider(widget.matchId)).value ?? const {};
 
     final match = matchAsync.value;
     final players = playersAsync.value ?? [];
@@ -261,7 +270,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
             child: Row(
               children: [
                 if (currentPlayer != null &&
-                    !currentPlayer.isConnected &&
+                    !_connected(currentPlayer) &&
                     !_isMyTurn) ...[
                   Container(
                     width: 8,
@@ -277,7 +286,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
                   child: Text(
                     _isMyTurn
                         ? 'Tu turno — escribe una pista'
-                        : 'Turno de ${currentPlayer?.displayName ?? '...'}${currentPlayer != null && !currentPlayer.isConnected ? ' (desconectado)' : ''}',
+                        : 'Turno de ${currentPlayer?.displayName ?? '...'}${currentPlayer != null && !_connected(currentPlayer) ? ' (desconectado)' : ''}',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -399,7 +408,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
           avatarUrl: player?.avatarUrl,
           clue: clue.clue,
           seatOrder: clue.turnOrder,
-          isConnected: player?.isConnected ?? true,
+          isConnected: player != null ? _connected(player) : true,
           role: (widget.myState.myIsEliminated || widget.myState.isSpectator)
               ? player?.role
               : null,
@@ -520,13 +529,13 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
           const SizedBox(width: 12),
           Flexible(
             child: Text(
-              currentPlayer != null && !currentPlayer.isConnected
+              currentPlayer != null && !_connected(currentPlayer)
                   ? 'Esperando a ${currentPlayer.displayName} (desconectado)...'
                   : 'Esperando a ${currentPlayer?.displayName ?? '...'}...',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: currentPlayer != null && !currentPlayer.isConnected
+                color: currentPlayer != null && !_connected(currentPlayer)
                     ? AppTheme.warningColor
                     : AppTheme.textSecondary,
               ),

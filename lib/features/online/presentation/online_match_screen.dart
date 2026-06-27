@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../theme/app_theme.dart';
 import '../application/match_heartbeat_provider.dart';
+import '../application/match_presence_provider.dart';
 import '../application/online_match_provider.dart';
 import '../application/online_rooms_provider.dart';
 import '../domain/online_match.dart';
@@ -219,6 +220,9 @@ class _OnlineMatchScreenState extends ConsumerState<OnlineMatchScreen>
     if (_roomId != null) {
       ref.watch(matchHeartbeatProvider((roomId: _roomId!)));
     }
+    // Presence en vivo (Fase 3): se mantiene activa toda la partida para que
+    // los demás vean al instante quién se conecta/desconecta.
+    ref.watch(matchPresenceProvider(widget.matchId));
 
     // Auto-detect if role was already confirmed (reconnection scenario)
     if (myState != null && myState.myRoleConfirmed && !_roleConfirmed) {
