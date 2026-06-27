@@ -28,8 +28,14 @@ espectador colgado, desconexión que no saca de la sala). Plan por fases en
   ser local y se calcula desde `turn_ends_at` + offset de reloj (countdown igual
   para todos; un reconectado ve el tiempo correcto). SQL en
   `queries/16-online-reliability.sql` (**aplicar a mano antes de probar**).
-- Pendiente: Fase 3 (presence en vivo), Fase 4 (espectador robusto), Fase 5
-  (polling fallback), Fase 0 (auditar SQL aplicado — a cargo del dueño).
+- **Fase 0 — auditoría SQL (vía Supabase MCP, 2026-06-26)**: todo aplicado y
+  sano (RLS en las 8 tablas, 3 cron activos, 6 triggers broadcast, realtime RLS,
+  query 16). Advisors: 0 errores. Hardening aplicado (`queries/17`): search_path
+  fijo, revoke de 8 funciones internas a PUBLIC, índices de FK.
+- **Fase 3 — presence en vivo** (commit `bea11c0`): `matchPresenceProvider`
+  (canal `match-presence:<id>`) detecta desconexión en ~12s; el indicador de
+  `clue_writing` usa la presence en vivo; heartbeat 60s→30s. Sin SQL nuevo.
+- Pendiente: Fase 4 (espectador robusto + reingreso), Fase 5 (polling fallback).
 
 ---
 
