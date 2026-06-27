@@ -41,7 +41,14 @@ espectador colgado, desconexión que no saca de la sala). Plan por fases en
   `realtime.messages` ahora dejan entrar a miembros de la sala
   (`queries/18`, aplicado por MCP). `_loadScoresForSpectator` con reintentos.
   `start_match` ya seatea room_players → reingreso/próxima OK.
-- Pendiente: Fase 5 (polling fallback + holds resilientes).
+- **Fase 5 — polling fallback** (commit `46b60e2`): `OnlineMatchChannel` hace un
+  re-snapshot cada 5s (catch-up only, guard por `state_version`) como red de
+  seguridad si un delta se pierde con el socket vivo. Sub-tarea "holds
+  resilientes" diferida (cosmética).
+
+**PLAN DE CONFIABILIDAD ONLINE v2 COMPLETO** (Fases 0-5). Rama
+`feature/online-reliability-v2`, sin pushear. Pendiente de validación
+multi-cliente en dispositivo.
 
 ---
 
