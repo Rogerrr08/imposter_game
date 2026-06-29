@@ -19,7 +19,7 @@ final matchHeartbeatProvider =
       .setPlayerConnected(roomId: params.roomId, connected: true)
       .catchError((_) {});
 
-  final timer = Timer.periodic(const Duration(seconds: 60), (_) {
+  final timer = Timer.periodic(const Duration(seconds: 30), (_) {
     repository
         .setPlayerConnected(roomId: params.roomId, connected: true)
         .catchError((_) {});

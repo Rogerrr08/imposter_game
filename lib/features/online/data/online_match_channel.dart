@@ -27,6 +27,7 @@ class OnlineMatchChannel {
   bool _started = false;
   bool _disposed = false;
   bool _resyncing = false;
+  Timer? _pollTimer;
 
   // Estado en memoria
   OnlineMatch? _match;
@@ -73,6 +74,15 @@ class OnlineMatchChannel {
 
     // 2. Canal broadcast privado.
     _channel = _subscribeChannel();
+
+    // 3. Poll de respaldo (Fase 5): si un delta se pierde con el socket "vivo"
+    //    (caso raro), un re-snapshot cada 5s reconcilia el estado. Es catch-up:
+    //    nunca regresa el estado (guard por state_version en _loadSnapshot). En
+    //    segundo plano el navegador/OS estrangula el timer solo, y el resume del
+    //    lifecycle hace su propio resync.
+    _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!_disposed) unawaited(_loadSnapshot(isPoll: true));
+    });
   }
 
   /// Crea y suscribe una nueva instancia del canal broadcast privado.
@@ -138,7 +148,7 @@ class OnlineMatchChannel {
     }
   }
 
-  Future<void> _loadSnapshot() async {
+  Future<void> _loadSnapshot({bool isPoll = false}) async {
     try {
       final result = await _client.rpc(
         'get_match_snapshot',
@@ -148,7 +158,19 @@ class OnlineMatchChannel {
       final data = result as Map<String, dynamic>;
 
       final matchMap = data['match'] as Map<String, dynamic>?;
-      _match = matchMap != null ? OnlineMatch.fromMap(matchMap) : null;
+      final nextMatch = matchMap != null
+          ? OnlineMatch.fromMap(matchMap)
+          : null;
+      // Poll de respaldo: catch-up only. Si los deltas ya van más adelante
+      // (state_version mayor), no regresamos el estado para evitar parpadeos.
+      final current = _match;
+      if (isPoll &&
+          nextMatch != null &&
+          current != null &&
+          nextMatch.stateVersion < current.stateVersion) {
+        return;
+      }
+      _match = nextMatch;
 
       _players
         ..clear()
@@ -269,6 +291,7 @@ class OnlineMatchChannel {
     if (_disposed) return;
     _disposed = true;
 
+    _pollTimer?.cancel();
     final channel = _channel;
     _channel = null;
     if (channel != null) {

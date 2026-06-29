@@ -75,18 +75,19 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
     }
   }
 
-  /// Spectators can't call the RPC — derive from streams.
-  void _loadScoresForSpectator() {
-    Future.delayed(const Duration(milliseconds: 300), () {
+  /// Spectators can't call the RPC — derive from streams. Espera a que el
+  /// snapshot llegue por el stream (hasta ~3.6s) en vez de un único delay de
+  /// 300ms (que fallaba si el snapshot tardaba → "cargando" eterno).
+  Future<void> _loadScoresForSpectator() async {
+    for (var attempt = 0; attempt < 12; attempt++) {
       if (!mounted) return;
       final players =
           ref.read(onlineMatchPlayersProvider(widget.matchId)).value ?? [];
-      final match =
-          ref.read(onlineMatchProvider(widget.matchId)).value;
+      final match = ref.read(onlineMatchProvider(widget.matchId)).value;
 
       if (players.isEmpty || match == null) {
-        setState(() => _loading = false);
-        return;
+        await Future.delayed(const Duration(milliseconds: 300));
+        continue;
       }
 
       // Derive winner from players data
@@ -110,6 +111,7 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
           return cmp != 0 ? cmp : a.displayName.compareTo(b.displayName);
         });
 
+      if (!mounted) return;
       setState(() {
         _scores = MatchScoresResult(
           winner: winner,
@@ -120,7 +122,10 @@ class _MatchResultsPhaseState extends ConsumerState<MatchResultsPhase> {
         _loading = false;
       });
       HapticFeedback.heavyImpact();
-    });
+      return;
+    }
+    // Timeout: el snapshot no llegó por el stream.
+    if (mounted) setState(() => _loading = false);
   }
 
   Future<void> _handlePlayAgain() async {

@@ -82,6 +82,10 @@ class OnlineMatch {
   final DateTime createdAt;
   final DateTime updatedAt;
 
+  /// Deadline del turno de pistas (servidor). Null fuera de clue_writing.
+  /// El cliente calcula los segundos restantes desde acá (timer sincronizado).
+  final DateTime? turnEndsAt;
+
   const OnlineMatch({
     required this.id,
     required this.roomId,
@@ -98,6 +102,7 @@ class OnlineMatch {
     this.word,
     required this.createdAt,
     required this.updatedAt,
+    this.turnEndsAt,
   });
 
   factory OnlineMatch.fromMap(Map<String, dynamic> map) {
@@ -119,6 +124,9 @@ class OnlineMatch {
       word: map['word'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
+      turnEndsAt: map['turn_ends_at'] != null
+          ? DateTime.parse(map['turn_ends_at'] as String).toUtc()
+          : null,
     );
   }
 

@@ -55,3 +55,22 @@ final myMatchStateProvider =
   final repository = ref.watch(onlineMatchRepositoryProvider);
   return repository.getMyMatchState(matchId);
 });
+
+/// Offset entre el reloj del servidor y el local: `serverNow ≈ localNow + offset`.
+/// Se mide una vez (con corrección de RTT/2) al abrir la pantalla del match y
+/// permite que el countdown del turno (derivado de `turn_ends_at`) sea igual en
+/// todos los clientes, sin importar el desfase de relojes. Si falla, cae a cero
+/// (peor caso: el countdown usa el reloj local, como antes).
+final serverClockOffsetProvider = FutureProvider.autoDispose<Duration>((
+  ref,
+) async {
+  final repository = ref.watch(onlineMatchRepositoryProvider);
+  final t0 = DateTime.now().toUtc();
+  final serverNow = await repository.getServerTime();
+  final t1 = DateTime.now().toUtc();
+  final rttHalf = Duration(
+    microseconds: t1.difference(t0).inMicroseconds ~/ 2,
+  );
+  // El reloj del servidor en t1 ≈ serverNow + rttHalf.
+  return serverNow.add(rttHalf).difference(t1);
+});

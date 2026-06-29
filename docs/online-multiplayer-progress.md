@@ -2,6 +2,53 @@
 
 Historial cronológico de los cambios más relevantes del modo online.
 El plan vigente está en [online-multiplayer-plan.md](online-multiplayer-plan.md).
+Plan v2 (en curso): [online-reliability-plan.md](online-reliability-plan.md).
+
+---
+
+## 2026-06-22 — Confiabilidad v2 (rama `feature/online-reliability-v2`)
+
+Tras feedback real de juego (desync, "es mi turno pero no es", timer en 5s,
+espectador colgado, desconexión que no saca de la sala). Plan por fases en
+[online-reliability-plan.md](online-reliability-plan.md).
+
+- **Fase 1 — fuente única de verdad** (commit `47f76fa`): la fase/turno que se
+  renderizan ahora salen SIEMPRE del stream del match, no del RPC
+  `get_my_match_state` (que pasa a usarse solo para la identidad inmutable:
+  rol/palabra/pista/seat). `online_match_screen` construye un `MyMatchState`
+  efectivo = identidad (RPC) + progreso vivo (streams de match/jugadores). Se
+  quitan los `invalidate` de cambio de fase y submit de pista; la
+  auto-eliminación se detecta desde el stream de jugadores. **Esto realiza la
+  "Fase 2.1" que estaba DIFERIDA** abajo (recablear `clue_writing` del RPC al
+  stream). Baseline analyze 23 → 22; tests verdes.
+- **Fase 2 — timer autoritativo por timestamp** (commit `9b7f898`): nueva
+  `matches.turn_ends_at` (deadline del turno) + trigger `stamp_turn_deadline`
+  (32s) + `server_now()` + `skip_clue_turn(uuid,int)` con compare-and-swap
+  (arregla el over-skip "se salta a las personas"). Cliente: el contador deja de
+  ser local y se calcula desde `turn_ends_at` + offset de reloj (countdown igual
+  para todos; un reconectado ve el tiempo correcto). SQL en
+  `queries/16-online-reliability.sql` (**aplicar a mano antes de probar**).
+- **Fase 0 — auditoría SQL (vía Supabase MCP, 2026-06-26)**: todo aplicado y
+  sano (RLS en las 8 tablas, 3 cron activos, 6 triggers broadcast, realtime RLS,
+  query 16). Advisors: 0 errores. Hardening aplicado (`queries/17`): search_path
+  fijo, revoke de 8 funciones internas a PUBLIC, índices de FK.
+- **Fase 3 — presence en vivo** (commit `bea11c0`): `matchPresenceProvider`
+  (canal `match-presence:<id>`) detecta desconexión en ~12s; el indicador de
+  `clue_writing` usa la presence en vivo; heartbeat 60s→30s. Sin SQL nuevo.
+- **Fase 4 — espectador robusto** (commit `4493f43`): el espectador no podía
+  cargar el snapshot ni suscribirse al broadcast (gate `is_match_player`).
+  Nuevo `is_match_room_member`; `get_match_snapshot` y la RLS de
+  `realtime.messages` ahora dejan entrar a miembros de la sala
+  (`queries/18`, aplicado por MCP). `_loadScoresForSpectator` con reintentos.
+  `start_match` ya seatea room_players → reingreso/próxima OK.
+- **Fase 5 — polling fallback** (commit `46b60e2`): `OnlineMatchChannel` hace un
+  re-snapshot cada 5s (catch-up only, guard por `state_version`) como red de
+  seguridad si un delta se pierde con el socket vivo. Sub-tarea "holds
+  resilientes" diferida (cosmética).
+
+**PLAN DE CONFIABILIDAD ONLINE v2 COMPLETO** (Fases 0-5). Rama
+`feature/online-reliability-v2`, sin pushear. Pendiente de validación
+multi-cliente en dispositivo.
 
 ---
 

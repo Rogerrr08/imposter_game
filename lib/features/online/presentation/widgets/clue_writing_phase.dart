@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../theme/app_theme.dart';
+import '../../application/match_presence_provider.dart';
 import '../../application/online_match_provider.dart';
 import '../../domain/online_match.dart';
 import 'player_avatar.dart';
@@ -33,8 +34,10 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
   bool _myClueWritten = false;
   bool _autoSkipping = false;
   int? _autoSkippedTurnIndex; // Track which turn we already skipped
-  Timer? _turnTimer;
+  int? _timedOutForTurn; // Solo disparamos el timeout una vez por turno
+  Timer? _turnTimer; // Ticker de 1s: solo refresca el número en pantalla
   int _secondsLeft = 30;
+  Set<String> _present = const {}; // user_ids presentes (presence en vivo)
 
   @override
   void initState() {
@@ -47,10 +50,9 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
   @override
   void didUpdateWidget(ClueWritingPhase oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Reset timer when turn changes
     if (oldWidget.myState.currentTurnIndex !=
         widget.myState.currentTurnIndex) {
-      _resetTurnTimer();
+      // El nuevo turno trae su propio turn_ends_at; solo limpiamos input/flags.
       _clueController.clear();
       _autoSkipping = false;
       _autoSkippedTurnIndex = null;
@@ -65,30 +67,29 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
     super.dispose();
   }
 
+  // Ticker de 1s: solo fuerza un rebuild para refrescar el número. Los segundos
+  // restantes se calculan en build desde `turn_ends_at` (servidor) + el offset
+  // de reloj, así todos los clientes ven el mismo número y un reconectado ve el
+  // tiempo correcto. El timeout se dispara desde build (una vez por turno).
   void _startTurnTimer() {
-    _secondsLeft = 30;
     _turnTimer?.cancel();
     _turnTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
-      setState(() => _secondsLeft--);
-      if (_secondsLeft <= 0) {
-        timer.cancel();
-        _handleTimeout();
-      }
+      setState(() {});
     });
-  }
-
-  void _resetTurnTimer() {
-    _turnTimer?.cancel();
-    _startTurnTimer();
   }
 
   bool get _isMyTurn =>
       !widget.isSpectator &&
       widget.myState.mySeatOrder == widget.myState.currentTurnIndex;
+
+  // Conexión en vivo desde presence (Fase 3); cae al flag de BD si presence aún
+  // no cargó (set vacío). Si está activa, siempre me incluye al menos a mí.
+  bool _connected(OnlineMatchPlayer p) =>
+      _present.isNotEmpty ? _present.contains(p.userId) : p.isConnected;
 
   Future<void> _handleSubmitClue() async {
     final clue = _clueController.text.trim();
@@ -96,18 +97,15 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
 
     setState(() => _submitting = true);
     try {
-      final nextPhase = await ref.read(onlineMatchRepositoryProvider).submitClue(
+      await ref.read(onlineMatchRepositoryProvider).submitClue(
             matchId: widget.matchId,
             clue: clue,
           );
       if (mounted) {
         _clueController.clear();
         setState(() => _myClueWritten = true);
-        // If phase advanced to voting, force immediate refresh of my own
-        // (secret) state. El cambio de fase del match llega por el canal.
-        if (nextPhase == 'voting') {
-          ref.invalidate(myMatchStateProvider(widget.matchId));
-        }
+        // El cambio de fase (a 'voting') llega por el stream del match; ya no
+        // hace falta invalidar el RPC (Fase 1: fuente única de verdad).
       }
     } catch (e) {
       if (mounted) {
@@ -124,12 +122,14 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
 
   Future<void> _handleTimeout() async {
     if (widget.isSpectator) return;
+    final turnIndex = widget.myState.currentTurnIndex;
     if (!_isMyTurn) {
-      // Any player can trigger skip when they detect timeout
+      // Cualquier jugador puede disparar el skip al vencer el deadline; el
+      // compare-and-swap del servidor (expected_turn_index) evita el over-skip.
       try {
         await ref
             .read(onlineMatchRepositoryProvider)
-            .skipClueTurn(widget.matchId);
+            .skipClueTurn(widget.matchId, expectedTurnIndex: turnIndex);
       } catch (_) {}
       return;
     }
@@ -143,7 +143,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
       try {
         await ref
             .read(onlineMatchRepositoryProvider)
-            .skipClueTurn(widget.matchId);
+            .skipClueTurn(widget.matchId, expectedTurnIndex: turnIndex);
       } catch (_) {}
     }
   }
@@ -153,6 +153,8 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
     final matchAsync = ref.watch(onlineMatchProvider(widget.matchId));
     final playersAsync = ref.watch(onlineMatchPlayersProvider(widget.matchId));
     final cluesAsync = ref.watch(onlineMatchCluesProvider(widget.matchId));
+    _present =
+        ref.watch(matchPresenceProvider(widget.matchId)).value ?? const {};
 
     final match = matchAsync.value;
     final players = playersAsync.value ?? [];
@@ -163,11 +165,34 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
     final currentTurnPlayer = activePlayers
         .where((p) => p.seatOrder == (match?.currentTurnIndex ?? 0))
         .firstOrNull;
+    final turnIndex = match?.currentTurnIndex ?? 0;
+
+    // Segundos restantes desde el deadline del servidor (turn_ends_at), con
+    // corrección del offset de reloj → countdown sincronizado entre clientes.
+    // Si todavía no hay deadline (SQL sin aplicar), mostramos 30 sin timeout.
+    final offset =
+        ref.watch(serverClockOffsetProvider).value ?? Duration.zero;
+    final turnEndsAt = match?.turnEndsAt;
+    final hasDeadline = turnEndsAt != null && widget.countdownSeconds == null;
+    if (hasDeadline) {
+      final remaining = turnEndsAt.difference(
+        DateTime.now().toUtc().add(offset),
+      );
+      _secondsLeft = (remaining.inMilliseconds / 1000).round().clamp(0, 30);
+    }
+
+    // Disparar el timeout una sola vez por turno cuando el deadline venció.
+    if (hasDeadline &&
+        _secondsLeft <= 0 &&
+        _timedOutForTurn != turnIndex &&
+        !widget.isSpectator) {
+      _timedOutForTurn = turnIndex;
+      Future.microtask(_handleTimeout);
+    }
 
     // Auto-skip when the current turn player was eliminated (abandoned).
     // Guard: only skip once per turn index to prevent loops caused by
     // Realtime lag (the RPC completes but the stream hasn't updated yet).
-    final turnIndex = match?.currentTurnIndex ?? 0;
     final turnPlayerEliminated = currentTurnPlayer == null &&
         players.any((p) => p.seatOrder == turnIndex && p.isEliminated);
 
@@ -182,7 +207,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
         try {
           await ref
               .read(onlineMatchRepositoryProvider)
-              .skipClueTurn(widget.matchId);
+              .skipClueTurn(widget.matchId, expectedTurnIndex: turnIndex);
         } catch (_) {}
         if (mounted) _autoSkipping = false;
       });
@@ -245,7 +270,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
             child: Row(
               children: [
                 if (currentPlayer != null &&
-                    !currentPlayer.isConnected &&
+                    !_connected(currentPlayer) &&
                     !_isMyTurn) ...[
                   Container(
                     width: 8,
@@ -261,7 +286,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
                   child: Text(
                     _isMyTurn
                         ? 'Tu turno — escribe una pista'
-                        : 'Turno de ${currentPlayer?.displayName ?? '...'}${currentPlayer != null && !currentPlayer.isConnected ? ' (desconectado)' : ''}',
+                        : 'Turno de ${currentPlayer?.displayName ?? '...'}${currentPlayer != null && !_connected(currentPlayer) ? ' (desconectado)' : ''}',
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -383,7 +408,7 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
           avatarUrl: player?.avatarUrl,
           clue: clue.clue,
           seatOrder: clue.turnOrder,
-          isConnected: player?.isConnected ?? true,
+          isConnected: player != null ? _connected(player) : true,
           role: (widget.myState.myIsEliminated || widget.myState.isSpectator)
               ? player?.role
               : null,
@@ -504,13 +529,13 @@ class _ClueWritingPhaseState extends ConsumerState<ClueWritingPhase> {
           const SizedBox(width: 12),
           Flexible(
             child: Text(
-              currentPlayer != null && !currentPlayer.isConnected
+              currentPlayer != null && !_connected(currentPlayer)
                   ? 'Esperando a ${currentPlayer.displayName} (desconectado)...'
                   : 'Esperando a ${currentPlayer?.displayName ?? '...'}...',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: currentPlayer != null && !currentPlayer.isConnected
+                color: currentPlayer != null && !_connected(currentPlayer)
                     ? AppTheme.warningColor
                     : AppTheme.textSecondary,
               ),
